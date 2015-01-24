@@ -136,10 +136,10 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="test1.asn">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\lib\ASN1cmpd -c -v -o cxx test.asn
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\lib\ASN1cmpd -c -v -o cxx test1.asn
 </Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cxx\myhttp.cxx;cxx\myhttp.inl;cxx\myhttp.h;cxx\test1.cxx;cxx\test1.inl;cxx\test1.h;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\Lib\ASN1cmp -c -v -o cxx test.asn
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\Lib\ASN1cmp -c -v -o cxx test1.asn
 </Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cxx\myhttp.cxx;cxx\myhttp.inl;cxx\myhttp.h;cxx\test1.cxx;cxx\test1.inl;cxx\test1.h;%(Outputs)</Outputs>
     </CustomBuild>
