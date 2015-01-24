@@ -318,8 +318,7 @@ std::ostream & operator<<(std::ostream & out, const StdError & e)
   if (e.e == Fatal) {
     fatals++;
     out << "error";
-  }
-  else {
+  }  else {
     warnings++;
     out << "warning";
   }
@@ -350,7 +349,7 @@ struct str_less : std::binary_function<const char*, const char*, bool>
 static string MakeIdentifierC(const string & identifier)
 {
   string s = identifier;
-  if (s != "")
+  if (!s.empty())
   {
     str_replace(s, "-", "_");
     static const char** end = CppReserveWords+ARRAY_SIZE(CppReserveWords);
@@ -1396,11 +1395,11 @@ void SingleValueConstraintElement::GetConstraint(string& str) const
   Unfreezer unfreezer(strm);
 
   if (dynamic_cast<const IntegerValue*>(value.get())) {
-    strm << *value << ", " << *value << std::ends;
+    strm << *value << ", " << *value ;
     str += strm.str();
   }
   else  if (dynamic_cast<const CharacterStringValue*>(value.get())) {
-    strm << *value << std::ends;
+    strm << *value;
     str += strm.str();
   }
 }
@@ -1468,7 +1467,7 @@ void ValueRangeConstraintElement::GetConstraint(string& str) const
 
   stringstream strm;
   Unfreezer unfreezer(strm);
-  strm << *lower << ", " << *upper << std::ends;
+  strm << *lower << ", " << *upper;
   str += strm.str();
 }
 
@@ -1546,7 +1545,7 @@ void SubTypeConstraintElement::GetConstraint(string& str) const
   stringstream strm;
   Unfreezer unfreezer(strm);
   strm << str << subtype->GetTypeName() << "::LowerLimit, "
-       << subtype->GetTypeName() << "::UpperLimit" << std::ends;
+       << subtype->GetTypeName() << "::UpperLimit";
   str = strm.str();
 }
 
@@ -3603,8 +3602,7 @@ void SequenceType::GenerateCplusplus(std::ostream & hdr, std::ostream & cxx, std
 
   GenerateInfo(this, hdr, cxx);
 
-  decoder << std::ends;
-  if (strlen(decoder.str().c_str()) )
+  if (!decoder.str().empty())
   {
       hdr << indent << "static ASN1::AbstractData* create(const void*);\n"
           << indent << "bool do_accept(ASN1::Visitor& visitor);\n";
@@ -3627,12 +3625,12 @@ void SequenceType::GenerateCplusplus(std::ostream & hdr, std::ostream & cxx, std
           << "  return false;\n"
           << "}\n\n";
   }
-
+  decoder << std::ends;
   indent -= 4;
   hdr << indent << "}; // end class " << shortClassNameString << "\n\n";
 
-  tmpcxx << std::ends;
   cxx << tmpcxx.str();
+  tmpcxx << std::ends;
   isGenerated = true;
 }
 
@@ -3728,13 +3726,11 @@ void SequenceType::GenerateComponent(TypeBase& field, std::ostream & hdr, std::o
 
   stringstream varName;
   Unfreezer unfreezer1(varName);
-  varName << "*static_cast<" << typenameKeyword << componentIdentifier << "::pointer>(fields[" << id << "])"
-          << std::ends;
+  varName << "*static_cast<" << typenameKeyword << componentIdentifier << "::pointer>(fields[" << id << "])";
 
   stringstream constVarName;
   Unfreezer unfreezer2(constVarName);
-  constVarName << "*static_cast<" << typenameKeyword << componentIdentifier << "::const_pointer>(fields["
-               << id << "])" << std::ends;
+  constVarName << "*static_cast<" << typenameKeyword << componentIdentifier << "::const_pointer>(fields[" << id << "])";
 
   // generate accessor/mutator functions
 
@@ -4685,8 +4681,8 @@ void ChoiceType::GenerateCplusplus(std::ostream & hdr, std::ostream & cxx, std::
     typenameKeyword = "typename ";
 
   EndGenerateCplusplus(hdr, cxx, inl);
-  tmpcxx << std::ends;
   cxx << tmpcxx.str();
+  tmpcxx << std::ends;
 
   isGenerated = true;
 }
@@ -6644,7 +6640,7 @@ void ModuleDefinition::GenerateCplusplus(const string & dir,
 
         stringstream suffix;
         Unfreezer unfreezer(suffix);
-        suffix << '_' << i/classesPerFile+1 << std::ends;
+        suffix << '_' << i/classesPerFile+1 ;
 
         if (!cxxFile.Open(dpath, suffix.str().c_str(), cppExt))
         {
@@ -6707,8 +6703,7 @@ void ModuleDefinition::GenerateCplusplus(const string & dir,
     //if (useNamespaces)
     cxxFile << "} // namespace " << cModuleName << "\n";
 
-    inl << std::ends;
-    if (strlen(inl.str().c_str()))
+    if (!inl.str().empty())
     {
       OutputFile inlFile;
       if (!inlFile.Open(dpath, "", ".inl"))
@@ -6740,6 +6735,7 @@ void ModuleDefinition::GenerateCplusplus(const string & dir,
       hdrFile << "#include \"" << ::GetFileName(dpath) + ".inl"//inlFile.GetFilePath().GetFileName()
               << "\"\n\n";
     }
+    inl << std::ends;
 
     // Close off the files
     hdrFile << "} // namespace " << cModuleName
@@ -6790,8 +6786,7 @@ void ModuleDefinition::GenerateClassModule(std::ostream& hdrFile, std::ostream& 
     }
   }
 
-  tmphdr << std::ends;
-  if (strlen(tmphdr.str().c_str()))
+  if (!tmphdr.str().empty())
   {
     hdrFile << "class " << dllMacroAPI << " Module : public ASN1::Module\n"
             << "{\n"
@@ -6811,6 +6806,7 @@ void ModuleDefinition::GenerateClassModule(std::ostream& hdrFile, std::ostream& 
     hdrFile << ");\n";
 
     hdrFile << tmphdr.str();
+    tmphdr << std::ends;
 
     hdrFile << "private:\n";
     for (i = 0 ; i < informationObjects.size(); ++i)
@@ -6830,12 +6826,12 @@ void ModuleDefinition::GenerateClassModule(std::ostream& hdrFile, std::ostream& 
 
     hdrFile << "}; // class Module\n\n";
 
-    tmpcxx << std::ends;
     cxxFile << "#ifdef _MSC_VER\n"
             << "#pragma warning(disable: 4355)\n"
             << "#endif\n\n"
             << tmpcxx.str()
             << "Module::Module(";
+    tmpcxx << std::ends;
 
     for (i = 0, needComma = false; i < imports.size(); ++i)
       if (imports[i]->HasValuesOrObjects())
@@ -8036,8 +8032,8 @@ void ObjectClassDefn::GenerateCplusplus(std::ostream& hdr, std::ostream& cxx, st
     stringstream strm;
     Unfreezer unfreezer(strm);
     (*fieldSpecs)[i]->FwdDeclare(strm);
-    strm << std::ends;
     string str = strm.str();
+    strm << std::ends;
     if (str.find(GetName()) != -1)
       continue;
     hdr << str;
@@ -8498,10 +8494,10 @@ void FieldSetting::GenerateInitializationList(std::ostream & hdr, std::ostream &
   stringstream tmp;
   Unfreezer unfreezer(tmp);
   setting->GenerateInitializationList(hdr, tmp, inl);
-  tmp << std::ends;
-  if (strlen(tmp.str().c_str())) {
+  if (!tmp.str().empty()) {
         cxx << identifier << "(" << tmp.str() << ")";
   }
+  tmp << std::ends;
 }
 
 void FieldSetting::GenerateInfo(std::ostream& hdr)
@@ -8664,8 +8660,7 @@ void DefaultObjectDefn::GenerateCplusplus(std::ostream& hdr , std::ostream & cxx
     (*settings)[i]->GenerateCplusplus(prefix, tmphdr, cxx, inl, flags);
 
 
-  tmphdr << std::ends;
-  if (strlen(tmphdr.str().c_str()))
+  if (!tmphdr.str().empty())
   {
     int has_type_setting = (flags & Setting::has_type_setting);
     int has_objectSet_setting = (flags & Setting::has_objectSet_setting);
@@ -8681,6 +8676,8 @@ void DefaultObjectDefn::GenerateCplusplus(std::ostream& hdr , std::ostream & cxx
         << "        " << className << "::value_type make() const\n"
            "        { return " << className << "::value_type(" << keyName << ",&info ); }\n"
            "    private:\n";
+
+	tmphdr << std::ends;
 
     if (has_type_setting || has_objectSet_setting)
     {
@@ -8715,8 +8712,7 @@ void DefaultObjectDefn::GenerateCplusplus(std::ostream& hdr , std::ostream & cxx
       stringstream tmp;
       Unfreezer unfreezer(tmp);
       (*settings)[i]->GenerateInitializationList(hdr, tmp, inl);
-      tmp << std::ends;
-      if (strlen(tmp.str().c_str()))
+      if (!tmp.str().empty())
       {
         if (!hasInitizationList)
           cxx << "\n  : " << tmp.str();
@@ -8726,7 +8722,8 @@ void DefaultObjectDefn::GenerateCplusplus(std::ostream& hdr , std::ostream & cxx
           hasInitizationList = true;
         }
       }
-    }
+      tmp << std::ends;
+   }
 
     if (has_objectSet_setting)
       cxx << ", info(this)";
@@ -9063,11 +9060,11 @@ bool InformationObjectSetDefn::GenerateTypeConstructor(std::ostream& cxx) const
   stringstream tmp;
   Unfreezer unfreezer(tmp);
   rep->GenerateObjSetAccessCode(tmp);
-  tmp << std::ends;
-  if (strlen(tmp.str().c_str()))
+  if (!tmp.str().empty())
   {
     cxx << tmp.str();
     return true;
+    tmp << std::ends;
   }
 
   cxx << "  ASN1::Module* module = env.find(\"" << Module->GetName() << "\");\n"
@@ -9160,7 +9157,7 @@ string ParameterizedObjectSet::GetName() const
 {
   stringstream strm;
   Unfreezer unfreezer(strm);
-  strm << referenceName << *arguments << std::ends;
+  strm << referenceName << *arguments;
   return string(strm.str());
 }
 
