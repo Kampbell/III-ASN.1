@@ -114,6 +114,7 @@ static std::string * ConcatNames(std::string * s1, char c, std::string * s2)
 #define YYERROR_VERBOSE 1
 #define YYDEBUG 1
 #define YYPRINT(a,b,c)
+
 %}
 
 
@@ -3134,13 +3135,14 @@ ObjectSetFromObject
     }
   ;
 
-
+/*
 ParameterizedValue
   : PARAMETERIZEDVALUEREFERENCE ActualParameterList
     { }
   | MODULEREFERENCE '.' PARAMETERIZEDVALUEREFERENCE ActualParameterList
     { }
   ;
+*/
 
 SimpleDefinedValue
   : VALUEREFERENCE
