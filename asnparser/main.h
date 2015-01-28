@@ -94,6 +94,7 @@
 #if defined(_MSC_VER) && (_MSC_VER <=1200)
 #pragma warning(disable:4786)
 #endif
+
 #include <stdio.h>
 #include <vector>
 #include <list>
@@ -114,15 +115,26 @@ using std::auto_ptr;
 using std::stack;
 using boost::shared_ptr;
 
+#define MULTI_PARSER 1
+
 extern unsigned lineNumber;
 extern string  fileName;
+
+#ifdef MULTI_PARSER
 extern FILE * yyin;
 extern FILE * idin;
 extern int yyparse();
 extern int idparse();
+void yyerror(const char* str);
+void iderror(const char* str);
 
-void yyerror(char * str);
-void iderror(char * str);
+#elif REENTRANT_PARSER
+struct yyscan_t {
+	int i;
+};
+extern yyparse(yyscan_t *scanner);
+extern yylex(YYSTYPE *yylval_param, yyscan_t* yyscanner);
+#endif
 
 /////////////////////////////////////////
 //
@@ -1674,6 +1686,8 @@ public:
   string GetDefault() const ;
   TypePtr GetDefaultType();
   virtual int GetToken() const;
+  virtual bool GetKey(TypePtr& keyType, string& keyName);
+
   void PrintOn(ostream &) const;
   virtual void ResolveReference() const;
   virtual void Generate_info_type_constructor(ostream&) const;
@@ -2683,6 +2697,7 @@ typedef map<string, TypePtr> TypeMap;
 class ModuleDefinition : public Printable
 {
 public:
+  ModuleDefinition(const string& name);
   ModuleDefinition(const string& name, Tag::Mode defTagMode);
   ~ModuleDefinition();
 
@@ -2747,6 +2762,8 @@ public:
   void RemoveReferences(bool verbose);
   ImportModule* FindImportedModule(const string& theModuleName);
 
+  void dump() const;
+
 private:
   ModuleDefinition& operator = (const ModuleDefinition&);
   typedef map<string, string> PStringMap;
@@ -2797,5 +2814,6 @@ extern ClassStack *classStack;
 extern ParameterList * DummyParameters;
 
 ModuleDefinition* FindModule(const char* name);
+ModuleDefinition* CreateModule(const char* name);
 void AddRemoveItem(const char* item);
 #endif

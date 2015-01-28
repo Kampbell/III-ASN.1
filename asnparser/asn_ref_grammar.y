@@ -53,6 +53,9 @@
 #undef realloc
 #undef free
 
+#define YYERROR_VERBOSE 1
+#define YYDEBUG 1
+
 #include "main.h"
 
 extern int idlex();
@@ -79,6 +82,11 @@ typedef std::vector<std::string> StringList;
 #define OBJECTSET_BRACE (TYPEREFERENCE+12)
 
 %}
+
+%define api.prefix {id}
+//%define api.pure full
+//%lex-param		{yyscan_t scanner}
+//%parse-param	{yyscan_t scanner}
 
 %token MODULEREFERENCE 
 %token TYPEREFERENCE  
@@ -174,9 +182,8 @@ typedef std::vector<std::string> StringList;
 
 %token ObjectDescriptor_t
 
-
-%type <ival> INTEGER
 %type <ival> TagDefault
+%type <ival> INTEGER
 
 %type <sval> IDENTIFIER
 %type <sval> MODULEREFERENCE
@@ -193,11 +200,13 @@ typedef std::vector<std::string> StringList;
 %type <sval> ParameterizedTypeReference
 %type <sval> ParameterizedWouldbeObjectClassReference
 %type <sval> ParameterizedIdentifier
+%type <modd> ModuleDefinition
 
 %type <slst> SymbolList
 
 %union {
-  boost::int64_t              ival;
+  ModuleDefinition*			modd;
+  boost::int64_t            ival;
   std::string				* sval;
   StringList				* slst;
   struct {
@@ -214,52 +223,36 @@ ModuleDefinitionList
     {  }
   | ModuleDefinition
     {  }
-
+  ;
 ModuleDefinition
   : TypeReference '{' '}' DEFINITIONS TagDefault ASSIGNMENT BEGIN_t
       {
-	Module = new ModuleDefinition(*$1, (Tag::Mode)$5);
-	Modules.push_back(ModuleDefinitionPtr(Module));
-	delete $1;
+		Module = new ModuleDefinition(*$1, (Tag::Mode)$5);
+		Modules.push_back(ModuleDefinitionPtr(Module));
+		delete $1;
       }
     ModuleBody END
 	  {
-    Module = NULL;
+		Module = NULL;
 	  }
   | TypeReference DEFINITIONS TagDefault ASSIGNMENT BEGIN_t
       {
-	Module = new ModuleDefinition(*$1, (Tag::Mode)$3);
-	Modules.push_back(ModuleDefinitionPtr(Module));
-	delete $1;
+		Module = new ModuleDefinition(*$1, (Tag::Mode)$3);
+		Modules.push_back(ModuleDefinitionPtr(Module));
+		delete $1;
       }
     ModuleBody END
 	  {
-    Module = NULL;
+		Module = NULL;
 	  }
   ;
 
-
 TagDefault
-  : EXPLICIT TAGS
-      {
-	$$ = Tag::Explicit;
-      }
-  | IMPLICIT TAGS 
-      {
-	$$ = Tag::Implicit;
-      }
-  | AUTOMATIC TAGS 
-      {
-	$$ = Tag::Automatic;
-      }
-  | /* empty */
-      {
-	$$ = Tag::Explicit;
-      }
+  : EXPLICIT TAGS   { $$ = Tag::Explicit; }
+  | IMPLICIT TAGS	{ $$ = Tag::Implicit; }
+  | AUTOMATIC TAGS	{ $$ = Tag::Automatic; }
+  | /* empty */		{ $$ = Tag::Explicit; }
   ;
-
-
-/*************************************/
 
 ModuleBody
   : Exports Imports AssignmentList
@@ -347,8 +340,8 @@ Symbol
 ParameterizedReference 
   : Reference '{' '}'
       {
-	*$1 += "{}";
-	$$ = $1;
+		*$1 += "{}";
+		$$ = $1;
 	  }
   ;
 /*************************************/
@@ -380,11 +373,6 @@ ValueSetTypeAssignment
       }
     
    ;
-
-
-
-
-/********/
 
 TypeAssignment
   : TYPEREFERENCE ASSIGNMENT Type
@@ -774,10 +762,6 @@ ObjectSet
   : '{' '}'
   ;
 
-
-
-
-/********/
 
 ParameterizedAssignment
   : ParameterizedTypeAssignment
