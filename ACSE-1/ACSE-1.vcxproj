@@ -59,7 +59,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
-      <Command>..\lib\ASN1cmpd -c -v -o csn -m ACSE_1 ..\..\ISO.ITU.OSI\cpp\src\iso\itu\osi\asn1\asn\ISO8823-PRESENTATION.asn ..\..\ISO.ITU.OSI\cpp\src\iso\itu\osi\asn1\asn\Reliable-Transfer-APDU.asn ..\..\ISO.ITU.OSI\cpp\src\iso\itu\osi\asn1\asn\Remote-Operations-Information-Objects.asn ..\..\ISO.ITU.OSI\cpp\src\iso\itu\osi\asn1\asn\Remote-Operations-Useful-Definitions.asn  ..\..\ISO.ITU.OSI\cpp\src\iso\itu\osi\asn1\asn\Remote-Operations-Generic-ROS-PDUs.asn	  </Command>
+      <Command>..\lib\ASN1cmpd -c -v -o csn -m ACSE_1 -i ..\..\ISO.ITU.OSI\cpp\src\iso\itu\osi\asn1\asn ISO8823-PRESENTATION.asn Reliable-Transfer-APDU.asn Remote-Operations-Information-Objects.asn Remote-Operations-Useful-Definitions.asn Remote-Operations-Generic-ROS-PDUs.asn</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

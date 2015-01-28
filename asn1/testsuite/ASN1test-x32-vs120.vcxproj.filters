@@ -25,10 +25,14 @@
     <None Include="cxx\test1.inl">
       <Filter>cxx</Filter>
     </None>
+    <None Include="Remote-Operations-Useful-Definitions.asn" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="cxx">
       <UniqueIdentifier>{a5a6a761-8b9d-4b77-9d44-3f8ea54ab7cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="asn">
+      <UniqueIdentifier>{c4e94dce-d7d0-4380-b4be-60f3ed97e35d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

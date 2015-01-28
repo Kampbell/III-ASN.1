@@ -27,6 +27,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="..\..\win-flex-bison\bin\Release\custom_build_rules\win_flex_bison_custom_build.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -44,7 +45,7 @@
     <OutDir>.\Debug\</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>../boost;$(IncludePath)</IncludePath>
+    <IncludePath>../boost;$(IncludePath);../asn1</IncludePath>
     <TargetName>$(ProjectName)d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -130,20 +131,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="asn_grammar.cxx">
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">_DEBUG;MSDOS</PreprocessorDefinitions>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NDEBUG;MSDOS</PreprocessorDefinitions>
+    <ClCompile Include="asn_grammar.cxx" />
+    <ClCompile Include="asn_lex.cxx" />
+    <ClCompile Include="asn_ref_grammar.cxx" />
+    <ClCompile Include="asn_ref_lex.cxx" />
+    <ClCompile Include="csn\iso8823_presentation.cxx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="asn_lex.cxx">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level2</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level2</WarningLevel>
+    <ClCompile Include="csn\reliable_transfer_apdu.cxx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="asn_ref_grammar.cxx">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+    <ClCompile Include="csn\remote_operations_generic_ros_pdus.cxx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="asn_ref_lex.cxx">
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+    <ClCompile Include="csn\remote_operations_information_objects.cxx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="csn\remote_operations_useful_definitions.cxx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="getopt.c" />
     <ClCompile Include="main.cxx">
@@ -151,64 +156,58 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="asn_grammar.y">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Bison Step</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">bison -v -d -t %(Filename).y
-move %(Filename).tab.c %(Filename).cxx
-move %(Filename).tab.h %(Filename).h
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx;%(Filename).h;%(Filename).out;%(Outputs)</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Bison Step</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">bison -v -d -t %(Filename).y
-move %(Filename)_tab.c %(Filename).cxx
-move %(Filename)_tab.h %(Filename).h
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).cxx;%(Filename).h;%(Filename).out;%(Outputs)</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="asn_lex.l">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Lex Step</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">flex -t %(Filename).l &gt; %(Filename).cxx
-</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">asn_grammar.h;asn_grammar.cxx;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx;%(Outputs)</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Lex Step</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">flex -t %(Filename).l &gt; %(Filename).cxx
-</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">asn_grammar.h;asn_grammar.cxx;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).cxx;%(Outputs)</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="asn_ref_grammar.y">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Bison Step</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">bison -p id -v -d -t %(Filename).y 
-move %(Filename).tab.c %(Filename).cxx 
-move %(Filename).tab.h %(Filename).h
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx;%(Filename).h;%(Filename).out;%(Outputs)</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Bison Step</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">bison -p id -v -d -t %(Filename).y
-move %(Filename)_tab.c %(Filename).cxx
-move %(Filename)_tab.h %(Filename).h
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).cxx;%(Filename).h;%(Filename).out;%(Outputs)</Outputs>
-    </CustomBuild>
-    <CustomBuild Include="asn_ref_lex.l">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Performing Lex Step</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">flex -Pid -t %(Filename).l &gt; %(Filename).cxx
-</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">asn_ref_grammar.h;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">flex -Pid -t %(Filename).l &gt; %(Filename).cxx
-</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">asn_ref_grammar.h;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).cxx;%(Outputs)</Outputs>
-    </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="asn_grammar.h" />
+    <ClInclude Include="asn_grammar.hxx" />
+    <ClInclude Include="asn_lex.hxx" />
+    <ClInclude Include="asn_ref_grammar.hxx" />
+    <ClInclude Include="asn_ref_lex.hxx" />
+    <ClInclude Include="csn\iso8823_presentation.h" />
+    <ClInclude Include="csn\reliable_transfer_apdu.h" />
+    <ClInclude Include="csn\remote_operations_generic_ros_pdus.h" />
+    <ClInclude Include="csn\remote_operations_information_objects.h" />
+    <ClInclude Include="csn\remote_operations_useful_definitions.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="unixstd.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Bison Include="asn_grammar.y">
+      <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
+      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</HeaderFile>
+      <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</DefinesFile>
+      <Report Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">state</Report>
+      <ReportFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).out</ReportFile>
+    </Bison>
+    <Bison Include="asn_ref_grammar.y">
+      <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
+      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</HeaderFile>
+      <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</DefinesFile>
+      <FilePrefix Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </FilePrefix>
+      <NamePrefix Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </NamePrefix>
+      <Report Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">all</Report>
+      <ReportFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).out</ReportFile>
+    </Bison>
+    <Flex Include="asn_lex.l">
+      <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
+      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</HeaderFile>
+    </Flex>
+    <Flex Include="asn_ref_lex.l">
+      <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
+      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</HeaderFile>
+      <Prefix Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">id</Prefix>
+    </Flex>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ASN.1.bnf" />
+    <None Include="asn_grammar.out" />
+    <None Include="asn_ref_grammar.out" />
+    <None Include="csn\iso8823_presentation.inl" />
+    <None Include="csn\reliable_transfer_apdu.inl" />
+    <None Include="csn\remote_operations_generic_ros_pdus.inl" />
+    <None Include="csn\remote_operations_information_objects.inl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\win-flex-bison\bin\Release\custom_build_rules\win_flex_bison_custom_build.targets" />
   </ImportGroup>
 </Project>
