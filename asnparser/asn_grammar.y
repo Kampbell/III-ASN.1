@@ -111,7 +111,11 @@ static std::string * ConcatNames(std::string * s1, char c, std::string * s2)
 #pragma warning(disable:4701)
 #endif
 
+#define YYERROR_VERBOSE 1
+#define YYDEBUG 1
+#define YYPRINT(a,b,c)
 %}
+
 
 %token MODULEREFERENCE
 %token TYPEREFERENCE
@@ -242,6 +246,7 @@ static std::string * ConcatNames(std::string * s1, char c, std::string * s2)
 %type <ival> SignedNumber
 %type <ival> Class ClassNumber
 %type <ival> PresenceConstraint
+%type <modd> ModuleDefinition
 
 
 %type <sval> CSTRING
@@ -484,37 +489,39 @@ static std::string * ConcatNames(std::string * s1, char c, std::string * s2)
   TableConstraint       * tcons;
   ObjectClassFieldType  * ocft;
   DefinedObjectSet      * dos;
+  ModuleDefinition*		modd;
 
   struct {
     Tag::Type tagClass;
     unsigned tagNumber;
   } tagv;
 }
+%printer { if ($$ != NULL) fprintf (yyoutput, "'%s'", $$->c_str()); } <sval>
+%printer { if ($$ != NULL) fprintf (yyoutput, "'%s'", $$->GetName().c_str()); } <tval> <vval> <objt> <para> <symb> <fspc> <objc> <ocft>
 
 
 %%
 
 ModuleDefinitionList
-  : ModuleDefinitionList ModuleDefinition
-    {  }
-  | ModuleDefinition
-    {  }
-
+	: ModuleDefinitionList ModuleDefinition
+      {  }
+	| ModuleDefinition
+      {  }
+;
 ModuleDefinition
-  : MODULEREFERENCE DefinitiveIdentifier DEFINITIONS TagDefault ASSIGNMENT BEGIN_t
-      {
-	Module = FindModule($1->c_str());
-	if ($2) {
-		Module->SetDefinitiveObjId(*$2); delete $2;
-	}
-      }
-    ModuleBody END
-	  {
-	Module->ResolveObjectClassReferences();
-    Module = NULL;
-	  }
-  ;
-
+	: MODULEREFERENCE DefinitiveIdentifier DEFINITIONS TagDefault ASSIGNMENT BEGIN_t
+		{
+			Module = FindModule($1->c_str());
+			if ($2) {
+				Module->SetDefinitiveObjId(*$2); delete $2;
+			}
+		}
+		ModuleBody END
+		{
+			Module->ResolveObjectClassReferences();
+			Module = NULL;
+		}
+;
 DefinitiveIdentifier
   : '{' DefinitiveObjIdComponentList '}'
 	{
@@ -564,19 +571,19 @@ DefinitiveNameAndNumberForm
 TagDefault
   : EXPLICIT TAGS
       {
-	$$ = Tag::Explicit;
+		$$ = Tag::Explicit;
       }
   | IMPLICIT TAGS
       {
-	$$ = Tag::Implicit;
+		$$ = Tag::Implicit;
       }
   | AUTOMATIC TAGS
       {
-	$$ = Tag::Automatic;
+		$$ = Tag::Automatic;
       }
   | /* empty */
       {
-	$$ = Tag::Explicit;
+		$$ = Tag::Explicit;
       }
   ;
 
@@ -676,23 +683,24 @@ SymbolList
 
 
 Symbol
-  : TYPEREFERENCE
+  : 
+    TYPEREFERENCE 
       {
 	$$ = new TypeReference(*$1, false); delete $1;
       }
-  | VALUEREFERENCE
+  | VALUEREFERENCE 
       {
     $$ = new ValueReference(*$1, false); delete $1;
 	  }
-  | OBJECTCLASSREFERENCE
+  | OBJECTCLASSREFERENCE 
       {
     $$ = new ObjectClassReference(*$1, false); delete $1;
 	  }
-  | OBJECTREFERENCE
+  | OBJECTREFERENCE 
       {
     $$ = new ObjectReference(*$1, false); delete $1;
 	  }
-  | OBJECTSETREFERENCE
+  | OBJECTSETREFERENCE 
       {
     $$ = new ObjectSetReference(*$1, false); delete $1;
 	  }
@@ -716,10 +724,7 @@ Symbol
       {
     $$ = new ObjectSetReference(*$1, true); delete $1;
 	  }
-  ;
-
-
-/*************************************/
+;
 
 AssignmentList: Assignment
   | AssignmentList Assignment
