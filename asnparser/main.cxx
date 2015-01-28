@@ -198,7 +198,7 @@ extern int optind;
 #include <iomanip>
 #include <cstring>
 #include <assert.h>
-#include "asn_grammar.h"
+#include "asn_grammar.hxx"
 
 #ifdef _WIN32
 #define DIR_SEPARATOR '\\'
@@ -235,8 +235,131 @@ extern FILE * yyin;
 extern FILE * idin;
 extern int yydebug;
 extern int iddebug;
-int LexEcho;
+int LexEcho = 0;
+extern int IsUpper(const char* text);
 
+const char* tokenAsString(int token) {
+	switch (token) {
+		case MODULEREFERENCE: return "MODULEREFERENCE";
+		case TYPEREFERENCE: return "TYPEREFERENCE";
+		case OBJECTCLASSREFERENCE: return "OBJECTCLASSREFERENCE";
+		case VALUEREFERENCE: return "VALUEREFERENCE";
+		case OBJECTREFERENCE: return "OBJECTREFERENCE";
+		case OBJECTSETREFERENCE: return "OBJECTSETREFERENCE";
+		case PARAMETERIZEDTYPEREFERENCE: return "PARAMETERIZEDTYPEREFERENCE";
+		case PARAMETERIZEDOBJECTCLASSREFERENCE: return "PARAMETERIZEDOBJECTCLASSREFERENCE";
+		case PARAMETERIZEDVALUEREFERENCE: return "PARAMETERIZEDVALUEREFERENCE";
+		case PARAMETERIZEDOBJECTREFERENCE: return "PARAMETERIZEDOBJECTREFERENCE";
+		case PARAMETERIZEDOBJECTSETREFERENCE: return "PARAMETERIZEDOBJECTSETREFERENCE";
+		case VALUESET_BRACE: return "VALUESET_BRACE";
+		case OBJECT_BRACE: return "OBJECT_BRACE";
+		case OBJECTSET_BRACE: return "OBJECTSET_BRACE";
+		case IDENTIFIER: return "IDENTIFIER";
+		case BIT_IDENTIFIER: return "BIT_IDENTIFIER";
+		case OID_IDENTIFIER: return "OID_IDENTIFIER";
+		case IMPORT_IDENTIFIER: return "IMPORT_IDENTIFIER";
+		case fieldreference: return "fieldreference";
+		case FieldReference: return "FieldReference";
+		case TYPEFIELDREFERENCE: return "TYPEFIELDREFERENCE";
+		case FIXEDTYPEVALUEFIELDREFERENCE: return "FIXEDTYPEVALUEFIELDREFERENCE";
+		case VARIABLETYPEVALUEFIELDREFERENCE: return "VARIABLETYPEVALUEFIELDREFERENCE";
+		case FIXEDTYPEVALUESETFIELDREFERENCE: return "FIXEDTYPEVALUESETFIELDREFERENCE";
+		case VARIABLETYPEVALUESETFIELDREFERENCE: return "VARIABLETYPEVALUESETFIELDREFERENCE";
+		case OBJECTFIELDREFERENCE: return "OBJECTFIELDREFERENCE";
+		case OBJECTSETFIELDREFERENCE: return "OBJECTSETFIELDREFERENCE";
+		case INTEGER: return "INTEGER";
+		case CSTRING: return "CSTRING";
+		case BSTRING: return "BSTRING";
+		case HSTRING: return "HSTRING";
+		case BS_BSTRING: return "BS_BSTRING";
+		case BS_HSTRING: return "BS_HSTRING";
+		case ABSENT: return "ABSENT";
+		case ABSTRACT_SYNTAX: return "ABSTRACT_SYNTAX";
+		case ALL: return "ALL";
+		case ANY: return "ANY";
+		case APPLICATION: return "APPLICATION";
+		case ASSIGNMENT: return "ASSIGNMENT";
+		case AUTOMATIC: return "AUTOMATIC";
+		case BEGIN_t: return "BEGIN_t";
+		case BIT: return "BIT";
+		case BMPString: return "BMPString";
+		case BOOLEAN_t: return "BOOLEAN_t";
+		case BY: return "BY";
+		case CHARACTER: return "CHARACTER";
+		case CHOICE: return "CHOICE";
+		case CLASS: return "CLASS";
+		case COMPONENT: return "COMPONENT";
+		case COMPONENTS: return "COMPONENTS";
+		case CONSTRAINED: return "CONSTRAINED";
+		case DEFAULT: return "DEFAULT";
+		case DEFINED: return "DEFINED";
+		case DEFINITIONS: return "DEFINITIONS";
+		case EMBEDDED: return "EMBEDDED";
+		case END: return "END";
+		case ENUMERATED: return "ENUMERATED";
+		case EXCEPT: return "EXCEPT";
+		case EXPLICIT: return "EXPLICIT";
+		case EXPORTS: return "EXPORTS";
+		case EXTERNAL: return "EXTERNAL";
+		case FALSE_t: return "FALSE_t";
+		case FROM: return "FROM";
+		case GeneralString: return "GeneralString";
+		case GraphicString: return "GraphicString";
+		case IA5String : return "IA5String";
+		case TYPE_IDENTIFIER: return "TYPE_IDENTIFIER";
+		case IDENTIFIER_t: return "IDENTIFIER_t";
+		case IMPLICIT: return "IMPLICIT";
+		case IMPORTS: return "IMPORTS";
+		case INCLUDES: return "INCLUDES";
+		case INSTANCE: return "INSTANCE";
+		case INTEGER_t: return "INTEGER_t";
+		case INTERSECTION: return "INTERSECTION";
+		case ISO646String: return "ISO646String";
+		case MACRO: return "MACRO";
+		case MAX: return "MAX";
+		case MIN : return "MIN";
+		case MINUS_INFINITY : return "MINUS_INFINITY";
+		case NOTATION: return "NOTATION";
+		case NULL_VALUE: return "NULL_VALUE";
+		case NULL_TYPE: return "NULL_TYPE";
+		case NumericString: return "NumericString";
+		case OBJECT: return "OBJECT";
+		case OCTET: return "OCTET";
+		case OF_t: return "OF_t";
+		case OPTIONAL_t: return "OPTIONAL_t";
+		case PDV: return "PDV";
+		case PLUS_INFINITY: return "PLUS_INFINITY";
+		case PRESENT: return "PRESENT";
+		case PrintableString: return "PrintableString";
+		case PRIVATE: return "PRIVATE";
+		case REAL: return "REAL";
+		case SEQUENCE: return "SEQUENCE";
+		case SET: return "SET";
+		case SIZE_t: return "SIZE_t";
+		case STRING: return "STRING";
+		case SYNTAX: return "SYNTAX";
+		case T61String: return "T61String";
+		case TAGS: return "TAGS";
+		case TeletexString: return "TeletexString";
+		case TRUE_t: return "TRUE_t";
+		case TYPE_t: return "TYPE_t";
+		case UNION: return "UNION";
+		case UNIQUE: return "UNIQUE";
+		case UNIVERSAL: return "UNIVERSAL";
+		case UniversalString: return "UniversalString";
+		case VideotexString: return "VideotexString";
+		case VisibleString: return "VisibleString";
+		case GeneralizedTime: return "GeneralizedTime";
+		case UTCTime: return "UTCTime";
+		case VALUE: return "VALUE";
+		case WITH: return "WITH";
+		case ObjectDescriptor_t: return "ObjectDescriptor_t";
+		case WORD_t: return "WORD_t";
+		case OID_INTEGER: return "OID_INTEGER";
+	}
+	static string result = "???" + std::to_string(token) + "???";
+	return result.c_str();
+}
 
 
 static const char * const StandardClasses[] = {
@@ -278,17 +401,22 @@ static const char * CppReserveWords[] = {
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
-ModuleDefinition * Module;
-ModuleList Modules;
-ClassStack *classStack;
-ParameterList * DummyParameters;
 extern int IdentifierTokenContext ;
 extern int BraceTokenContext ;
 extern int InOIDContext ;
 extern int NullTokenContext ;
 extern int InObjectSetContext;
-TypePtr ValueTypeContext;
-vector<string> RemoveList;
+
+class UsefulModuleDef;
+class ModuleDefinition;
+
+ModuleDefinition *	Module = NULL;
+ModuleList			Modules;
+ClassStack *		classStack = NULL;
+ParameterList *		DummyParameters = NULL;
+TypePtr				ValueTypeContext;
+vector<string>		RemoveList;
+UsefulModuleDef *	UsefulModule = NULL;
 
 class UsefulModuleDef : public ModuleDefinition
 {
@@ -307,22 +435,21 @@ private:
 };
 
 
-UsefulModuleDef * UsefulModule =0;
 //
 //  yyerror
 //  required function for flex
 //
 
-void yyerror(char * str)
+void yyerror(const char * str)
 {
   extern char * yytext;
-  cerr << StdError(Fatal) << str << " near token \"" << yytext <<"\"\n";
+  cerr << "Second stage " << StdError(Fatal) << str << " near token \"" << yytext <<"\"\n";
 }
 
-void iderror(char * str)
+void iderror(const char * str)
 {
   extern char * idtext;
-  cerr << StdError(Fatal) << str << " near token \"" << idtext <<"\"\n";
+  cerr << "First  stage " << StdError(Fatal) << str << " near token \"" << idtext <<"\"\n";
 }
 
 ostream & operator<<(ostream & out, const StdError & e)
@@ -512,7 +639,14 @@ void for_all(Cont& cont, Fun fun)
 
 ModuleDefinition* FindModule(const char* name)
 {
-  return FindWithName(Modules, name).get();
+	ModuleDefinitionPtr smd = FindWithName(Modules, name);
+	return smd.get();
+}
+ModuleDefinition* CreateModule(const char* name)
+{
+	ModuleDefinitionPtr mdp (new ModuleDefinition(name));
+	Modules.push_back(mdp);
+	return mdp.get();
 }
 
 
@@ -560,19 +694,26 @@ bool noInlineFiles = false;
 
 int main(int argc, char** argv)
 {
-  extern int yydebug ;      //  nonzero means print parse trace
 
-  const char* opt = "cdeno:s:vm:Cr:";
+  const char* opt = "i:cdeno:s:vm:Cr:";
 
   int c;
   bool generateCpp = false;
   string path;
+  string asndir;
+
+  iddebug =0;
+  yydebug = 0;
 
   while ((c=getopt(argc, argv, opt)) != -1)
   {
     switch (c) {
     case 'c':
       generateCpp = true;
+      break;
+
+    case 'i':
+      asndir  = optarg;
       break;
 
     case 'd':
@@ -629,6 +770,7 @@ int main(int argc, char** argv)
   if (fileCount < 1 ) {
     cerr << "usage: asnparser [options] asnfile...\n"
                  "  -v          Verbose output (multiple times for more verbose)\n"
+                 "  -i          Local directory of the asn files\n"
                  "  -d          Debug output (copious!)\n"
                  "  -c          Generate C++ files\n"
                  "  -e          Generated C++ files with .cpp extension\n"
@@ -651,12 +793,16 @@ int main(int argc, char** argv)
 
   Modules.push_back(ModuleDefinitionPtr(UsefulModule = new UsefulModuleDef));
 
-  for ( i = 0 ; i < fileCount; ++i)
-  {
-    idin = fds[i] = fopen(argv[i+optind],"r");
+  for ( i = 0 ; i < fileCount; ++i)  {
+	string abspath;
+	if (!asndir.empty()) {
+		abspath += asndir;
+		abspath += '/';
+	}
+	abspath += argv[i+optind];
+    idin = fds[i] = fopen(abspath.c_str(),"r");
     if (!idin) {
-      cerr << "asnparser: cannot open \""
-                << argv[i+optind]  << '"'<<endl;
+      cerr << "asnparser: cannot open \"" << abspath  << '"'<< endl;
       return 1;
     }
 
@@ -666,12 +812,17 @@ int main(int argc, char** argv)
     warnings   = 0;
 
     if (verbose)
-      cout << "First Stage Parsing... " << fileName << endl;
+      cout << "First  Stage Parsing... " << fileName << endl;
 
     idparse(); // parse the identifier types
-  }
 
-  for (i = 0; i < fileCount; ++i)
+  }
+	for(int no = 0; no < Modules.size(); no++) {
+		Modules[no]->dump();
+	}
+
+
+	for (i = 0; i < fileCount; ++i)
   {
     fileName   = argv[i+optind];
     lineNumber = 1;
@@ -683,10 +834,18 @@ int main(int argc, char** argv)
     if (verbose)
       cout << "Second Stage Parsing... " << fileName << endl;
 
-    rewind(yyin); // rewind the file
-    yyrestart( yyin );
+ #ifdef MULTI_PARSER
+   rewind(yyin); // rewind the file
+    yyrestart(yyin);
     yyparse(); // actually parse the content of the ASN.1
-  }
+#elif REENTRANT_PARSER
+		yyscan_t myscanner;
+
+		yylex_init(&myscanner);
+		yyparse(myscanner);
+		yylex_destroy(myscanner);
+#endif
+	}
 
   for (i = 0 ; i < Modules.size(); ++i) {
     Modules[i]->AdjustModuleName(path);
@@ -6204,6 +6363,19 @@ string ImportModule::GetCModuleName() const
 
 /////////////////////////////////////////////////////////
 
+ModuleDefinition::ModuleDefinition(const string& name)
+  : moduleName(name)
+{
+  exportAll = false;
+  indentLevel = 1;
+
+  for (size_t i = 0; i < Modules.size(); ++i)
+  {
+    string str = Modules[i]->moduleName;
+    identifiers[str]= MODULEREFERENCE;
+  }
+  // Create sorted list for faster searching.
+}
 ModuleDefinition::ModuleDefinition(const string& name, Tag::Mode defTagMode)
   : moduleName(name)
 {
@@ -6251,15 +6423,28 @@ void ModuleDefinition::AddImportedIdentifiers(StringList& imports_sl, const stri
   }
   else
   {
-    for (size_t i = 0; i < imports_sl.size(); ++i)
+    int id = 0;
+	for (size_t i = 0; i < imports_sl.size(); ++i)
     {
-      int id = TYPEREFERENCE;
-      string identifier = imports_sl[i];
-      if (identifier.find("{}") != -1)
-      {
-        str_replace(identifier,"{}","");
-        id = PARAMETERIZEDTYPEREFERENCE;
-      }
+		string identifier = imports_sl[i];
+		if (IsUpper(identifier.c_str())) {
+			id = OBJECTCLASSREFERENCE;
+		} else
+		if (isupper(identifier.at(0))) {
+			id = TYPEREFERENCE;
+			if (identifier.find("{}") != -1)
+			{
+				str_replace(identifier,"{}","");
+				id = PARAMETERIZEDTYPEREFERENCE;
+			}
+		} else {
+			id = OBJECTREFERENCE;
+			if (identifier.find("{}") != -1)
+			{
+				str_replace(identifier,"{}","");
+				id = PARAMETERIZEDOBJECTREFERENCE;
+			}
+		}
       identifiers[identifier]=id;
     }
   }
@@ -6911,7 +7096,7 @@ ObjectClassBasePtr ModuleDefinition::FindObjectClass(const string & name)
 
     TokenGroupPtr tokens(new TokenGroup);
     tokens->AddToken(TokenOrGroupSpecPtr(new PrimitiveFieldName("&Type")));
-    tokens->AddToken(TokenOrGroupSpecPtr(new Literal("IDENTIFIERD")));
+    tokens->AddToken(TokenOrGroupSpecPtr(new Literal("IDENTIFIED")));
     tokens->AddToken(TokenOrGroupSpecPtr(new Literal("BY")));
     tokens->AddToken(TokenOrGroupSpecPtr(new PrimitiveFieldName("&id")));
 
@@ -7235,6 +7420,13 @@ bool  ModuleDefinition::HasType(const string& name)
   return FindType(name).get() != NULL;
 }
 
+void ModuleDefinition::dump() const {
+	cout << GetName() << endl;
+	map<string,int>::const_iterator i;
+	for(i = identifiers.cbegin(); i != identifiers.cend(); ++i) {
+		cout << "\t" << i->first  << "\t\t = " << tokenAsString(i->second) << endl;
+	}
+} 
 //////////////////////////////////////////////////////////////////////////////
 FieldSpec::FieldSpec(const string& nam, bool optional)
 : name(nam), isOptional(optional)
@@ -7304,6 +7496,11 @@ string TypeFieldSpec::GetDefault() const
     return string("");
 }
 
+bool TypeFieldSpec::GetKey(TypePtr& keyType, string& keyName) {
+    keyType = type;
+    keyName = GetName();
+    return true;
+}
 
 void TypeFieldSpec::PrintOn(ostream& strm) const
 {
@@ -8025,13 +8222,14 @@ void ObjectClassDefn::ResolveKey()
   if (!keyType.get())
   {
     find_if(fieldSpecs->begin(), fieldSpecs->end(),
-      boost::bind(&FieldSpec::GetKey, _1, boost::ref(keyType), boost::ref(keyName)));
+		boost::bind(&FieldSpec::GetKey, _1, keyType, keyName));
   }
 }
 
 void ObjectClassDefn::GenerateCplusplus(ostream& hdr, ostream& cxx, ostream&)
 {
-  if (GetName() == "TYPE-IDENTIFIER" || GetName() == "ABSTRACT-SYNTAX")
+	const string& ocName = GetName();
+  if (ocName == "TYPE-IDENTIFIER" || ocName == "ABSTRACT-SYNTAX" || ocName == "OPEN")
     return;
 
   hdr << "\n"
@@ -8046,7 +8244,6 @@ void ObjectClassDefn::GenerateCplusplus(ostream& hdr, ostream& cxx, ostream&)
     Unfreezer unfreezer(strm);
     (*fieldSpecs)[i]->FwdDeclare(strm);
     string str = strm.str();
-    strm << ends;
     if (str.find(GetName()) != -1)
       continue;
     hdr << str;
@@ -8058,9 +8255,13 @@ void ObjectClassDefn::GenerateCplusplus(ostream& hdr, ostream& cxx, ostream&)
 
   hdr << "class "  << dllMacroAPI << " " << className << "\n"
       << "{\n"
-      << "public:\n"
-      << "    typedef "<< keyType->GetTypeName() << " key_type;\n"
-      << "    class info_type\n"
+      << "public:\n";
+  if  (keyType.get()) {
+      hdr << "    typedef "<< keyType->GetTypeName() << " key_type;\n";
+  } else {
+      hdr << "    typedef "<< keyName << " key_type;\n";
+  }
+  hdr << "    class info_type\n"
       << "    {\n"
       << "    public:\n";
 
@@ -8225,8 +8426,8 @@ ObjectClassBase* DefinedObjectClass::GetReference()
 
 const ObjectClassBase* DefinedObjectClass::GetReference() const
 {
-    ResolveReference();
-    assert(reference);
+	ResolveReference();
+	assert(reference);
     return reference;
 }
 
@@ -8264,12 +8465,15 @@ void DefinedObjectClass::PreParseObject() const
 
 void DefinedObjectClass::BeginParseObject() const
 {
-    GetReference()->BeginParseObject();
+    const ObjectClassBase* r = GetReference();
+ 	r->BeginParseObject();
+	classStack->push(const_cast<DefinedObjectClass*>(this));
+	BraceTokenContext = OBJECT_BRACE;
 }
 
 void DefinedObjectClass::EndParseObject() const
 {
-    GetReference()->EndParseObject();
+	GetReference()->EndParseObject();
 }
 
 void DefinedObjectClass::BeginParseObjectSet() const
