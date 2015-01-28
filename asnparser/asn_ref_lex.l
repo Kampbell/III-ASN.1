@@ -48,7 +48,7 @@
 
 #define YY_NEVER_INTERACTIVE 1
 
-#include "asn_ref_grammar.h"
+#include "asn_ref_grammar.hxx"
 
 #define FALSE 0
 #define TRUE  1
@@ -68,13 +68,13 @@ extern "C" int yywrap() { return 1; }
 
 int braceCount, parenthesisCount;
 
+//%option reentrant bison-bridge
 %}
 
-%x comment_line brace parenthesis square_bracket
+%x multiline_comment comment_line brace parenthesis square_bracket
 
 %%
-
-"::="				   { return ASSIGNMENT; }
+"::="								{ return ASSIGNMENT; }
 
 "ABSENT"                           { return ABSENT; }
 "ABSTRACT-SYNTAX"                  { return ABSTRACT_SYNTAX; }
@@ -117,11 +117,11 @@ int braceCount, parenthesisCount;
 "INTEGER"                          { return INTEGER_t; }
 "INTERSECTION"                     { return INTERSECTION; }
 "ISO646String"                     { return ISO646String; }
-"MACRO"				   { return MACRO; }
+"MACRO"								{ return MACRO; }
 "MAX"                              { return MAX; }
 "MIN"                              { return MIN; }
 "MINUS-INFINITY"                   { return MINUS_INFINITY; }
-"NOTATION"			   { return NOTATION; }
+"NOTATION"							{ return NOTATION; }
 "NULL"                             { return NULL_t; }
 "NumericString"                    { return NumericString; }
 "OBJECT"                           { return OBJECT; }
@@ -143,33 +143,40 @@ int braceCount, parenthesisCount;
 "TAGS"                             { return TAGS; }
 "TeletexString"                    { return TeletexString; }
 "TRUE"                             { return TRUE_t; }
-"TYPE"				   { return TYPE_t; }
+"TYPE"								{ return TYPE_t; }
 "UNION"                            { return UNION; }
 "UNIQUE"                           { return UNIQUE; }
 "UNIVERSAL"                        { return UNIVERSAL; }
 "UniversalString"                  { return UniversalString; }
-"VALUE"				   { return VALUE; }
+"VALUE"								{ return VALUE; }
 "VideotexString"                   { return VideotexString; }
 "VisibleString"                    { return VisibleString; }
 "WITH"                             { return WITH; }
 
+"/*" {
+    BEGIN(multiline_comment);
+}
+<multiline_comment>"*/"  {
+    BEGIN(INITIAL);
+}
+<multiline_comment>\n  {
+    lineNumber++;
+}
+<multiline_comment>. {
+}
 
 "--" {
     BEGIN(comment_line);
   }
-
 <comment_line>"--"  {
     BEGIN(INITIAL);
   }
-
 <comment_line>\n  {
     lineNumber++;
     BEGIN(INITIAL);
   }
-
 <comment_line>. {
 }
-
 <comment_line><<EOF>> {
     BEGIN(INITIAL);
 }
@@ -237,7 +244,7 @@ int braceCount, parenthesisCount;
     lineNumber++;
 }
 
-<parenthesis>. { /* eat anything inside parentheis */
+<parenthesis>. { /* eat anything inside parenthesis */
 }
 
 
