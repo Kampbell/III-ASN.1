@@ -65,7 +65,7 @@
  */
 
 #include "main.h"
-#include "asn_grammar.h"
+#include "asn_grammar.hxx"
 #include <ctype.h>
 
 #define FALSE 0
@@ -90,16 +90,43 @@ int InMacroContext = FALSE;
 int HasObjectTypeMacro = FALSE;
 int InMIBContext = FALSE;
 int InWithSyntaxContext = FALSE;
-int InObjectSetContext = FALSE;
+int InObjectSetContext = 0;
 const ObjectClassBase * InformationFromObjectContext = NULL;
 int InOIDContext = FALSE;
 int ParsingConstructedType = FALSE;
 
-
+static const char* SYMBOLS[] = {
+  "$end", "error", "$undefined", "MODULEREFERENCE",
+  "TYPEREFERENCE", "OBJECTCLASSREFERENCE", "VALUEREFERENCE",
+  "OBJECTREFERENCE", "OBJECTSETREFERENCE", "PARAMETERIZEDTYPEREFERENCE",
+  "PARAMETERIZEDOBJECTCLASSREFERENCE", "PARAMETERIZEDVALUEREFERENCE",
+  "PARAMETERIZEDOBJECTREFERENCE", "PARAMETERIZEDOBJECTSETREFERENCE",
+  "VALUESET_BRACE", "OBJECT_BRACE", "OBJECTSET_BRACE", "IDENTIFIER",
+  "BIT_IDENTIFIER", "OID_IDENTIFIER", "IMPORT_IDENTIFIER",
+  "fieldreference", "FieldReference", "TYPEFIELDREFERENCE",
+  "FIXEDTYPEVALUEFIELDREFERENCE", "VARIABLETYPEVALUEFIELDREFERENCE",
+  "FIXEDTYPEVALUESETFIELDREFERENCE", "VARIABLETYPEVALUESETFIELDREFERENCE",
+  "OBJECTFIELDREFERENCE", "OBJECTSETFIELDREFERENCE", "INTEGER", "CSTRING",
+  "BSTRING", "HSTRING", "BS_BSTRING", "BS_HSTRING", "ABSENT",
+  "ABSTRACT_SYNTAX", "ALL", "ANY", "APPLICATION", "ASSIGNMENT",
+  "AUTOMATIC", "BEGIN_t", "BIT", "BMPString", "BOOLEAN_t", "BY",
+  "CHARACTER", "CHOICE", "CLASS", "COMPONENT", "COMPONENTS", "CONSTRAINED",
+  "DEFAULT", "DEFINED", "DEFINITIONS", "EMBEDDED", "END", "ENUMERATED",
+  "EXCEPT", "EXPLICIT", "EXPORTS", "EXTERNAL", "FALSE_t", "FROM",
+  "GeneralString", "GraphicString", "IA5String", "TYPE_IDENTIFIER",
+  "IDENTIFIER_t", "IMPLICIT", "IMPORTS", "INCLUDES", "INSTANCE",
+  "INTEGER_t", "INTERSECTION", "ISO646String", "MACRO", "MAX", "MIN",
+  "MINUS_INFINITY", "NOTATION", "NULL_VALUE", "NULL_TYPE", "NumericString",
+  "OBJECT", "OCTET", "OF_t", "OPTIONAL_t", "PDV", "PLUS_INFINITY",
+  "PRESENT", "PrintableString", "PRIVATE", "REAL", "SEQUENCE", "SET",
+  "SIZE_t", "STRING", "SYNTAX", "T61String", "TAGS", "TeletexString",
+  "TRUE_t", "TYPE_t", "UNION", "UNIQUE", "UNIVERSAL", "UniversalString",
+  "VideotexString", "VisibleString", "GeneralizedTime", "UTCTime", "VALUE",
+  "WITH", "ObjectDescriptor_t", "WORD_t", "OID_INTEGER"}; 
 
 extern "C" int yywrap() { return 1; }
 
-static int IsUpper(const char* text)
+int IsUpper(const char* text)
 {
 	for (const char* p = text; *p != NULL; ++p)
 		if (!(isupper(*p) || *p == '-' || *p == '_'))
@@ -125,19 +152,24 @@ static int Is_WORD()
 static int GetUpperCaseToken(const char* text)
 {
     int result;
-	if (DummyParameters && (result = DummyParameters->GetIdentifierType(text)) != -1)
+	if (DummyParameters && (result = DummyParameters->GetIdentifierType(text)) != -1) {
+		printf("GetUpperCaseToken::token=%d, name=%s, value=%s\n", result, SYMBOLS[result - 255], text);
 		return result;
+	}
 
 	if (Module)
 	{
-		if ((result = Module->GetIdentifierType(text)) != -1)
+		result = Module->GetIdentifierType(text);
+		if (result != -1) {
+			printf("GetUpperCaseToken::token=%d, name=%s, value=%s\n", result, SYMBOLS[result - 255], text);
 			return result;
-		else if (((InWithSyntaxContext && IsUpper(text)) || (!classStack->empty() && classStack->top()->HasLiteral(text))) && !ParsingConstructedType)
+		} else
+		if (((InWithSyntaxContext && IsUpper(text)) || (!classStack->empty() && classStack->top()->HasLiteral(text))) && !ParsingConstructedType) {
 			return WORD_t;
-		else
+		} else {
 			return TYPEREFERENCE;
-	}
-	else
+		}
+	} else
 		return MODULEREFERENCE;
 }
 
@@ -148,24 +180,28 @@ static int GetLowerCaseToken(const char* text)
 	if (InOIDContext)
 	    return OID_IDENTIFIER;
 
-	if (DummyParameters && (result = DummyParameters->GetIdentifierType(text)) != -1)
+	if (DummyParameters && (result = DummyParameters->GetIdentifierType(text)) != -1) {
+		printf("GetLowerCaseToken::token=%d, name=%s, value=%s\n", result, SYMBOLS[result - 255], text);
 		return result;
+	}
 
-	if (Module && (result = Module->GetIdentifierType(text)) != -1)
+	if (Module && (result = Module->GetIdentifierType(text)) != -1) {
+		printf("GetLowerCaseToken::token=%d, name=%s, value=%s\n", result, SYMBOLS[result - 255], text);
 		return result;
+	}
 
     return IdentifierTokenContext;
 }
 
 %}
 
-%x comment_line directive remove_directive
+%x multiline_comment comment_line directive remove_directive
 
 %%
 
 "::="				   { return ASSIGNMENT; }
 
-"ABSENT"                           { return TokenSelect(!Is_WORD(),ABSENT,WORD_t); }              
+"ABSENT"							{ return TokenSelect(!Is_WORD(),ABSENT,WORD_t); }              
 "ABSTRACT-SYNTAX"                  { return TokenSelect(!Is_WORD(),ABSTRACT_SYNTAX,WORD_t); }
 "ALL"                              { return TokenSelect(!Is_WORD(),ALL,WORD_t); }
 "ANY"                              { return TokenSelect(!Is_WORD(),ANY,WORD_t); }
@@ -244,6 +280,18 @@ static int GetLowerCaseToken(const char* text)
 "VisibleString"                    { return VisibleString; }
 "WITH"                             { return TokenSelect(!Is_WORD(),WITH,WORD_t); }
                                                               
+
+"/*" {
+    BEGIN(multiline_comment);
+  }
+<multiline_comment>"*/"  {
+    BEGIN(INITIAL);
+  }
+<multiline_comment>\n  {
+    lineNumber++;
+  }
+<multiline_comment>. {
+}
 
 "--" {
     BEGIN(comment_line);
