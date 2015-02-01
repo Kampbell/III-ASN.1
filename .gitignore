@@ -154,6 +154,7 @@ hs_err_pid*
 # ASN.1 generated files # 
 ########################
 **/cxx/
+**/csn/
 *.def
 /autom4te.cache
 /ipch
