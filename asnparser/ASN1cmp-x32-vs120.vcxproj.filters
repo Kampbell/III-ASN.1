@@ -50,6 +50,9 @@
     <ClCompile Include="asn_ref_lex.cxx">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="csn\remote_operations_abstract_syntaxes.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -80,10 +83,13 @@
       <Filter>csn</Filter>
     </ClInclude>
     <ClInclude Include="asn_lex.hxx">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="asn_ref_lex.hxx">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\remote_operations_abstract_syntaxes.h">
+      <Filter>csn</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

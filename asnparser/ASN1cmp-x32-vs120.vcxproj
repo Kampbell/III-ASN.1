@@ -141,6 +141,9 @@
     <ClCompile Include="csn\reliable_transfer_apdu.cxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="csn\remote_operations_abstract_syntaxes.cxx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="csn\remote_operations_generic_ros_pdus.cxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -162,6 +165,7 @@
     <ClInclude Include="asn_ref_lex.hxx" />
     <ClInclude Include="csn\iso8823_presentation.h" />
     <ClInclude Include="csn\reliable_transfer_apdu.h" />
+    <ClInclude Include="csn\remote_operations_abstract_syntaxes.h" />
     <ClInclude Include="csn\remote_operations_generic_ros_pdus.h" />
     <ClInclude Include="csn\remote_operations_information_objects.h" />
     <ClInclude Include="csn\remote_operations_useful_definitions.h" />
@@ -173,8 +177,9 @@
       <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
       <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</HeaderFile>
       <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</DefinesFile>
-      <Report Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">state</Report>
+      <Report Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">all</Report>
       <ReportFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).out</ReportFile>
+      <NoLines Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</NoLines>
     </Bison>
     <Bison Include="asn_ref_grammar.y">
       <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
