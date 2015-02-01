@@ -239,11 +239,13 @@ namespace ASN1 {
     UniversalReal,
     UniversalEnumeration,
     UniversalEmbeddedPDV,
+	UniversalUTF8String,
+	UniversalRelativeOID,
     UniversalSequence = 16,
     UniversalSet,
     UniversalNumericString,
     UniversalPrintableString,
-    UniversalTeletexString,
+    UniversalT61String,
     UniversalVideotexString,
     UniversalIA5String,
     UniversalUTCTime,
@@ -1391,6 +1393,26 @@ namespace ASN1 {
     PrintableString * clone() const { return static_cast<PrintableString *>(AbstractString::clone()); }
     static AbstractData* create();
     void swap(PrintableString& other) { base_string::swap(other); }
+    static const InfoType theInfo;
+    static bool equal_type(const ASN1::AbstractData& type)
+    {return type.info() == reinterpret_cast<const ASN1::AbstractData::InfoType*>(&theInfo);}
+  };
+
+  class ASN1_API T61String : public AbstractString {
+  protected:
+    T61String(const void* info) : AbstractString(info) { }
+  public:
+    T61String() : AbstractString(&theInfo) { }
+    T61String(const ASN1_STD string& str, const void* info = &theInfo) : AbstractString(info, str) { }
+    T61String(const char* str, const void* info = &theInfo) : AbstractString(info,str) { }
+
+    T61String& operator = (const T61String& other) { assign(other); return *this;}
+    T61String& operator=(const char * str) { assign(str);  return *this;}
+    T61String& operator=(const ASN1_STD string & str) { assign(str);  return *this;}
+    T61String& operator=(char c) { assign(1, c); return *this;}
+    T61String * clone() const { return static_cast<T61String *>(AbstractString::clone()); }
+    static AbstractData* create();
+    void swap(T61String& other) { base_string::swap(other); }
     static const InfoType theInfo;
     static bool equal_type(const ASN1::AbstractData& type)
     {return type.info() == reinterpret_cast<const ASN1::AbstractData::InfoType*>(&theInfo);}

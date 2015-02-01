@@ -644,6 +644,11 @@ AbstractData* AbstractString::create(const void* info)
 static const char NumericStringSet[]   =
   " 0123456789";
 
+static const char T61StringSet[] =
+  " '()+,-./0123456789:=?"
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  "abcdefghijklmnopqrstuvwxyz";
+
 static const char PrintableStringSet[] =
   " '()+,-./0123456789:=?"
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -721,6 +726,20 @@ ASN1_API const NumericString::InfoType NumericString::theInfo = {
   4,
   4,
   4
+};
+
+ASN1_API const T61String::InfoType T61String::theInfo = {
+  AbstractString::create,
+  UniversalTagClass << 30 | UniversalT61String,
+  0,
+  Unconstrained,
+  0,
+  UINT_MAX,
+  T61StringSet,
+  74,
+  7,
+  7,
+  8
 };
 
 ASN1_API const PrintableString::InfoType PrintableString::theInfo = {
