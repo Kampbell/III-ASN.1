@@ -1,7 +1,7 @@
 /*
  * main.cxx
  *
- * PWLib application source file for asnparser
+ * PWLib application source file for context
  *
  * ASN.1 compiler to produce C++ classes.
  *
@@ -35,137 +35,6 @@
  *    Arunas Ruksnaitis <arunas.ruksnaitis@genesyslab.com>
  *    Rustam Mirzaev <rustam.mirzaev@genesyslab.com>
  *
- * $Log: main.cxx,v $
- * Revision 1.27  2014/06/22 06:12:06  francisandre
- * c++11 updates: replace outdated strstream by sstream.add <cstring> for strlen. fix up method resolution
- *
- * Revision 1.26  2011/09/06 13:47:11  arunasr
- * Genesys fixes, includes contributions from Rodrigo Coimbra
- *
- * Revision 1.25  2011/08/09 18:12:43  arunasr
- * Genesys fixes: 3.0 release candidate
- *
- *  /main/20 2009/10/13 15:51:27 BST arunasr
- *     UNCTime added; compiler warnings cleanup
- * Revision 1.23  2006/05/12 20:53:00  arunasr
- * UTCTime, GeneralizedTime sorted
- * Fixes for generated code (dashes in class name)
- *
- * Revision 1.22  2005/09/14 18:30:16  arunasr
- * Generation of names list for Enum and BitString changed to used static member array
- *
- * Revision 1.21  2005/09/14 17:41:09  arunasr
- * Parsing of ImportedType field default values as names fixed
- *
- * Revision 1.20  2005/09/14 17:34:58  arunasr
- * Parsing of Enumerated and Integer field default values as names fixed
- *
- * Revision 1.19  2005/09/14 10:07:54  arunasr
- * Value parsing corrected in BIT STRING context
- * Generation of named bits corrected
- * Operators for ENUMERATED corrected
- *
- * Revision 1.18  2005/09/09 11:17:10  arunasr
- * Explicit tag in sequence type defined in-place not recognised:
- *   reset the flattened type's tag to back default
- *
- * Revision 1.17  2005/05/24 10:24:37  arunasr
- * Streams sorted
- *
- * Revision 1.16  2005/05/24 10:12:04  arunasr
- * Imported original changes from SF
- *
- * Revision 1.20  2003/07/21 03:26:02  mangelo
- * Fixed problem for parsing object using DefinedSyntax
- *
- * Revision 1.19  2003/06/20 03:49:49  mangelo
- * Fixed the generation of the constructor for IntegerWithNamedNumber in SEQUENCE
- *
- * Revision 1.18  2003/04/20 03:18:41  mangelo
- * Fixed OutputFile::Open() problem in VS.NET 2003
- *
- * Revision 1.17  2003/04/02 10:49:40  btrummer
- * Reimplemented the enum names output in EnumeratedType::GenerateInfo().
- * Now, ENUMERATED::getName() works correctly, even if the defined enums
- * don't start with 0 or contain holes in the value assignment.
- *
- * Revision 1.16  2003/02/17 12:12:30  btrummer
- * The last fix must be solved using an #ifdef.
- * Otherwise, it won't compile on Win32/VC6.
- *
- * Revision 1.15  2003/02/10 14:12:51  btrummer
- * ObjectClassDefn::GenerateCplusplus(): Added scope to const_iterator(i)
- * to make Solaris' Forte Developer 7 C++ 5.4 happy.
- *
- * Revision 1.14  2003/02/10 08:52:59  btrummer
- * Added a missing const in the BMPStringType::GenerateOperators() output.
- *
- * Revision 1.13  2003/01/27 12:41:29  btrummer
- * Added comparision operators for generated ENUMERATED classes.
- * When using g++ 3.2, no casts are necessary now,
- * when comparing an ENUMERATED class with one of its enum values.
- *
- * Revision 1.12  2003/01/10 13:57:42  btrummer
- * IntegerWithNamedNumber::getName() and setFromName(), ENUMERATED::getName(),
- * setFromName() and names(), CHOICE::getSelectionName() and
- * SEQUENCE::getFieldName() is now working without ASN1_HAS_IOSTREAM defined.
- *
- * Revision 1.11  2002/11/06 14:57:16  btrummer
- * If the new commandline option -C is given, the generated .cxx files
- * won't include the config.h header.
- *
- * Revision 1.10  2002/11/04 07:17:11  btrummer
- * Commited angelo's fix for the forward declaration generation
- * in TypeBase::BeginGenerateCplusplus().
- *
- * Revision 1.9  2002/10/31 07:36:15  btrummer
- * Aaargh. The new typedef must be defined protected rather than private.
- * (private is only working on g++ 2.95)
- *
- * Revision 1.8  2002/10/31 06:50:26  btrummer
- * Added a "typedef Inherited::InfoType InfoType;" to all generated classes
- * to prevent g++ compile errors, when the ASN.1 file contains tags.
- *
- * Revision 1.7  2002/10/03 07:12:14  btrummer
- * Fixed ObjectClassFieldType::GenerateDecoder():
- * if objSet.get() == NULL, true should be returned.
- *
- * Revision 1.6  2002/10/03 07:02:57  btrummer
- * Bugfix in InformationObjectSetDefn::GenerateTypeConstructor():
- * If module == NULL, objSet must be initialized to NULL.
- *
- * Revision 1.5  2002/09/14 01:56:32  mangelo
- * Removed the memory leak caused by strstream::str()
- *
- * Revision 1.4  2002/08/20 22:35:54  mangelo
- * Add MSVC DLL support
- *
- * Revision 1.3  2002/07/02 02:03:25  mangelo
- * Remove Pwlib dependency
- *
- * Revision 1.2  2001/09/07 22:39:28  mangelo
- * add Log keyword substitution
- *
- *
- * 2001/07/25 Huang-Ming Huang
- *   Added code to generate "#undef ERROR"
- *
- * 2001/07/18 Huang-Ming Huang
- *   Fixed the bug of generating non-static info for SEQUENCE_OF type.
- *
- * 2001/07/18 Huang-Ming Huang
- *   The includeOptionalField has been changed to take two parameter in
- *   accordance with the ASN1 library.
- *
- * 2001/06/26 Huang-Ming Huang
- *   Version 2.1 Reimplemented to minimize the generated code size.
- *
- * 2001/05/03 Huang-Ming Huang
- *   Fixed the problem with my wrong interpretation to varaible constraint.
- *
- * March, 2001  Huang-Ming Huang
- *   Add support for Information Object Class and generate code that follows
- *   X/Open ASN.1/C++ interface.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -198,7 +67,30 @@ extern int optind;
 #include <iomanip>
 #include <cstring>
 #include <assert.h>
+
+#define IDDEBUG 1
+#define YYDEBUG 1
 #include "asn_grammar.hxx"
+#include "asn_lex.hxx"
+#include "asn_ref_lex.hxx"
+
+
+
+/* Debug traces.  */
+#ifndef IDDEBUG
+# if defined YYDEBUG
+#if YYDEBUG
+#   define IDDEBUG 1
+#  else
+#   define IDDEBUG 0
+#  endif
+# else /* ! defined YYDEBUG */
+#  define IDDEBUG 0
+# endif /* ! defined YYDEBUG */
+#endif  /* ! defined IDDEBUG */
+#if IDDEBUG
+int iddebug;
+#endif
 
 #ifdef _WIN32
 #define DIR_SEPARATOR '\\'
@@ -206,7 +98,6 @@ extern int optind;
 #define DIR_SEPARATOR '/'
 #endif
 
-//using namespace boost;
 using std::cout;
 using std::clog;
 using std::cerr;
@@ -224,144 +115,69 @@ using std::ios;
 using std::skipws;
 using std::setfill;
 using std::setprecision;
+using boost::shared_ptr;
 
 unsigned lineNumber;
 string  fileName;
 
 unsigned fatals, warnings;
 
-extern void yyrestart(FILE*);
-extern FILE * yyin;
-extern FILE * idin;
-extern int yydebug;
-extern int iddebug;
+
 int LexEcho = 0;
 extern int IsUpper(const char* text);
+//
+//  yyerror
+//  required function for flex
+//
+#ifdef REENTRANT_PARSER
+		ModuleList				Modules;
+static	stack<ParserContext*>	contexts;
+static	Environment				env;
+static 	vector<FILE*>			fds;
 
-const char* tokenAsString(int token) {
-	switch (token) {
-		case MODULEREFERENCE: return "MODULEREFERENCE";
-		case TYPEREFERENCE: return "TYPEREFERENCE";
-		case OBJECTCLASSREFERENCE: return "OBJECTCLASSREFERENCE";
-		case VALUEREFERENCE: return "VALUEREFERENCE";
-		case OBJECTREFERENCE: return "OBJECTREFERENCE";
-		case OBJECTSETREFERENCE: return "OBJECTSETREFERENCE";
-		case PARAMETERIZEDTYPEREFERENCE: return "PARAMETERIZEDTYPEREFERENCE";
-		case PARAMETERIZEDOBJECTCLASSREFERENCE: return "PARAMETERIZEDOBJECTCLASSREFERENCE";
-		case PARAMETERIZEDVALUEREFERENCE: return "PARAMETERIZEDVALUEREFERENCE";
-		case PARAMETERIZEDOBJECTREFERENCE: return "PARAMETERIZEDOBJECTREFERENCE";
-		case PARAMETERIZEDOBJECTSETREFERENCE: return "PARAMETERIZEDOBJECTSETREFERENCE";
-		case VALUESET_BRACE: return "VALUESET_BRACE";
-		case OBJECT_BRACE: return "OBJECT_BRACE";
-		case OBJECTSET_BRACE: return "OBJECTSET_BRACE";
-		case IDENTIFIER: return "IDENTIFIER";
-		case BIT_IDENTIFIER: return "BIT_IDENTIFIER";
-		case OID_IDENTIFIER: return "OID_IDENTIFIER";
-		case IMPORT_IDENTIFIER: return "IMPORT_IDENTIFIER";
-		case fieldreference: return "fieldreference";
-		case FieldReference: return "FieldReference";
-		case TYPEFIELDREFERENCE: return "TYPEFIELDREFERENCE";
-		case FIXEDTYPEVALUEFIELDREFERENCE: return "FIXEDTYPEVALUEFIELDREFERENCE";
-		case VARIABLETYPEVALUEFIELDREFERENCE: return "VARIABLETYPEVALUEFIELDREFERENCE";
-		case FIXEDTYPEVALUESETFIELDREFERENCE: return "FIXEDTYPEVALUESETFIELDREFERENCE";
-		case VARIABLETYPEVALUESETFIELDREFERENCE: return "VARIABLETYPEVALUESETFIELDREFERENCE";
-		case OBJECTFIELDREFERENCE: return "OBJECTFIELDREFERENCE";
-		case OBJECTSETFIELDREFERENCE: return "OBJECTSETFIELDREFERENCE";
-		case INTEGER: return "INTEGER";
-		case CSTRING: return "CSTRING";
-		case BSTRING: return "BSTRING";
-		case HSTRING: return "HSTRING";
-		case BS_BSTRING: return "BS_BSTRING";
-		case BS_HSTRING: return "BS_HSTRING";
-		case ABSENT: return "ABSENT";
-		case ABSTRACT_SYNTAX: return "ABSTRACT_SYNTAX";
-		case ALL: return "ALL";
-		case ANY: return "ANY";
-		case APPLICATION: return "APPLICATION";
-		case ASSIGNMENT: return "ASSIGNMENT";
-		case AUTOMATIC: return "AUTOMATIC";
-		case BEGIN_t: return "BEGIN_t";
-		case BIT: return "BIT";
-		case BMPString: return "BMPString";
-		case BOOLEAN_t: return "BOOLEAN_t";
-		case BY: return "BY";
-		case CHARACTER: return "CHARACTER";
-		case CHOICE: return "CHOICE";
-		case CLASS: return "CLASS";
-		case COMPONENT: return "COMPONENT";
-		case COMPONENTS: return "COMPONENTS";
-		case CONSTRAINED: return "CONSTRAINED";
-		case DEFAULT: return "DEFAULT";
-		case DEFINED: return "DEFINED";
-		case DEFINITIONS: return "DEFINITIONS";
-		case EMBEDDED: return "EMBEDDED";
-		case END: return "END";
-		case ENUMERATED: return "ENUMERATED";
-		case EXCEPT: return "EXCEPT";
-		case EXPLICIT: return "EXPLICIT";
-		case EXPORTS: return "EXPORTS";
-		case EXTERNAL: return "EXTERNAL";
-		case FALSE_t: return "FALSE_t";
-		case FROM: return "FROM";
-		case GeneralString: return "GeneralString";
-		case GraphicString: return "GraphicString";
-		case IA5String : return "IA5String";
-		case TYPE_IDENTIFIER: return "TYPE_IDENTIFIER";
-		case IDENTIFIER_t: return "IDENTIFIER_t";
-		case IMPLICIT: return "IMPLICIT";
-		case IMPORTS: return "IMPORTS";
-		case INCLUDES: return "INCLUDES";
-		case INSTANCE: return "INSTANCE";
-		case INTEGER_t: return "INTEGER_t";
-		case INTERSECTION: return "INTERSECTION";
-		case ISO646String: return "ISO646String";
-		case MACRO: return "MACRO";
-		case MAX: return "MAX";
-		case MIN : return "MIN";
-		case MINUS_INFINITY : return "MINUS_INFINITY";
-		case NOTATION: return "NOTATION";
-		case NULL_VALUE: return "NULL_VALUE";
-		case NULL_TYPE: return "NULL_TYPE";
-		case NumericString: return "NumericString";
-		case OBJECT: return "OBJECT";
-		case OCTET: return "OCTET";
-		case OF_t: return "OF_t";
-		case OPTIONAL_t: return "OPTIONAL_t";
-		case PDV: return "PDV";
-		case PLUS_INFINITY: return "PLUS_INFINITY";
-		case PRESENT: return "PRESENT";
-		case PrintableString: return "PrintableString";
-		case PRIVATE: return "PRIVATE";
-		case REAL: return "REAL";
-		case SEQUENCE: return "SEQUENCE";
-		case SET: return "SET";
-		case SIZE_t: return "SIZE_t";
-		case STRING: return "STRING";
-		case SYNTAX: return "SYNTAX";
-		case T61String: return "T61String";
-		case TAGS: return "TAGS";
-		case TeletexString: return "TeletexString";
-		case TRUE_t: return "TRUE_t";
-		case TYPE_t: return "TYPE_t";
-		case UNION: return "UNION";
-		case UNIQUE: return "UNIQUE";
-		case UNIVERSAL: return "UNIVERSAL";
-		case UniversalString: return "UniversalString";
-		case VideotexString: return "VideotexString";
-		case VisibleString: return "VisibleString";
-		case GeneralizedTime: return "GeneralizedTime";
-		case UTCTime: return "UTCTime";
-		case VALUE: return "VALUE";
-		case WITH: return "WITH";
-		case ObjectDescriptor_t: return "ObjectDescriptor_t";
-		case WORD_t: return "WORD_t";
-		case OID_INTEGER: return "OID_INTEGER";
-	}
-	static string result = "???" + std::to_string(token) + "???";
-	return result.c_str();
+ParserContext::ParserContext() {
+	IdentifierTokenContext = IDENTIFIER;
+	NullTokenContext= NULL_TYPE;
+	classStack = new ClassStack;
+	ReferenceTokenContext = MODULEREFERENCE;
+}
+ParserContext::ParserContext(FILE* file) : file(file) {
+	IdentifierTokenContext = IDENTIFIER;
+	NullTokenContext= NULL_TYPE;
+	classStack = new ClassStack;
+	ReferenceTokenContext = MODULEREFERENCE;
+}
+ParserContext::~ParserContext() {
+	if (file) fclose(file);
+	delete classStack;
+}
+int idparse (ParserContext* context, const string& path);
+
+int  yyerror(struct ParserContext *,struct Environment *,char const *str) {
+  extern char * yytext;
+  clog << "Second stage " << StdError(Fatal) << str << " near token \"" << yytext <<"\"\n";
+  return 0;
+}
+int  iderror(struct ParserContext *, const string& path, char const *str) {
+  extern char * yytext;
+  clog << "First  stage " << StdError(Fatal) << str << " near token \"" << idtext <<"\"\n";
+  return 0;
 }
 
-
+#else
+int idparse ();
+void yyerror(const char * str)
+{
+  extern char * yytext;
+  cerr << "Second stage " << StdError(Fatal) << str << " near token \"" << yytext <<"\"\n";
+}
+void iderror(const char * str)
+{
+  extern char * idtext;
+  cerr << "First  stage " << StdError(Fatal) << str << " near token \"" << idtext <<"\"\n";
+}
+#endif
+static const char* tokenAsString(int token);
 static const char * const StandardClasses[] = {
   "ASN1::Null",
   "ASN1::BOOLEAN",
@@ -401,22 +217,42 @@ static const char * CppReserveWords[] = {
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
-extern int IdentifierTokenContext ;
-extern int BraceTokenContext ;
-extern int InOIDContext ;
-extern int NullTokenContext ;
-extern int InObjectSetContext;
 
-class UsefulModuleDef;
-class ModuleDefinition;
+void AddRemoveItem(const char* item);
+static string ToLower(const string& str);
+static string ToUpper(const string& str);
+static string GetFileName(const string& fullname);
+static string GetFileDirectory(const string& fullname);
+static string GetFileTitle(const string& fullname);
+static string ShortenName(const string& name);
+static string MakeIdentifierC(const string & identifier);
+static void str_replace(string& str, const char* src, const char* target, string::size_type pos = 0);
+static string getPath(const string& name);
 
-ModuleDefinition *	Module = NULL;
-ModuleList			Modules;
-ClassStack *		classStack = NULL;
-ParameterList *		DummyParameters = NULL;
-TypePtr				ValueTypeContext;
-vector<string>		RemoveList;
-UsefulModuleDef *	UsefulModule = NULL;
+
+/////////////////////////////////////////////////////////
+//
+//  Application
+//
+
+static int verbose=0;
+static string asndir;
+static string dllMacro;
+static string dllMacroDEFINED;
+static string dllMacroEXPORTS;
+static string dllMacroDLL;
+static string dllMacroAPI;
+static string dllMacroSTATIC;
+static string dllMacroLIB_SUFFIX;
+static string dllMacroRTS;
+static string dllMacroNO_AUTOMATIC_LIBS;
+static bool includeConfigH = true;
+static string useReinterpretCast;
+
+static unsigned classesPerFile = 0;
+
+static const char *cppExt = ".cxx";
+static bool noInlineFiles = false;
 
 class UsefulModuleDef : public ModuleDefinition
 {
@@ -424,273 +260,39 @@ public:
   UsefulModuleDef();
   virtual void GenerateCplusplus(const string & modName, unsigned numFiles, bool verbose) {}
 };
-
-class CompareNamedNumber
+UsefulModuleDef::UsefulModuleDef() : ModuleDefinition("ASN1", "", Tag::Explicit)
 {
-public:
-  CompareNamedNumber (int val) : m_val(val) {}
-  bool operator()(NamedNumberPtr ptr) const { return ptr->GetNumber()==m_val; }
-private:
-  int m_val;
-};
+  // add the definition of ABSTRACT_SYNTAX
+  boost::shared_ptr<ObjectClassDefn> type_Identifier(new ObjectClassDefn);
 
+  type_Identifier->SetName("ABSTRACT-SYNTAX");
 
-//
-//  yyerror
-//  required function for flex
-//
-
-void yyerror(const char * str)
-{
-  extern char * yytext;
-  cerr << "Second stage " << StdError(Fatal) << str << " near token \"" << yytext <<"\"\n";
-}
-
-void iderror(const char * str)
-{
-  extern char * idtext;
-  cerr << "First  stage " << StdError(Fatal) << str << " near token \"" << idtext <<"\"\n";
-}
-
-ostream & operator<<(ostream & out, const StdError & e)
-{
-  out << fileName << '(' << lineNumber << ") : ";
-  if (e.e == Fatal) {
-    fatals++;
-    out << "error";
-  }  else {
-    warnings++;
-    out << "warning";
-  }
-  return out << ": ";
-}
-
-
-/////////////////////////////////////////////////////////
-//
-//  Utility
-//
-
-void str_replace(string& str, const char* src, const char* target, string::size_type pos = 0)
-{
-  const size_t l = strlen(src);
-
-  while ( (pos = str.find(src,pos)) != string::npos)
-    str.replace(pos, l, target);
-}
-
-struct str_less : binary_function<const char*, const char*, bool>
-{
-  bool operator () (const char* lhs, const char* rhs) const {
-    return strcmp(lhs, rhs)<0;
-  }
-};
-
-static string MakeIdentifierC(const string & identifier)
-{
-  string s = identifier;
-  if (!s.empty())
   {
-    str_replace(s, "-", "_");
-    static const char** end = CppReserveWords+ARRAY_SIZE(CppReserveWords);
-    if (binary_search(CppReserveWords,
-        end,
-        s.c_str(),
-        str_less()))
-      s += '_';
-  }
-  return s;
-}
+    auto_ptr<FieldSpecsList> fieldSpecs(new FieldSpecsList);
+    FieldSpecPtr typeField(new TypeFieldSpec("&Type"));
+    fieldSpecs->push_back(typeField);
 
-// creates a short name for module names from combining the first character
-// of each '-' parted words, eg. H323-MESSAGES => HM,
-// Multimedia-System-Control => MSC
-static string ShortenName(const string& name)
-{
-  string s ;
-  s += name[0];
+    boost::shared_ptr<FixedTypeValueFieldSpec> idField(
+             new FixedTypeValueFieldSpec("&id"
+                         , TypePtr(new ObjectIdentifierType), false, true));
 
-  size_t i = 0;
-  while ( (i = name.find('-', i+1)) != -1)
-    s += name[i+1];
-
-  return s;
-}
-
-inline string ToLower(const string& str)
-{
-  string result;
-  result.resize(str.size());
-  transform(str.begin(), str.end(), result.begin(), tolower);
-  return result;
-}
-
-inline string ToUpper(const string& str)
-{
-  string result;
-  result.resize(str.size());
-  transform(str.begin(), str.end(), result.begin(), toupper);
-  return result;
-}
-
-string GetFileName(const string& fullname)
-{
-  int i = fullname.find_last_of(DIR_SEPARATOR);
-  return fullname.substr(i+1);
-}
-
-string GetFileDirectory(const string& fullname)
-{
-  string::size_type p = fullname.find_last_of(DIR_SEPARATOR);
-  if (p!=string::npos)
-    return fullname.substr(0, p);
-
-  return string();
-}
-
-string GetFileTitle(const string& fullname)
-{
-  string result = GetFileName(fullname);
-  int dotpos = result.find_last_of('.');
-  if (dotpos == -1)
-    return result.substr(0, dotpos-1);
-
-  return result;
-}
-
-
-class OutputFile : public ofstream
-{
-public:
-  OutputFile() {}
-  ~OutputFile() { Close(); }
-
-  bool Open(const string & path, const char* suffix, const char * extension);
-  void Close();
-  const string& GetFilePath() const  { return filename; }
-
-private:
-  OutputFile(const OutputFile&);
-  OutputFile& operator = (const OutputFile&);
-  string filename;
-};
-
-
-bool OutputFile::Open(const string & path,
-                      const char * suffix,
-                      const char * extension)
-{
-  filename = path + suffix + extension;
-  open(filename.c_str());
-  ostream& strm = *this;
-  if (is_open()) {
-    strm << "//\n"
-             "// " << GetFileName(filename) << "\n"
-             "//\n"
-             "// Code automatically generated by asnparser.\n"
-             "//\n"
-             "\n";
-    return true;
+    fieldSpecs->push_back(idField);
+    type_Identifier->SetFieldSpecs(fieldSpecs);
   }
 
-  cerr << "asnparser : cannot create " << filename << endl;
-  return false;
+  TokenGroupPtr tokens(new TokenGroup);
+  tokens->AddToken(TokenOrGroupSpecPtr(new PrimitiveFieldName("&Type")));
+  tokens->AddToken(TokenOrGroupSpecPtr(new Literal("IDENTIFIED")));
+  tokens->AddToken(TokenOrGroupSpecPtr(new Literal("BY")));
+  tokens->AddToken(TokenOrGroupSpecPtr(new PrimitiveFieldName("&id")));
+  tokens->SetOptional();
+
+  type_Identifier->SetWithSyntaxSpec(tokens);
+  type_Identifier->ResolveKey();
+
+  AddObjectClass(type_Identifier);
 }
 
-
-void OutputFile::Close()
-{
-  if (is_open()) {
-    ostream& strm = *this;
-    strm << "\n// End of " << GetFileName(filename) << '\n';
-  }
-  using namespace std;
-
-  ofstream::close();
-}
-
-
-class Indent {
-public:
-  Indent(streamsize i) : space(i){}
-  Indent operator + (int i) const { return Indent(space +i); }
-  Indent operator - (int i) const { return Indent(space -i); }
-  Indent& operator += (int i) { space+= i; return *this;}
-  Indent& operator -= (int i) { space-= i; return *this;}
-
-  friend ostream& operator << (ostream& os, const Indent& indent)
-  { return os << setw(indent.space) << ""; }
-
-private:
-  streamsize space;
-};
-
-void AddRemoveItem(const char* item)
-{
-    RemoveList.push_back(string(item));
-}
-
-
-template <class Cont, class Fun>
-void for_all(Cont& cont, Fun fun)
-{
-  for_each(cont.begin(), cont.end(), fun);
-}
-
-ModuleDefinition* FindModule(const char* name)
-{
-	ModuleDefinitionPtr smd = FindWithName(Modules, name);
-	return smd.get();
-}
-ModuleDefinition* CreateModule(const char* name)
-{
-	ModuleDefinitionPtr mdp (new ModuleDefinition(name));
-	Modules.push_back(mdp);
-	return mdp.get();
-}
-
-
-template <class T>
-ostream& operator << (ostream& os, const vector<boost::shared_ptr<T> >& cont)
-{
-  typename vector<boost::shared_ptr<T> >::const_iterator it, last = cont.end();
-  for (it = cont.begin(); it != last; ++it)
-    os << **it;
-  return os;
-}
-
-class Unfreezer
-{
-public:
-  Unfreezer(stringstream& strm) : stream(strm) {}
-  ~Unfreezer() { }
-
-private:
-  stringstream& stream;
-};
-
-/////////////////////////////////////////////////////////
-//
-//  Application
-//
-
-int verbose=0;
-string dllMacro;
-string dllMacroDEFINED;
-string dllMacroEXPORTS;
-string dllMacroDLL;
-string dllMacroAPI;
-string dllMacroSTATIC;
-string dllMacroLIB_SUFFIX;
-string dllMacroRTS;
-string dllMacroNO_AUTOMATIC_LIBS;
-bool includeConfigH = true;
-string useReinterpretCast;
-
-unsigned classesPerFile = 0;
-
-const char *cppExt = ".cxx";
-bool noInlineFiles = false;
 
 int main(int argc, char** argv)
 {
@@ -700,7 +302,6 @@ int main(int argc, char** argv)
   int c;
   bool generateCpp = false;
   string path;
-  string asndir;
 
   iddebug =0;
   yydebug = 0;
@@ -717,8 +318,8 @@ int main(int argc, char** argv)
       break;
 
     case 'd':
-      yydebug = 1;
-      iddebug = 1;
+//     yydebug = 1;
+//     iddebug = 1;
       break;
 
     case 'e':
@@ -765,10 +366,10 @@ int main(int argc, char** argv)
 
   size_t fileCount = argc-optind;
 
-  cout << "asnparser version 2.3 by Institute for Information Industry\n" << endl;
+  cout << "ASN.1 compiler version 2.4\n" << endl;
 
   if (fileCount < 1 ) {
-    cerr << "usage: asnparser [options] asnfile...\n"
+    cerr << "usage: ASN1cmp [options] asnfile...\n"
                  "  -v          Verbose output (multiple times for more verbose)\n"
                  "  -i          Local directory of the asn files\n"
                  "  -d          Debug output (copious!)\n"
@@ -785,99 +386,84 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  classStack = new ClassStack;
 
-  vector<FILE*> fds(fileCount);
+	
+	fds.resize(fileCount);
+	ParserContext context;
+	contexts.push(&context);
 
-  size_t i;
+	Modules.push_back(ModuleDefinitionPtr(contexts.top()->UsefulModule = new UsefulModuleDef));
 
-  Modules.push_back(ModuleDefinitionPtr(UsefulModule = new UsefulModuleDef));
+	for (int no = 0 ; no < fileCount; ++no)  {
+		fileName   = argv[no+optind];
+		string filePath = getPath(fileName);
+		idin = fds[no] = fopen(filePath.c_str(),"r");
+		if (!idin) {
+			cerr << "ASN1 compiler: cannot open \"" << filePath  << '"'<< endl;
+			return 1;
+		}
 
-  for ( i = 0 ; i < fileCount; ++i)  {
-	string abspath;
-	if (!asndir.empty()) {
-		abspath += asndir;
-		abspath += '/';
+		lineNumber = 1;
+		fatals     = 0;
+		warnings   = 0;
+
+		if (verbose)
+			cout << "First  Stage Parsing... " << fileName << endl;
+
+		idparse(&context, filePath); 
+		rewind(idin); // rewind the file
 	}
-	abspath += argv[i+optind];
-    idin = fds[i] = fopen(abspath.c_str(),"r");
-    if (!idin) {
-      cerr << "asnparser: cannot open \"" << abspath  << '"'<< endl;
-      return 1;
-    }
-
-    fileName   = argv[i+optind];
-    lineNumber = 1;
-    fatals     = 0;
-    warnings   = 0;
-
-    if (verbose)
-      cout << "First  Stage Parsing... " << fileName << endl;
-
-    idparse(); // parse the identifier types
-
-  }
 	for(int no = 0; no < Modules.size(); no++) {
 		Modules[no]->dump();
 	}
 
 
-	for (i = 0; i < fileCount; ++i)
-  {
-    fileName   = argv[i+optind];
-    lineNumber = 1;
-    fatals     = 0;
-    warnings   = 0;
+	for (int no = 0; no < fileCount; ++no)  {
+		fileName   = argv[no+optind];
+		lineNumber = 1;
+		fatals     = 0;
+		warnings   = 0;
+		if (verbose)
+			cout << "Second Stage Parsing... " << fileName << endl;
 
-    yyin = fds[i];
-
-    if (verbose)
-      cout << "Second Stage Parsing... " << fileName << endl;
-
- #ifdef MULTI_PARSER
-   rewind(yyin); // rewind the file
-    yyrestart(yyin);
-    yyparse(); // actually parse the content of the ASN.1
-#elif REENTRANT_PARSER
-		yyscan_t myscanner;
-
-		yylex_init(&myscanner);
-		yyparse(myscanner);
-		yylex_destroy(myscanner);
-#endif
+		contexts.top()->file = fds[no];
+		yyset_in(fds[no]);
+		yyrestart(yyin);
+		yyparse(contexts.top(), &env);
+		yylex_destroy();
+		fclose(fds[no]);
+		contexts.top()->file = NULL;
 	}
 
-  for (i = 0 ; i < Modules.size(); ++i) {
-    Modules[i]->AdjustModuleName(path);
-  }
+	for (int no= 0 ; no < Modules.size(); ++no) {
+	Modules[no]->AdjustModuleName(path);
+	}
 
-  for (i = 0; i < RemoveList.size(); ++i)
-  {
-     int dotpos = RemoveList[i].find('.');
-     string modulename = RemoveList[i].substr(0, dotpos);
-     ModuleDefinition* module = FindModule(modulename.c_str());
-     if (module)
-         module->AddToRemoveList(RemoveList[i].substr(dotpos+1, RemoveList[i].size()-1));
-  }
+	for (int no = 0; no < contexts.top()->RemoveList.size(); ++no)
+	{
+		int dotpos = contexts.top()->RemoveList[no].find('.');
+		string modulename = contexts.top()->RemoveList[no].substr(0, dotpos);
+		ModuleDefinition* module = FindModule(modulename.c_str());
+		if (module)
+			module->AddToRemoveList(contexts.top()->RemoveList[no].substr(dotpos+1, contexts.top()->RemoveList[no].size()-1));
+	}
 
-  for (i = 0 ; i < Modules.size(); ++i) {
-    Modules[i]->RemoveReferences(verbose !=0 );
-    Modules[i]->AdjustImportedModules();
-  }
+	for (int no = 0 ; no < Modules.size(); ++no) {
+	Modules[no]->RemoveReferences(verbose !=0 );
+	Modules[no]->AdjustImportedModules();
+	}
 
-  for (i = 0; i < Modules.size(); ++i) {
-    Module = Modules[i].get();
-    if (verbose > 1)
-      cerr << "Module " << *Module << endl;
+	for (int no = 0; no < Modules.size(); ++no) {
+	contexts.top()->Module = Modules[no].get();
+	if (verbose > 1)
+		cerr << "Module " << *contexts.top()->Module << endl;
 
-    if (generateCpp)
-      Module->GenerateCplusplus(path,
-                                classesPerFile,
-                                verbose!=0);
-  }
+	if (generateCpp)
+		contexts.top()->Module->GenerateCplusplus(path,  classesPerFile, verbose!=0);
+	}
 
-  delete classStack;
-  return 0;
+	contexts.pop();
+	return 0;
 }
 
 
@@ -885,20 +471,134 @@ int main(int argc, char** argv)
 //
 //  miscellaneous
 //
+template <class Cont, class Fun>
+void for_all(Cont& cont, Fun fun)
+{
+  for_each(cont.begin(), cont.end(), fun);
+}
+
+class Indent {
+public:
+  Indent(streamsize i) : space(i){}
+  Indent operator + (int i) const { return Indent(space +i); }
+  Indent operator - (int i) const { return Indent(space -i); }
+  Indent& operator += (int i) { space+= i; return *this;}
+  Indent& operator -= (int i) { space-= i; return *this;}
+
+  friend ostream& operator << (ostream& os, const Indent& indent)
+  { return os << setw(indent.space) << ""; }
+
+private:
+  streamsize space;
+};
 
 class indent : public string
 {
   typedef string Base;
 
   public:
-    indent() : Base(Module->GetIndentLevel()*3, ' ') { }
+    indent() : Base(contexts.top()->Module->GetIndentLevel()*3, ' ') { }
 };
+
+class Unfreezer
+{
+public:
+  Unfreezer(stringstream& strm) : stream(strm) {}
+  ~Unfreezer() { }
+
+private:
+  stringstream& stream;
+};
+
+class OutputFile : public ofstream
+{
+public:
+  OutputFile() {}
+  ~OutputFile() { Close(); }
+
+  bool Open(const string & path, const char* suffix, const char * extension);
+  void Close();
+  const string& GetFilePath() const  { return filename; }
+
+private:
+  OutputFile(const OutputFile&);
+  OutputFile& operator = (const OutputFile&);
+  string filename;
+};
+
+
+bool OutputFile::Open(const string & path,
+                      const char * suffix,
+                      const char * extension)
+{
+  filename = path + suffix + extension;
+  open(filename.c_str());
+  ostream& strm = *this;
+  if (is_open()) {
+    strm << "//\n"
+             "// " << GetFileName(filename) << "\n"
+             "//\n"
+             "// Code automatically generated by contexts.top()->\n"
+             "//\n"
+             "\n";
+    return true;
+  }
+
+  cerr << "context : cannot create " << filename << endl;
+  return false;
+}
+
+
+void OutputFile::Close()
+{
+  if (is_open()) {
+    ostream& strm = *this;
+    strm << "\n// End of " << GetFileName(filename) << '\n';
+  }
+  using namespace std;
+
+  ofstream::close();
+}
+
+void str_replace(string& str, const char* src, const char* target, string::size_type pos)
+{
+  const size_t l = strlen(src);
+
+  while ( (pos = str.find(src,pos)) != string::npos)
+    str.replace(pos, l, target);
+}
+
+struct str_less : binary_function<const char*, const char*, bool>
+{
+  bool operator () (const char* lhs, const char* rhs) const {
+    return strcmp(lhs, rhs)<0;
+  }
+};
+
+template <class T>
+ostream& operator << (ostream& os, const vector<boost::shared_ptr<T> >& cont)
+{
+  typename vector<boost::shared_ptr<T> >::const_iterator it, last = cont.end();
+  for (it = cont.begin(); it != last; ++it)
+    os << **it;
+  return os;
+}
 
 
 /////////////////////////////////////////
 //
 //  intermediate structures from parser
 //
+class CompareNamedNumber
+{
+public:
+  CompareNamedNumber (int val) : m_val(val) {}
+  bool operator()(NamedNumberPtr ptr) const { return ptr->GetNumber()==m_val; }
+private:
+  int m_val;
+};
+
+
 
 NamedNumber::NamedNumber(string * nam)
   : name(*nam)
@@ -2004,7 +1704,7 @@ TypeBase::TypeBase(TypeBase& copy)
   isOptional = copy.isOptional;
   isGenerated = false;
   isValueSetType = false;
-  module = Module;
+  module = contexts.top()->Module;
 }
 
 
@@ -2022,13 +1722,13 @@ void TypeBase::PrintStart(ostream & strm) const
     strm << name << parameters << ": ";
   }
   strm << tag << GetClass() << ' ';
-  Module->SetIndentLevel(1);
+  contexts.top()->Module->SetIndentLevel(1);
 }
 
 
 void TypeBase::PrintFinish(ostream & strm) const
 {
-  Module->SetIndentLevel(-1);
+  contexts.top()->Module->SetIndentLevel(-1);
   strm << ' ' << constraints;
   if (isOptional)
     strm << " OPTIONAL";
@@ -2052,7 +1752,7 @@ void TypeBase::SetDefaultValue(ValuePtr value)
 
 void TypeBase::AdjustIdentifier(bool)
 {
-  identifier = Module->GetPrefix() + MakeIdentifierC(name);
+  identifier = contexts.top()->Module->GetPrefix() + MakeIdentifierC(name);
 }
 
 
@@ -2304,14 +2004,14 @@ void TypeBase::BeginParseValue() const
 
 void TypeBase::EndParseValue() const
 {
-  BraceTokenContext = InObjectSetContext ? OBJECT_BRACE : '{';
+  contexts.top()->BraceTokenContext = contexts.top()->InObjectSetContext ? OBJECT_BRACE : '{';
   EndParseThisTypeValue();
-  ValueTypeContext.reset();
+  contexts.top()->ValueTypeContext.reset();
 }
 
 void TypeBase::BeginParseValueSet() const
 {
-  BraceTokenContext = VALUESET_BRACE;
+  contexts.top()->BraceTokenContext = VALUESET_BRACE;
   BeginParseValue();
 }
 
@@ -2398,7 +2098,7 @@ const char* TypeBase::GetClass() const
 /////////////////////////////////////////////////////////
 
 DefinedType::DefinedType(const string& name)
-  : TypeBase(Tag::IllegalUniversalTag, Module),
+  : TypeBase(Tag::IllegalUniversalTag, contexts.top()->Module),
     referenceName(name)
 {
   unresolved = true;
@@ -2446,7 +2146,7 @@ void DefinedType::ConstructFromType(TypePtr& refType, const string & refName)
   refType->SetName(refName);
 
   if (refName != "" || !refType->IsPrimitiveType() || refType->HasConstraints()){
-    Module->AddType(refType);
+    contexts.top()->Module->AddType(refType);
   }
 
   baseType = refType;
@@ -2536,7 +2236,7 @@ string DefinedType::GetTypeName() const
   if (baseType->GetIdentifier().size() == 0 || result == GetIdentifier())
     return baseType->GetTypeName();
 
-  if (GetCModuleName() != Module->GetCModuleName())
+  if (GetCModuleName() != contexts.top()->Module->GetCModuleName())
     result = GetCModuleName() + "::" + result;
   return result;
 }
@@ -2548,7 +2248,7 @@ void DefinedType::BeginParseThisTypeValue() const
     baseType->BeginParseThisTypeValue();
   else
   {// used when this type is an INTEGER and the subsequent value is a NamedNumber.
-    IdentifierTokenContext = VALUEREFERENCE;
+    contexts.top()->IdentifierTokenContext = VALUEREFERENCE;
   }
 }
 
@@ -2557,7 +2257,7 @@ void DefinedType::EndParseThisTypeValue() const
   if (baseType.get())
     baseType->EndParseThisTypeValue();
   else
-    IdentifierTokenContext = IDENTIFIER;
+    contexts.top()->IdentifierTokenContext = IDENTIFIER;
 }
 
 void DefinedType::ResolveReference() const
@@ -2565,9 +2265,9 @@ void DefinedType::ResolveReference() const
   if (unresolved) {
     unresolved = false;
 
-    if (Module == 0)
-      Module = module;
-    baseType = Module->FindType(referenceName);
+    if (contexts.top()->Module == NULL)
+      contexts.top()->Module = module;
+    baseType = contexts.top()->Module->FindType(referenceName);
 
     // AR Tag should not be fetched from base type
     // That only confuses SEQUENCE code generation
@@ -2766,7 +2466,7 @@ TypeBase::RemoveResult ParameterizedType::CanRemoveType(const TypeBase& type)
 /////////////////////////////////////////////////////////
 
 SelectionType::SelectionType(const string& name, TypePtr base)
-  : TypeBase(Tag::IllegalUniversalTag, Module),
+  : TypeBase(Tag::IllegalUniversalTag, contexts.top()->Module),
     selection(name)
 {
   assert(base.get());
@@ -2832,7 +2532,7 @@ bool SelectionType::UseType(const TypeBase& type) const
 /////////////////////////////////////////////////////////
 
 BooleanType::BooleanType()
-  : TypeBase(Tag::UniversalBoolean, Module)
+  : TypeBase(Tag::UniversalBoolean, contexts.top()->Module)
 {
 }
 
@@ -2862,13 +2562,13 @@ void BooleanType::GenerateConstructors(ostream & hdr, ostream & , ostream & )
 /////////////////////////////////////////////////////////
 
 IntegerType::IntegerType()
-  : TypeBase(Tag::UniversalInteger, Module)
+  : TypeBase(Tag::UniversalInteger, contexts.top()->Module)
 {
 }
 
 
 IntegerType::IntegerType(NamedNumberList& lst)
-  : TypeBase(Tag::UniversalInteger, Module)
+  : TypeBase(Tag::UniversalInteger, contexts.top()->Module)
 {
   allowedValues.swap(lst);
 }
@@ -3098,17 +2798,17 @@ bool IntegerType::ReferencesType(const TypeBase & type) const
 void IntegerType::BeginParseThisTypeValue() const
 {
   if(!allowedValues.empty())
-    IdentifierTokenContext = VALUEREFERENCE;
+    contexts.top()->IdentifierTokenContext = VALUEREFERENCE;
 }
 
 void IntegerType::EndParseThisTypeValue() const
 {
-  IdentifierTokenContext = IDENTIFIER;
+  contexts.top()->IdentifierTokenContext = IDENTIFIER;
 }
 /////////////////////////////////////////////////////////
 
 EnumeratedType::EnumeratedType(NamedNumberList& enums, bool extend, NamedNumberList* ext)
-  : TypeBase(Tag::UniversalEnumeration, Module),
+  : TypeBase(Tag::UniversalEnumeration, contexts.top()->Module),
   maxEnumValue(0)
 {
   enumerations.swap(enums);
@@ -3286,18 +2986,18 @@ void EnumeratedType::GenerateInfo(const TypeBase* type, ostream& hdr, ostream& c
 
 void EnumeratedType::BeginParseThisTypeValue() const
 {
-  IdentifierTokenContext = VALUEREFERENCE;
+  contexts.top()->IdentifierTokenContext = VALUEREFERENCE;
 }
 
 void EnumeratedType::EndParseThisTypeValue() const
 {
-  IdentifierTokenContext = IDENTIFIER;
+  contexts.top()->IdentifierTokenContext = IDENTIFIER;
 }
 
 /////////////////////////////////////////////////////////
 
 RealType::RealType()
-  : TypeBase(Tag::UniversalReal, Module)
+  : TypeBase(Tag::UniversalReal, contexts.top()->Module)
 {
 }
 
@@ -3324,13 +3024,13 @@ void RealType::GenerateConstructors(ostream & hdr, ostream & , ostream & )
 /////////////////////////////////////////////////////////
 
 BitStringType::BitStringType()
-  : TypeBase(Tag::UniversalBitString, Module)
+  : TypeBase(Tag::UniversalBitString, contexts.top()->Module)
 {
 }
 
 
 BitStringType::BitStringType(NamedNumberList& lst)
-  : TypeBase(Tag::UniversalBitString, Module)
+  : TypeBase(Tag::UniversalBitString, contexts.top()->Module)
 {
   allowedBits.swap(lst);
 }
@@ -3362,12 +3062,12 @@ bool BitStringType::NeedGenInfo() const
 
 void BitStringType::BeginParseThisTypeValue() const
 {
-  IdentifierTokenContext = BIT_IDENTIFIER;
+  contexts.top()->IdentifierTokenContext = BIT_IDENTIFIER;
 }
 
 void BitStringType::EndParseThisTypeValue() const
 {
-  IdentifierTokenContext = IDENTIFIER;
+  contexts.top()->IdentifierTokenContext = IDENTIFIER;
 }
 
 int BitStringType::GetToken() const
@@ -3496,7 +3196,7 @@ void BitStringType::GenerateInfo(const TypeBase* type, ostream& hdr, ostream& cx
 /////////////////////////////////////////////////////////
 
 OctetStringType::OctetStringType()
-  : TypeBase(Tag::UniversalOctetString, Module)
+  : TypeBase(Tag::UniversalOctetString, contexts.top()->Module)
 {
 }
 
@@ -3580,18 +3280,18 @@ void OctetStringType::GenerateInfo(const TypeBase* type, ostream& hdr, ostream& 
 /////////////////////////////////////////////////////////
 
 NullType::NullType()
-  : TypeBase(Tag::UniversalNull, Module)
+  : TypeBase(Tag::UniversalNull, contexts.top()->Module)
 {
 }
 
 void NullType::BeginParseThisTypeValue() const
 {
-  NullTokenContext = NULL_VALUE;
+  contexts.top()->NullTokenContext = NULL_VALUE;
 }
 
 void NullType::EndParseThisTypeValue() const
 {
-  NullTokenContext = NULL_TYPE;
+  contexts.top()->NullTokenContext = NULL_TYPE;
 }
 
 const char * NullType::GetAncestorClass() const
@@ -3606,7 +3306,7 @@ SequenceType::SequenceType(TypesVector* a_std,
                            bool extend,
                            TypesVector * ext,
                            unsigned tagNum)
-  : TypeBase(tagNum, Module), detectingLoop(false)
+  : TypeBase(tagNum, contexts.top()->Module), detectingLoop(false)
 {
   if (a_std != NULL) {
     numFields = a_std->size();
@@ -4395,7 +4095,7 @@ void SequenceType::GenerateInfo(const TypeBase* type, ostream& hdr, ostream& cxx
 /////////////////////////////////////////////////////////
 
 SequenceOfType::SequenceOfType(TypePtr base, ConstraintPtr constraint, unsigned tag)
-  : TypeBase(tag, Module), nonTypedef (false)
+  : TypeBase(tag, contexts.top()->Module), nonTypedef (false)
 {
   assert(base.get());
   baseType = base;
@@ -5027,7 +4727,7 @@ void ChoiceType::GenerateInfo(const TypeBase* type,ostream& hdr, ostream& cxx)
 /////////////////////////////////////////////////////////
 
 EmbeddedPDVType::EmbeddedPDVType()
-  : TypeBase(Tag::UniversalEmbeddedPDV, Module)
+  : TypeBase(Tag::UniversalEmbeddedPDV, contexts.top()->Module)
 {
 }
 
@@ -5041,7 +4741,7 @@ const char * EmbeddedPDVType::GetAncestorClass() const
 /////////////////////////////////////////////////////////
 
 ExternalType::ExternalType()
-  : TypeBase(Tag::UniversalExternalType, Module)
+  : TypeBase(Tag::UniversalExternalType, contexts.top()->Module)
 {
 }
 
@@ -5055,7 +4755,7 @@ const char * ExternalType::GetAncestorClass() const
 /////////////////////////////////////////////////////////
 
 AnyType::AnyType(const string& ident)
-  : TypeBase(Tag::UniversalExternalType, Module)
+  : TypeBase(Tag::UniversalExternalType, contexts.top()->Module)
 {
     identifier = ident;
 }
@@ -5121,7 +4821,7 @@ static const char GeneralStringSet[]   =
 /////////////////////////////////////////////////////////
 
 StringTypeBase::StringTypeBase(int tag)
-  : TypeBase(tag, Module)
+  : TypeBase(tag, contexts.top()->Module)
 {
 }
 
@@ -5502,7 +5202,7 @@ const char * UnrestrictedCharacterStringType::GetAncestorClass() const
 /////////////////////////////////////////////////////////
 
 GeneralizedTimeType::GeneralizedTimeType()
-  : TypeBase(Tag::UniversalGeneralisedTime, Module)
+  : TypeBase(Tag::UniversalGeneralisedTime, contexts.top()->Module)
 {
 }
 
@@ -5529,7 +5229,7 @@ void GeneralizedTimeType::GenerateConstructors(ostream & hdr, ostream & cxx, ost
 /////////////////////////////////////////////////////////
 
 UTCTimeType::UTCTimeType()
-  : TypeBase(Tag::UniversalUTCTime, Module)
+  : TypeBase(Tag::UniversalUTCTime, contexts.top()->Module)
 {
 }
 
@@ -5556,7 +5256,7 @@ void UTCTimeType::GenerateConstructors(ostream & hdr, ostream & cxx, ostream & i
 /////////////////////////////////////////////////////////
 
 ObjectDescriptorType::ObjectDescriptorType()
-  : TypeBase(Tag::UniversalObjectDescriptor, Module)
+  : TypeBase(Tag::UniversalObjectDescriptor, contexts.top()->Module)
 {
 }
 
@@ -5570,19 +5270,19 @@ const char * ObjectDescriptorType::GetAncestorClass() const
 /////////////////////////////////////////////////////////
 
 ObjectIdentifierType::ObjectIdentifierType()
-  : TypeBase(Tag::UniversalObjectId, Module)
+  : TypeBase(Tag::UniversalObjectId, contexts.top()->Module)
 {
 }
 
 
 void ObjectIdentifierType::BeginParseThisTypeValue() const
 {
-  InOIDContext = true;
+  contexts.top()->InOIDContext = true;
 }
 
 void ObjectIdentifierType::EndParseThisTypeValue() const
 {
-  InOIDContext = false;
+  contexts.top()->InOIDContext = false;
 }
 
 const char * ObjectIdentifierType::GetAncestorClass() const
@@ -5604,7 +5304,7 @@ void ObjectIdentifierType::GenerateConstructors(ostream & hdr, ostream & cxx, os
 
 ObjectClassFieldType::ObjectClassFieldType(ObjectClassBasePtr  objclass,
                        const string& field)
-  : TypeBase(Tag::IllegalUniversalTag, Module),
+  : TypeBase(Tag::IllegalUniversalTag, contexts.top()->Module),
     asnObjectClass(objclass),
     asnObjectClassField(field)
 {
@@ -5758,14 +5458,14 @@ void ObjectClassFieldType::GenerateInfo(const TypeBase* type, ostream& hdr, ostr
 /////////////////////////////////////////////////////////
 
 ImportedType::ImportedType(const string & theName, bool param)
-  : TypeBase(Tag::IllegalUniversalTag, Module)
+  : TypeBase(Tag::IllegalUniversalTag, contexts.top()->Module)
 {
   identifier = name = theName;
   parameterised = param;
 }
 
 ImportedType::ImportedType(const TypePtr& ref)
-  : TypeBase(Tag::IllegalUniversalTag, Module), reference(ref)
+  : TypeBase(Tag::IllegalUniversalTag, contexts.top()->Module), reference(ref)
 {
   identifier = name = ref->GetName();
   parameterised = ref->HasParameters();
@@ -5796,7 +5496,7 @@ void ImportedType::SetModuleName(const string& mname)
 {
   moduleName = mname;
   cModuleName = MakeIdentifierC(mname);
-  modulePrefix = Module->GetImportModuleName(mname);
+  modulePrefix = contexts.top()->Module->GetImportModuleName(mname);
 }
 
 
@@ -5812,7 +5512,7 @@ void ImportedType::BeginParseThisTypeValue() const
     reference->BeginParseThisTypeValue();
   else
     // used when this type is an INTEGER and the subsequent value is a NamedNumber.
-    IdentifierTokenContext = VALUEREFERENCE;
+    contexts.top()->IdentifierTokenContext = VALUEREFERENCE;
 }
 
 void ImportedType::EndParseThisTypeValue() const
@@ -5820,7 +5520,7 @@ void ImportedType::EndParseThisTypeValue() const
   if (reference.get())
     reference->EndParseThisTypeValue();
   else
-    IdentifierTokenContext = IDENTIFIER;
+    contexts.top()->IdentifierTokenContext = IDENTIFIER;
 }
 
 bool ImportedType::IsPrimitiveType() const
@@ -5834,7 +5534,7 @@ bool ImportedType::IsPrimitiveType() const
 
 /////////////////////////////////////////////////////////
 TypeFromObject::TypeFromObject(InformationObjectPtr  obj, const string& fld)
-: TypeBase(Tag::IllegalUniversalTag, Module)
+: TypeBase(Tag::IllegalUniversalTag, contexts.top()->Module)
   ,refObj(obj)
   ,field(fld)
 {
@@ -5944,7 +5644,7 @@ void DefinedValue::GenerateCplusplus(ostream & hdr, ostream & cxx, ostream & inl
 {
   if (unresolved) {
     unresolved = false;
-    actualValue = Module->FindValue(referenceName);
+    actualValue = contexts.top()->Module->FindValue(referenceName);
   }
 
   if (actualValue.get() != NULL)
@@ -6249,7 +5949,7 @@ void ChoiceValue::GenerateCplusplus(ostream & , ostream & cxx, ostream & ) const
 
 ImportModule::ImportModule(string * name, SymbolList * syms)
   : fullModuleName(*name),
-    shortModuleName(Module->GetImportModuleName(*name))
+    shortModuleName(contexts.top()->Module->GetImportModuleName(*name))
 {
   delete name;
 
@@ -6261,9 +5961,9 @@ ImportModule::ImportModule(string * name, SymbolList * syms)
 
     for (size_t i = 0; i < symbols.size(); i++) {
       if (from)
-        symbols[i]->AppendToModule(from,Module);
+        symbols[i]->AppendToModule(from,contexts.top()->Module);
       else
-        symbols[i]->AppendToModule(fullModuleName, Module);
+        symbols[i]->AppendToModule(fullModuleName, contexts.top()->Module);
     }
   }
 
@@ -6298,7 +5998,7 @@ void ImportModule::GenerateCplusplus(ostream & hdr, ostream & cxx, ostream &)
   }
   else
   {
-    if(module != UsefulModule)
+    if(module != contexts.top()->UsefulModule)
       hdr << "#include \"" << filename << ".h\"\n";
 
     for (size_t i = 0; i < symbols.size(); i++)
@@ -6376,8 +6076,8 @@ ModuleDefinition::ModuleDefinition(const string& name)
   }
   // Create sorted list for faster searching.
 }
-ModuleDefinition::ModuleDefinition(const string& name, Tag::Mode defTagMode)
-  : moduleName(name)
+ModuleDefinition::ModuleDefinition(const string& name, const string& filePath, Tag::Mode defTagMode)
+  : moduleName(name), modulePath(filePath)
 {
   defaultTagMode = defTagMode;
   exportAll = false;
@@ -6522,16 +6222,16 @@ void ModuleDefinition::AdjustModuleName(const string & sourcePath,bool isSubModu
 {
   shortModuleName = ShortenName(moduleName);
   cModuleName = MakeIdentifierC(moduleName);
-  path = sourcePath + DIR_SEPARATOR;
+  generatedPath = sourcePath + DIR_SEPARATOR;
   if (!isSubModule)
-    path += ToLower(cModuleName);
+    generatedPath += ToLower(cModuleName);
   else if (types.size())
-    path += (shortModuleName + "_" +ToLower(MakeIdentifierC(types[0]->GetName())));
+    generatedPath += (shortModuleName + "_" +ToLower(MakeIdentifierC(types[0]->GetName())));
   else
   {
-    path += imports[0]->GetFileName();
+    generatedPath += imports[0]->GetFileName();
     string tmp = imports[1]->GetFileName();
-    path += tmp.substr(tmp.size()-tmp.find('_'));
+    generatedPath += tmp.substr(tmp.size()-tmp.find('_'));
   }
 
 }
@@ -6597,7 +6297,7 @@ void ModuleDefinition::GenerateCplusplus(const string & dir,
 {
   size_t i,classesCount = 1;
 
-  Module = this;
+  contexts.top()->Module = this;
   string dpath(dir);
   if (dpath.length())
     dpath += DIR_SEPARATOR;
@@ -7079,13 +6779,11 @@ ObjectClassBasePtr ModuleDefinition::FindObjectClass(const string & name)
   {
     // add the definition of TYPE-IDENTIFIER
 
-    boost::shared_ptr<ObjectClassDefn> type_Identifier(new ObjectClassDefn);
+    ObjectClassDefnPtr type_Identifier(new ObjectClassDefn);
     type_Identifier->SetName("TYPE-IDENTIFIER");
     auto_ptr<FieldSpecsList> fieldSpecs(new FieldSpecsList);
 
-    boost::shared_ptr<FixedTypeValueFieldSpec> idField(
-           new FixedTypeValueFieldSpec("&id"
-                                 , TypePtr(new ObjectIdentifierType), false, true));
+    FixedTypeValueFieldSpecPtr idField(new FixedTypeValueFieldSpec("&id", TypePtr(new ObjectIdentifierType), false, true));
 
     fieldSpecs->push_back(idField);
 
@@ -7105,11 +6803,11 @@ ObjectClassBasePtr ModuleDefinition::FindObjectClass(const string & name)
     return type_Identifier;
   }
 
-  if (this != UsefulModule) {
-    ObjectClassBasePtr useful = UsefulModule->FindObjectClass(name);
+  if (this != contexts.top()->UsefulModule) {
+    ObjectClassBasePtr useful = contexts.top()->UsefulModule->FindObjectClass(name);
 
     if(useful) {
-      ObjectClassBasePtr oc(new ImportedObjectClass(UsefulModule->GetName(),
+      ObjectClassBasePtr oc(new ImportedObjectClass(contexts.top()->UsefulModule->GetName(),
                             name,
                             useful.get()));
       oc->SetName(name);
@@ -7118,7 +6816,7 @@ ObjectClassBasePtr ModuleDefinition::FindObjectClass(const string & name)
       SymbolList *lst = new SymbolList;
       lst->push_back(SymbolPtr(new ObjectClassReference(name, false)));
 
-      AddImport(ImportModulePtr(new ImportModule(new string(UsefulModule->GetName()), lst)));
+      AddImport(ImportModulePtr(new ImportModule(new string(contexts.top()->UsefulModule->GetName()), lst)));
 
       return oc;
     }
@@ -7147,7 +6845,7 @@ void ModuleDefinition::ResolveObjectClassReferences() const
 
 string ModuleDefinition::GetFileName()
 {
-  return ToLower(GetFileTitle(path));
+  return ToLower(GetFileTitle(generatedPath));
 }
 
 
@@ -7161,13 +6859,13 @@ string ModuleDefinition::CreateSubModules(SymbolList& exportedSymbols)
     return GetFileName();
 
   size_t i, j;
-  Module = this;
+  contexts.top()->Module = this;
   for (i = 0; i < types.size(); ++i)
     types[i]->ResolveReference();
 
   typedef list<string> StringList;
   StringList unhandledSymbols;
-  ModuleDefinitionPtr subModule(new ModuleDefinition(moduleName, defaultTagMode));
+  ModuleDefinitionPtr subModule(new ModuleDefinition(moduleName, "", defaultTagMode));
 
   TypesVector& exportedTypes = subModule->types;
 
@@ -7270,7 +6968,7 @@ string ModuleDefinition::CreateSubModules(SymbolList& exportedSymbols)
        }
     }
 
-    subModule->AdjustModuleName(GetFileDirectory(path), true);
+    subModule->AdjustModuleName(GetFileDirectory(generatedPath), true);
     subModules.push_back(subModule);
     Modules.push_back(subModule);
     return subModule->GetFileName();
@@ -7613,7 +7311,7 @@ string FixedTypeValueFieldSpec::GetField() const
 
 void FixedTypeValueFieldSpec::BeginParseSetting(FieldSettingList*) const
 {
-  ValueTypeContext = type;
+  contexts.top()->ValueTypeContext = type;
   type->BeginParseValue();
 }
 
@@ -7686,7 +7384,7 @@ bool FixedTypeValueSetFieldSpec::HasDefault() const
 
 void FixedTypeValueSetFieldSpec::BeginParseSetting(FieldSettingList*) const
 {
-  ValueTypeContext = type;
+  contexts.top()->ValueTypeContext = type;
   type->BeginParseValueSet();
 }
 
@@ -7789,14 +7487,14 @@ void VariableTypeValueFieldSpec::BeginParseSetting(FieldSettingList* parsedField
     type = defaultType;
 
   if (type.get() != NULL) {
-    ValueTypeContext = type;
+    contexts.top()->ValueTypeContext = type;
     type->BeginParseValue();
   }
 }
 
 void VariableTypeValueFieldSpec::EndParseSetting() const
 {
-  ValueTypeContext->EndParseValue();
+  contexts.top()->ValueTypeContext->EndParseValue();
 }
 
 int VariableTypeValueFieldSpec::GetToken() const
@@ -7855,7 +7553,7 @@ void VariableTypeValueSetFieldSpec::BeginParseSetting(FieldSettingList* parsedFi
   TypePtr type = ::GetFieldType(parsedFields, GetField());
 
   if (type.get() != NULL) {
-    ValueTypeContext = type;
+    contexts.top()->ValueTypeContext = type;
     type->BeginParseValueSet();
   }
 }
@@ -8161,31 +7859,31 @@ void ObjectClassDefn::PreParseObject() const
 
 void ObjectClassDefn::BeginParseObject() const
 {
-  classStack->push(const_cast<ObjectClassDefn*>(this));
+  contexts.top()->classStack->push(const_cast<ObjectClassDefn*>(this));
   PreParseObject();
-  BraceTokenContext = OBJECT_BRACE;
+  contexts.top()->BraceTokenContext = OBJECT_BRACE;
 }
 
 void ObjectClassDefn::EndParseObject() const
 {
-  BraceTokenContext = '{';
+  contexts.top()->BraceTokenContext = '{';
 //  classStack->Pop();
 }
 
 void ObjectClassDefn::BeginParseObjectSet() const
 {
-  classStack->push(const_cast<ObjectClassDefn*>(this));
+  contexts.top()->classStack->push(const_cast<ObjectClassDefn*>(this));
   PreParseObject();
-  BraceTokenContext = OBJECTSET_BRACE;
-  InObjectSetContext++;
+  contexts.top()->BraceTokenContext = OBJECTSET_BRACE;
+  contexts.top()->InObjectSetContext++;
 }
 
 void ObjectClassDefn::EndParseObjectSet() const
 {
-  if (--InObjectSetContext == 0)
-    BraceTokenContext = '{';
+  if (--contexts.top()->InObjectSetContext == 0)
+    contexts.top()->BraceTokenContext = '{';
   else
-    BraceTokenContext = OBJECT_BRACE;
+    contexts.top()->BraceTokenContext = OBJECT_BRACE;
 
   if (withSyntaxSpec.get())
     withSyntaxSpec->CancelMakeDefaultSyntax();
@@ -8403,7 +8101,11 @@ void ObjectClassDefn::GenerateCplusplus(ostream& hdr, ostream& cxx, ostream&)
 
   hdr << setprecision(0);
 }
-
+/////////////////////////////////////////////////////////////
+ImportedObjectClass::ImportedObjectClass(const string& modName, const string& nam, ObjectClassBase* ref)
+    : DefinedObjectClass(nam, ref), moduleName(modName) {
+	module = FindWithName(Modules, modName);
+  }
 
 /////////////////////////////////////////////////////////////
 DefinedObjectClass::DefinedObjectClass(ObjectClassBase* ref)
@@ -8420,7 +8122,7 @@ DefinedObjectClass::DefinedObjectClass(const string& nam, ObjectClassBase* ref)
 ObjectClassBase* DefinedObjectClass::GetReference()
 {
     if (reference == NULL)
-        reference = Module->FindObjectClass(referenceName).get();
+        reference = contexts.top()->Module->FindObjectClass(referenceName).get();
     return reference;
 }
 
@@ -8467,8 +8169,8 @@ void DefinedObjectClass::BeginParseObject() const
 {
     const ObjectClassBase* r = GetReference();
  	r->BeginParseObject();
-	classStack->push(const_cast<DefinedObjectClass*>(this));
-	BraceTokenContext = OBJECT_BRACE;
+//	contexts.top()->classStack->push(const_cast<DefinedObjectClass*>(this));
+//	contexts.top()->BraceTokenContext = OBJECT_BRACE;
 }
 
 void DefinedObjectClass::EndParseObject() const
@@ -8495,8 +8197,33 @@ void DefinedObjectClass::PrintOn(ostream& strm) const
 
 void DefinedObjectClass::ResolveReference() const
 {
-    if (reference == NULL)
-        reference = Module->FindObjectClass(referenceName).get();
+    if (reference == NULL) {
+        reference = contexts.top()->Module->FindObjectClass(referenceName).get();
+		//FIXME process imported ObjectClass...
+		ImportedObjectClass* ioc = dynamic_cast<ImportedObjectClass*>(reference);
+		if (ioc != NULL) {
+			//load ObjectClassDefinition from the Module
+			string modulePath = ioc->GetModule()->GetModulePath();
+			if (!modulePath.empty()) {
+				clog << "Processing of " << modulePath << endl;
+
+				FILE* fd = fopen(modulePath.c_str(),"r");
+				if (!fd) {
+					cerr << "ASN1 compiler: cannot open \"" << modulePath  << '"'<< endl;
+				} else {
+					ParserContext context(fd);
+					contexts.push(&context);
+					yyset_in(fd);
+					yyrestart(context.file);
+					yyparse(&context, &env);
+					yylex_destroy();
+			        reference = contexts.top()->Module->FindObjectClass(referenceName).get();
+					contexts.pop();
+					yyset_in(contexts.top()->file);
+				}
+			}
+		}
+	}
 }
 
 TypeBase* DefinedObjectClass::GetFieldType(const string& fieldName)
@@ -8771,7 +8498,7 @@ DefinedObject::DefinedObject(const string& nam, const InformationObject* ref)
 const InformationObject* DefinedObject::GetReference() const
 {
     if (reference == NULL)
-        reference = Module->FindInformationObject(referenceName);
+        reference = contexts.top()->Module->FindInformationObject(referenceName);
     if (reference == NULL)
     {
         cerr << StdError(Fatal) << "Invalid Object" << GetName();
@@ -8782,9 +8509,9 @@ const InformationObject* DefinedObject::GetReference() const
 
 const ObjectClassBase* DefinedObject::GetObjectClass() const
 {
-    if (DummyParameters)
+    if (contexts.top()->DummyParameters)
     {
-        Parameter* param = DummyParameters->GetParameter(GetName().c_str());
+        Parameter* param = contexts.top()->DummyParameters->GetParameter(GetName().c_str());
         if ((param != NULL) && dynamic_cast<ObjectParameter*>(param))
         {
             ObjectParameter* p = (ObjectParameter*) param;
@@ -9284,9 +9011,9 @@ bool InformationObjectSetDefn::GenerateTypeConstructor(ostream& cxx) const
     tmp << ends;
   }
 
-  cxx << "  ASN1::Module* module = env.find(\"" << Module->GetName() << "\");\n"
+  cxx << "  ASN1::Module* module = env.find(\"" << contexts.top()->Module->GetName() << "\");\n"
       << "  if (module)\n"
-      << "  objSet =  &(static_cast<"<< Module->GetCModuleName() << "::Module*>(module)->get_"
+      << "  objSet =  &(static_cast<"<< contexts.top()->Module->GetCModuleName() << "::Module*>(module)->get_"
       << MakeIdentifierC(GetName()) << "());\n"
       << "  else\n"
       << "    objSet = NULL;\n";
@@ -9305,7 +9032,7 @@ DefinedObjectSet::DefinedObjectSet(const string& ref)
 const InformationObjectSet* DefinedObjectSet::GetReference() const
 {
     if (reference == NULL)
-        reference = Module->FindInformationObjectSet(referenceName);
+        reference = contexts.top()->Module->FindInformationObjectSet(referenceName);
     if (reference == NULL)
     {
         cerr << StdError(Fatal) << "Invalid ObjectSet " << GetName();
@@ -9317,9 +9044,9 @@ const InformationObjectSet* DefinedObjectSet::GetReference() const
 
 const ObjectClassBase* DefinedObjectSet::GetObjectClass() const
 {
-    if (DummyParameters)
+    if (contexts.top()->DummyParameters)
     {
-        Parameter* param = DummyParameters->GetParameter(GetName().c_str());
+        Parameter* param = contexts.top()->DummyParameters->GetParameter(GetName().c_str());
         if (param && dynamic_cast<ObjectParameter*>(param))
         {
             ObjectParameter* p = (ObjectParameter*) param;
@@ -10269,7 +9996,7 @@ bool ActualObjectSetParameter::ReferencesType(const TypeBase & type) const
 //////////////////////////////////////////////////////////////
 
 ObjectSetType::ObjectSetType(InformationObjectSetPtr os)
-: TypeBase(0, Module)
+: TypeBase(0, contexts.top()->Module)
 , objSet(os)
 {
   name = objSet->GetName();
@@ -10292,38 +10019,383 @@ bool ObjectSetType::HasParameters() const
 }
 
 
-UsefulModuleDef::UsefulModuleDef() : ModuleDefinition("ASN1", Tag::Explicit)
+
+
+ostream & operator<<(ostream & out, const StdError & e)
 {
-  // add the definition of ABSTRACT_SYNTAX
-  boost::shared_ptr<ObjectClassDefn> type_Identifier(new ObjectClassDefn);
-
-  type_Identifier->SetName("ABSTRACT-SYNTAX");
-
-  {
-    auto_ptr<FieldSpecsList> fieldSpecs(new FieldSpecsList);
-
-    FieldSpecPtr typeField(new TypeFieldSpec("&Type"));
-
-    fieldSpecs->push_back(typeField);
-
-    boost::shared_ptr<FixedTypeValueFieldSpec> idField(
-             new FixedTypeValueFieldSpec("&id"
-                         , TypePtr(new ObjectIdentifierType), false, true));
-
-    fieldSpecs->push_back(idField);
-
-    type_Identifier->SetFieldSpecs(fieldSpecs);
+  out << fileName << '(' << lineNumber << ") : ";
+  if (e.e == Fatal) {
+    fatals++;
+    out << "error";
+  }  else {
+    warnings++;
+    out << "warning";
   }
-
-  TokenGroupPtr tokens(new TokenGroup);
-  tokens->AddToken(TokenOrGroupSpecPtr(new PrimitiveFieldName("&Type")));
-  tokens->AddToken(TokenOrGroupSpecPtr(new Literal("IDENTIFIED")));
-  tokens->AddToken(TokenOrGroupSpecPtr(new Literal("BY")));
-  tokens->AddToken(TokenOrGroupSpecPtr(new PrimitiveFieldName("&id")));
-  tokens->SetOptional();
-
-  type_Identifier->SetWithSyntaxSpec(tokens);
-  type_Identifier->ResolveKey();
-
-  AddObjectClass(type_Identifier);
+  return out << ": ";
 }
+
+
+/////////////////////////////////////////////////////////
+//
+//  Utility
+//
+
+string MakeIdentifierC(const string & identifier)
+{
+  string s = identifier;
+  if (!s.empty())
+  {
+    str_replace(s, "-", "_");
+    static const char** end = CppReserveWords+ARRAY_SIZE(CppReserveWords);
+    if (binary_search(CppReserveWords,
+        end,
+        s.c_str(),
+        str_less()))
+      s += '_';
+  }
+  return s;
+}
+
+// creates a short name for module names from combining the first character
+// of each '-' parted words, eg. H323-MESSAGES => HM,
+// Multimedia-System-Control => MSC
+static string ShortenName(const string& name)
+{
+  string s ;
+  s += name[0];
+
+  size_t i = 0;
+  while ( (i = name.find('-', i+1)) != -1)
+    s += name[i+1];
+
+  return s;
+}
+
+string ToLower(const string& str)
+{
+  string result;
+  result.resize(str.size());
+  transform(str.begin(), str.end(), result.begin(), tolower);
+  return result;
+}
+
+string ToUpper(const string& str)
+{
+  string result;
+  result.resize(str.size());
+  transform(str.begin(), str.end(), result.begin(), toupper);
+  return result;
+}
+
+string GetFileName(const string& fullname)
+{
+  int i = fullname.find_last_of(DIR_SEPARATOR);
+  return fullname.substr(i+1);
+}
+
+string GetFileDirectory(const string& fullname)
+{
+  string::size_type p = fullname.find_last_of(DIR_SEPARATOR);
+  if (p!=string::npos)
+    return fullname.substr(0, p);
+
+  return string();
+}
+
+string GetFileTitle(const string& fullname)
+{
+  string result = GetFileName(fullname);
+  int dotpos = result.find_last_of('.');
+  if (dotpos == -1)
+    return result.substr(0, dotpos-1);
+
+  return result;
+}
+
+
+
+void AddRemoveItem(const char* item)
+{
+    contexts.top()->RemoveList.push_back(string(item));
+}
+
+
+ModuleDefinition* FindModule(const char* name)
+{
+	ModuleDefinitionPtr smd = FindWithName(Modules, name);
+	return smd.get();
+}
+ModuleDefinition* CreateModule(const char* name)
+{
+	ModuleDefinitionPtr mdp (new ModuleDefinition(name));
+	Modules.push_back(mdp);
+	return mdp.get();
+}
+
+
+
+const char* tokenAsString(int token) {
+	switch (token) {
+		case MODULEREFERENCE: return "MODULEREFERENCE";
+		case TYPEREFERENCE: return "TYPEREFERENCE";
+		case OBJECTCLASSREFERENCE: return "OBJECTCLASSREFERENCE";
+		case VALUEREFERENCE: return "VALUEREFERENCE";
+		case OBJECTREFERENCE: return "OBJECTREFERENCE";
+		case OBJECTSETREFERENCE: return "OBJECTSETREFERENCE";
+		case PARAMETERIZEDTYPEREFERENCE: return "PARAMETERIZEDTYPEREFERENCE";
+		case PARAMETERIZEDOBJECTCLASSREFERENCE: return "PARAMETERIZEDOBJECTCLASSREFERENCE";
+		case PARAMETERIZEDVALUEREFERENCE: return "PARAMETERIZEDVALUEREFERENCE";
+		case PARAMETERIZEDOBJECTREFERENCE: return "PARAMETERIZEDOBJECTREFERENCE";
+		case PARAMETERIZEDOBJECTSETREFERENCE: return "PARAMETERIZEDOBJECTSETREFERENCE";
+		case VALUESET_BRACE: return "VALUESET_BRACE";
+		case OBJECT_BRACE: return "OBJECT_BRACE";
+		case OBJECTSET_BRACE: return "OBJECTSET_BRACE";
+		case IDENTIFIER: return "IDENTIFIER";
+		case BIT_IDENTIFIER: return "BIT_IDENTIFIER";
+		case OID_IDENTIFIER: return "OID_IDENTIFIER";
+		case IMPORT_IDENTIFIER: return "IMPORT_IDENTIFIER";
+		case fieldreference: return "fieldreference";
+		case FieldReference: return "FieldReference";
+		case TYPEFIELDREFERENCE: return "TYPEFIELDREFERENCE";
+		case FIXEDTYPEVALUEFIELDREFERENCE: return "FIXEDTYPEVALUEFIELDREFERENCE";
+		case VARIABLETYPEVALUEFIELDREFERENCE: return "VARIABLETYPEVALUEFIELDREFERENCE";
+		case FIXEDTYPEVALUESETFIELDREFERENCE: return "FIXEDTYPEVALUESETFIELDREFERENCE";
+		case VARIABLETYPEVALUESETFIELDREFERENCE: return "VARIABLETYPEVALUESETFIELDREFERENCE";
+		case OBJECTFIELDREFERENCE: return "OBJECTFIELDREFERENCE";
+		case OBJECTSETFIELDREFERENCE: return "OBJECTSETFIELDREFERENCE";
+		case INTEGER: return "INTEGER";
+		case CSTRING: return "CSTRING";
+		case BSTRING: return "BSTRING";
+		case HSTRING: return "HSTRING";
+		case BS_BSTRING: return "BS_BSTRING";
+		case BS_HSTRING: return "BS_HSTRING";
+		case ABSENT: return "ABSENT";
+		case ABSTRACT_SYNTAX: return "ABSTRACT_SYNTAX";
+		case ALL: return "ALL";
+		case ANY: return "ANY";
+		case APPLICATION: return "APPLICATION";
+		case ASSIGNMENT: return "ASSIGNMENT";
+		case AUTOMATIC: return "AUTOMATIC";
+		case BEGIN_t: return "BEGIN_t";
+		case BIT: return "BIT";
+		case BMPString: return "BMPString";
+		case BOOLEAN_t: return "BOOLEAN_t";
+		case BY: return "BY";
+		case CHARACTER: return "CHARACTER";
+		case CHOICE: return "CHOICE";
+		case CLASS: return "CLASS";
+		case COMPONENT: return "COMPONENT";
+		case COMPONENTS: return "COMPONENTS";
+		case CONSTRAINED: return "CONSTRAINED";
+		case DEFAULT: return "DEFAULT";
+		case DEFINED: return "DEFINED";
+		case DEFINITIONS: return "DEFINITIONS";
+		case EMBEDDED: return "EMBEDDED";
+		case END: return "END";
+		case ENUMERATED: return "ENUMERATED";
+		case EXCEPT: return "EXCEPT";
+		case EXPLICIT: return "EXPLICIT";
+		case EXPORTS: return "EXPORTS";
+		case EXTERNAL: return "EXTERNAL";
+		case FALSE_t: return "FALSE_t";
+		case FROM: return "FROM";
+		case GeneralString: return "GeneralString";
+		case GraphicString: return "GraphicString";
+		case IA5String : return "IA5String";
+		case TYPE_IDENTIFIER: return "TYPE_IDENTIFIER";
+		case IDENTIFIER_t: return "IDENTIFIER_t";
+		case IMPLICIT: return "IMPLICIT";
+		case IMPORTS: return "IMPORTS";
+		case INCLUDES: return "INCLUDES";
+		case INSTANCE: return "INSTANCE";
+		case INTEGER_t: return "INTEGER_t";
+		case INTERSECTION: return "INTERSECTION";
+		case ISO646String: return "ISO646String";
+		case MACRO: return "MACRO";
+		case MAX: return "MAX";
+		case MIN : return "MIN";
+		case MINUS_INFINITY : return "MINUS_INFINITY";
+		case NOTATION: return "NOTATION";
+		case NULL_VALUE: return "NULL_VALUE";
+		case NULL_TYPE: return "NULL_TYPE";
+		case NumericString: return "NumericString";
+		case OBJECT: return "OBJECT";
+		case OCTET: return "OCTET";
+		case OF_t: return "OF_t";
+		case OPTIONAL_t: return "OPTIONAL_t";
+		case PDV: return "PDV";
+		case PLUS_INFINITY: return "PLUS_INFINITY";
+		case PRESENT: return "PRESENT";
+		case PrintableString: return "PrintableString";
+		case PRIVATE: return "PRIVATE";
+		case REAL: return "REAL";
+		case SEQUENCE: return "SEQUENCE";
+		case SET: return "SET";
+		case SIZE_t: return "SIZE_t";
+		case STRING: return "STRING";
+		case SYNTAX: return "SYNTAX";
+		case T61String: return "T61String";
+		case TAGS: return "TAGS";
+		case TeletexString: return "TeletexString";
+		case TRUE_t: return "TRUE_t";
+		case TYPE_t: return "TYPE_t";
+		case UNION: return "UNION";
+		case UNIQUE: return "UNIQUE";
+		case UNIVERSAL: return "UNIVERSAL";
+		case UniversalString: return "UniversalString";
+		case VideotexString: return "VideotexString";
+		case VisibleString: return "VisibleString";
+		case GeneralizedTime: return "GeneralizedTime";
+		case UTCTime: return "UTCTime";
+		case VALUE: return "VALUE";
+		case WITH: return "WITH";
+		case ObjectDescriptor_t: return "ObjectDescriptor_t";
+		case WORD_t: return "WORD_t";
+		case OID_INTEGER: return "OID_INTEGER";
+	}
+	static string result = "???" + std::to_string(token) + "???";
+	return result.c_str();
+}
+
+string getPath(const string& name) {
+	string path;
+	if (!asndir.empty()) {
+		path += asndir;
+		path += DIR_SEPARATOR;
+	}
+	path += name;
+	return path;
+}
+/*
+ * $Log: main.cxx,v $
+ * Revision 1.27  2014/06/22 06:12:06  francisandre
+ * c++11 updates: replace outdated strstream by sstream.add <cstring> for strlen. fix up method resolution
+ *
+ * Revision 1.26  2011/09/06 13:47:11  arunasr
+ * Genesys fixes, includes contributions from Rodrigo Coimbra
+ *
+ * Revision 1.25  2011/08/09 18:12:43  arunasr
+ * Genesys fixes: 3.0 release candidate
+ *
+ *  /main/20 2009/10/13 15:51:27 BST arunasr
+ *     UNCTime added; compiler warnings cleanup
+ * Revision 1.23  2006/05/12 20:53:00  arunasr
+ * UTCTime, GeneralizedTime sorted
+ * Fixes for generated code (dashes in class name)
+ *
+ * Revision 1.22  2005/09/14 18:30:16  arunasr
+ * Generation of names list for Enum and BitString changed to used static member array
+ *
+ * Revision 1.21  2005/09/14 17:41:09  arunasr
+ * Parsing of ImportedType field default values as names fixed
+ *
+ * Revision 1.20  2005/09/14 17:34:58  arunasr
+ * Parsing of Enumerated and Integer field default values as names fixed
+ *
+ * Revision 1.19  2005/09/14 10:07:54  arunasr
+ * Value parsing corrected in BIT STRING context
+ * Generation of named bits corrected
+ * Operators for ENUMERATED corrected
+ *
+ * Revision 1.18  2005/09/09 11:17:10  arunasr
+ * Explicit tag in sequence type defined in-place not recognised:
+ *   reset the flattened type's tag to back default
+ *
+ * Revision 1.17  2005/05/24 10:24:37  arunasr
+ * Streams sorted
+ *
+ * Revision 1.16  2005/05/24 10:12:04  arunasr
+ * Imported original changes from SF
+ *
+ * Revision 1.20  2003/07/21 03:26:02  mangelo
+ * Fixed problem for parsing object using DefinedSyntax
+ *
+ * Revision 1.19  2003/06/20 03:49:49  mangelo
+ * Fixed the generation of the constructor for IntegerWithNamedNumber in SEQUENCE
+ *
+ * Revision 1.18  2003/04/20 03:18:41  mangelo
+ * Fixed OutputFile::Open() problem in VS.NET 2003
+ *
+ * Revision 1.17  2003/04/02 10:49:40  btrummer
+ * Reimplemented the enum names output in EnumeratedType::GenerateInfo().
+ * Now, ENUMERATED::getName() works correctly, even if the defined enums
+ * don't start with 0 or contain holes in the value assignment.
+ *
+ * Revision 1.16  2003/02/17 12:12:30  btrummer
+ * The last fix must be solved using an #ifdef.
+ * Otherwise, it won't compile on Win32/VC6.
+ *
+ * Revision 1.15  2003/02/10 14:12:51  btrummer
+ * ObjectClassDefn::GenerateCplusplus(): Added scope to const_iterator(i)
+ * to make Solaris' Forte Developer 7 C++ 5.4 happy.
+ *
+ * Revision 1.14  2003/02/10 08:52:59  btrummer
+ * Added a missing const in the BMPStringType::GenerateOperators() output.
+ *
+ * Revision 1.13  2003/01/27 12:41:29  btrummer
+ * Added comparision operators for generated ENUMERATED classes.
+ * When using g++ 3.2, no casts are necessary now,
+ * when comparing an ENUMERATED class with one of its enum values.
+ *
+ * Revision 1.12  2003/01/10 13:57:42  btrummer
+ * IntegerWithNamedNumber::getName() and setFromName(), ENUMERATED::getName(),
+ * setFromName() and names(), CHOICE::getSelectionName() and
+ * SEQUENCE::getFieldName() is now working without ASN1_HAS_IOSTREAM defined.
+ *
+ * Revision 1.11  2002/11/06 14:57:16  btrummer
+ * If the new commandline option -C is given, the generated .cxx files
+ * won't include the config.h header.
+ *
+ * Revision 1.10  2002/11/04 07:17:11  btrummer
+ * Commited angelo's fix for the forward declaration generation
+ * in TypeBase::BeginGenerateCplusplus().
+ *
+ * Revision 1.9  2002/10/31 07:36:15  btrummer
+ * Aaargh. The new typedef must be defined protected rather than private.
+ * (private is only working on g++ 2.95)
+ *
+ * Revision 1.8  2002/10/31 06:50:26  btrummer
+ * Added a "typedef Inherited::InfoType InfoType;" to all generated classes
+ * to prevent g++ compile errors, when the ASN.1 file contains tags.
+ *
+ * Revision 1.7  2002/10/03 07:12:14  btrummer
+ * Fixed ObjectClassFieldType::GenerateDecoder():
+ * if objSet.get() == NULL, true should be returned.
+ *
+ * Revision 1.6  2002/10/03 07:02:57  btrummer
+ * Bugfix in InformationObjectSetDefn::GenerateTypeConstructor():
+ * If module == NULL, objSet must be initialized to NULL.
+ *
+ * Revision 1.5  2002/09/14 01:56:32  mangelo
+ * Removed the memory leak caused by strstream::str()
+ *
+ * Revision 1.4  2002/08/20 22:35:54  mangelo
+ * Add MSVC DLL support
+ *
+ * Revision 1.3  2002/07/02 02:03:25  mangelo
+ * Remove Pwlib dependency
+ *
+ * Revision 1.2  2001/09/07 22:39:28  mangelo
+ * add Log keyword substitution
+ *
+ *
+ * 2001/07/25 Huang-Ming Huang
+ *   Added code to generate "#undef ERROR"
+ *
+ * 2001/07/18 Huang-Ming Huang
+ *   Fixed the bug of generating non-static info for SEQUENCE_OF type.
+ *
+ * 2001/07/18 Huang-Ming Huang
+ *   The includeOptionalField has been changed to take two parameter in
+ *   accordance with the ASN1 library.
+ *
+ * 2001/06/26 Huang-Ming Huang
+ *   Version 2.1 Reimplemented to minimize the generated code size.
+ *
+ * 2001/05/03 Huang-Ming Huang
+ *   Fixed the problem with my wrong interpretation to varaible constraint.
+ *
+ * March, 2001  Huang-Ming Huang
+ *   Add support for Information Object Class and generate code that follows
+ *   X/Open ASN.1/C++ interface. 
+ */

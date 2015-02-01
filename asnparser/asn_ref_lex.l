@@ -67,9 +67,12 @@ extern int LexEcho;
 extern "C" int yywrap() { return 1; }
 
 int braceCount, parenthesisCount;
-
+//#define YY_DECL int yylex(YYSTYPE * yylval_param, ParserContext* yyscanner)
 //%option reentrant bison-bridge
+#define YY_DECL int idlex(ParserContext* context)
+
 %}
+
 
 %x multiline_comment comment_line brace parenthesis square_bracket
 
@@ -320,8 +323,8 @@ int braceCount, parenthesisCount;
 ([A-Z]|([A-Z][A-Z0-9_-]*[A-Z0-9_]))  {
     yylval.sval = new std::string(yytext);
 	int result;
-	if (Module)
-	  if ((result = Module->GetIdentifierType(yytext)) == OBJECTCLASSREFERENCE)
+	if (context->Module)
+	  if ((result = context->Module->GetIdentifierType(yytext)) == OBJECTCLASSREFERENCE)
 	     return OBJECTCLASSREFERENCE;
 	return WOULDBE_OBJECTCLASSREFERENCE;
 }

@@ -34,58 +34,6 @@
  * Contributors: 
  *    Arunas Ruksnaitis <arunas.ruksnaitis@genesyslab.com>
  *    Rustam Mirzaev <rustam.mirzaev@genesyslab.com>
- *
- * $Log: main.h,v $
- * Revision 1.5  2011/08/09 18:12:43  arunasr
- * Genesys fixes: 3.0 release candidate
- *
- *  /main/12 2009/10/13 15:51:28 BST arunasr
- *     UNCTime added; compiler warnings cleanup
- * Revision 1.13  2006/05/12 20:53:28  arunasr
- * UTCTime sorted
- *
- * Revision 1.12  2005/09/14 17:34:58  arunasr
- * Parsing of Enumerated and Integer field default values as names fixed
- *
- * Revision 1.11  2005/09/14 10:05:12  arunasr
- * Value parsing corrected in BIT STRING context
- * Generation of named bits corrected
- *
- * Revision 1.10  2005/05/24 10:12:04  arunasr
- * Imported original changes from SF
- *
- * Revision 1.3.2.1  2005/05/23 14:57:55  arunasr
- * Exported object set code to be generated if exported,
- * even if not used in the current module
- * "using" directive should be generated for an imported object set
- *
- * Flattening of CHOICE corrected
- *
- * Portable code generation
- *
- * Quick and dirty fix for fields that have default values:
- *   code generated as for optional fields
- *
- * Fixes for ABSTRACT-SYNTAX
- *
- * Handling of tag modes (Explicit) fixed
- *
- * Got rid of .inl files
- *
- * Revision 1.3  2002/07/02 02:03:26  mangelo
- * Remove Pwlib dependency
- *
- * Revision 1.2  2001/09/07 22:39:17  mangelo
- * add Log keyword substitution
- *
- *
- * May 3, 2001 Huang-Ming Huang
- *   Fixed the problem with my wrong interpretation to varaible constraint.
- *
- * March, 2001 Huang-Ming Huang
- *            Add support for Information Object Class and generate code that follows
- *            X/Open ASN.1/C++ interface.
- *
  */
 
 #ifndef _MAIN_H
@@ -93,6 +41,7 @@
 
 #if defined(_MSC_VER) && (_MSC_VER <=1200)
 #pragma warning(disable:4786)
+#pragma warning(disable:4127)
 #endif
 
 #include <stdio.h>
@@ -115,26 +64,20 @@ using std::auto_ptr;
 using std::stack;
 using boost::shared_ptr;
 
-#define MULTI_PARSER 1
+#define REENTRANT_PARSER 1
 
 extern unsigned lineNumber;
 extern string  fileName;
 
-#ifdef MULTI_PARSER
-extern FILE * yyin;
+#ifdef REENTRANT_PARSER
+#else
 extern FILE * idin;
-extern int yyparse();
 extern int idparse();
-void yyerror(const char* str);
 void iderror(const char* str);
-
-#elif REENTRANT_PARSER
-struct yyscan_t {
-	int i;
-};
-extern yyparse(yyscan_t *scanner);
-extern yylex(YYSTYPE *yylval_param, yyscan_t* yyscanner);
 #endif
+#define FALSE 0
+#define TRUE  1
+
 
 /////////////////////////////////////////
 //
@@ -192,14 +135,14 @@ inline ostream& operator << (ostream& os, const Printable& obj)
 }
 
 //PLIST(NamedNumberList, NamedNumber);
-typedef boost::shared_ptr<NamedNumber> NamedNumberPtr;
+typedef shared_ptr<NamedNumber> NamedNumberPtr;
 typedef list<NamedNumberPtr> NamedNumberList;
 
 
 // Types
 
 class TypeBase;
-typedef boost::shared_ptr<TypeBase> TypePtr;
+typedef shared_ptr<TypeBase> TypePtr;
 typedef vector<TypePtr> TypesVector;
 
 class Tag : public Printable
@@ -273,8 +216,8 @@ class SizeConstraintElement;
 class FromConstraintElement;
 class SubTypeConstraintElement;
 
-typedef boost::shared_ptr<ValueSet> ValueSetPtr;
-typedef boost::shared_ptr<Constraint> ConstraintPtr;
+typedef shared_ptr<ValueSet> ValueSetPtr;
+typedef shared_ptr<Constraint> ConstraintPtr;
 
 class ConstraintElementBase : public Printable
 {
@@ -282,7 +225,7 @@ public:
   ConstraintElementBase();
   ~ConstraintElementBase();
 
-  void SetExclusions(boost::shared_ptr<ConstraintElementBase> excl) { exclusions = excl; }
+  void SetExclusions(shared_ptr<ConstraintElementBase> excl) { exclusions = excl; }
 
   virtual void GenerateCplusplus(const string & fn, ostream & hdr, ostream & cxx, ostream & inl) const;
   virtual void GetConstraint(string& ) const {}
@@ -305,10 +248,10 @@ public:
   virtual void PrintOn(ostream&) {}
 
 protected:
-  boost::shared_ptr<ConstraintElementBase> exclusions;
+  shared_ptr<ConstraintElementBase> exclusions;
 };
 
-typedef boost::shared_ptr<ConstraintElementBase> ConstraintElementPtr;
+typedef shared_ptr<ConstraintElementBase> ConstraintElementPtr;
 typedef vector<ConstraintElementPtr> ConstraintElementVector;
 
 class Constraint : public Printable
@@ -357,7 +300,7 @@ protected:
   ConstraintElementVector extensions;
 };
 
-typedef boost::shared_ptr<Constraint> ConstraintPtr;
+typedef shared_ptr<Constraint> ConstraintPtr;
 typedef vector<ConstraintPtr> ConstraintList;
 
 class ConstrainAllConstraintElement : public ConstraintElementBase
@@ -402,7 +345,7 @@ protected:
 
 
 class ValueBase;
-typedef boost::shared_ptr<ValueBase> ValuePtr;
+typedef shared_ptr<ValueBase> ValuePtr;
 
 class SingleValueConstraintElement : public ConstraintElementBase
 {
@@ -535,9 +478,9 @@ protected:
 };
 
 class ActualParameter;
-typedef boost::shared_ptr<ActualParameter> ActualParameterPtr;
+typedef shared_ptr<ActualParameter> ActualParameterPtr;
 typedef vector<ActualParameterPtr> ActualParameterList;
-typedef boost::shared_ptr<ActualParameterList> ActualParameterListPtr;
+typedef shared_ptr<ActualParameterList> ActualParameterListPtr;
 
 class UserDefinedConstraintElement : public ConstraintElementBase
 {
@@ -551,18 +494,18 @@ protected:
 };
 
 class DefinedObjectSet;
-typedef boost::shared_ptr<DefinedObjectSet> DefinedObjectSetPtr;
+typedef shared_ptr<DefinedObjectSet> DefinedObjectSetPtr;
 class TableConstraint
 {
 public:
-  TableConstraint(boost::shared_ptr<DefinedObjectSet> objSet,
+  TableConstraint(shared_ptr<DefinedObjectSet> objSet,
       auto_ptr<StringList> atNotations = auto_ptr<StringList>());
   ~TableConstraint();
   bool ReferenceType(const TypeBase& type);
   string GetObjectSetIdentifier() const;
   const StringList* GetAtNotations() const { return atNotations.get();}
 private:
-  boost::shared_ptr<DefinedObjectSet> objSet;
+  shared_ptr<DefinedObjectSet> objSet;
   auto_ptr<StringList> atNotations;
 };
 
@@ -601,7 +544,7 @@ protected:
 };
 
 class DefinedObjectClass;
-typedef boost::shared_ptr<DefinedObjectClass> DefinedObjectClassPtr;
+typedef shared_ptr<DefinedObjectClass> DefinedObjectClassPtr;
 class ObjectParameter : public Parameter
 {
 public:
@@ -617,7 +560,7 @@ protected:
   DefinedObjectClassPtr governor;
 };
 
-typedef boost::shared_ptr<Parameter> ParameterPtr;
+typedef shared_ptr<Parameter> ParameterPtr;
 typedef vector<ParameterPtr> ParameterListRep;
 
 class ParameterList : public Printable
@@ -629,13 +572,13 @@ public:
   Parameter* GetParameter(const char* identifier);
   void GenerateCplusplus(string& templatePrefix, string& classNameString);
   void PrintOn(ostream& strm) const;
-  boost::shared_ptr<ParameterList> GetReferencedParameters(const TypeBase& type) const;
+  shared_ptr<ParameterList> GetReferencedParameters(const TypeBase& type) const;
   ActualParameterListPtr MakeActualParameters() const;
   void swap(ParameterList& other) { rep.swap(other.rep); }
   ParameterListRep rep;
 };
 
-typedef boost::shared_ptr<ParameterList> ParameterListPtr;
+typedef shared_ptr<ParameterList> ParameterListPtr;
 
 ////////////////////////////////////////////
 class ModuleDefinition;
@@ -846,7 +789,7 @@ public:
   BooleanType();
   virtual void GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType);
   virtual const char * GetAncestorClass() const;
-  virtual string GetPrimitiveType(const string& myName) const { return "bool";}
+  virtual string GetPrimitiveType(const string& ) const { return "bool";}
   virtual void GenerateConstructors(ostream & hdr, ostream & cxx, ostream & inl);
 };
 
@@ -921,7 +864,7 @@ class RealType : public TypeBase
 public:
   RealType();
   virtual const char * GetAncestorClass() const;
-  virtual string GetPrimitiveType(const string& myName) const { return "double";}
+  virtual string GetPrimitiveType(const string& ) const { return "double";}
   virtual void GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType);
   virtual void GenerateConstructors(ostream & hdr, ostream & cxx, ostream & inl);
 };
@@ -954,7 +897,7 @@ public:
   OctetStringType();
   virtual const char * GetAncestorClass() const;
   string GetTypeName() const;
-  virtual string GetPrimitiveType(const string& myName) const { return "const ASN1_STD vector<char>&";}
+  virtual string GetPrimitiveType(const string& ) const { return "const ASN1_STD vector<char>&";}
   virtual const char* GetConstrainedType() const;
   virtual void GenerateConstructors(ostream & hdr, ostream & cxx, ostream & inl);
   virtual void GenerateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
@@ -1102,7 +1045,7 @@ class StringTypeBase : public TypeBase
 public:
   StringTypeBase(int tag);
   virtual string GetTypeName() const;
-  virtual string GetPrimitiveType(const string& myName) const { return "const ASN1_STD string&";}
+  virtual string GetPrimitiveType(const string& ) const { return "const ASN1_STD string&";}
   virtual void GenerateConstructors(ostream & hdr, ostream & cxx, ostream & inl);
   virtual void GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType);
   virtual bool NeedGenInfo() const;
@@ -1120,7 +1063,7 @@ class BMPStringType : public StringTypeBase
 public:
   BMPStringType();
   virtual const char * GetAncestorClass() const;
-  virtual string GetPrimitiveType(const string& myName) const { return "const ASN1_STD wstring&";}
+  virtual string GetPrimitiveType(const string& ) const { return "const ASN1_STD wstring&";}
   virtual void GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType);
   virtual void GenerateConstructors(ostream & hdr, ostream & cxx, ostream & inl);
   virtual void GenerateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
@@ -1264,7 +1207,7 @@ public:
 
 
 class ObjectClassBase;
-typedef boost::shared_ptr<ObjectClassBase> ObjectClassBasePtr;
+typedef shared_ptr<ObjectClassBase> ObjectClassBasePtr;
 
 class ObjectClassFieldType : public TypeBase
 {
@@ -1278,14 +1221,14 @@ public:
   TypeBase* GetFieldType() ;
   const TypeBase* GetFieldType() const ;
   virtual string GetTypeName() const;
-  void AddTableConstraint(boost::shared_ptr<TableConstraint> constraint);
+  void AddTableConstraint(shared_ptr<TableConstraint> constraint);
   void GenerateDecoder(ostream&);
   virtual void GenerateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
   string GetConstrainedTypeName() const;
 protected:
   ObjectClassBasePtr asnObjectClass;
   string asnObjectClassField;
-  boost::shared_ptr<TableConstraint> tableConstraint;
+  shared_ptr<TableConstraint> tableConstraint;
 };
 
 
@@ -1318,7 +1261,7 @@ private:
 
 
 class InformationObject;
-typedef boost::shared_ptr<InformationObject> InformationObjectPtr;
+typedef shared_ptr<InformationObject> InformationObjectPtr;
 
 
 class TypeFromObject : public TypeBase
@@ -1409,7 +1352,7 @@ public:
   virtual void GenerateConst(ostream & hdr, ostream & cxx) const;
 
   #if (__SIZEOF_LONG__ != 8)
-  operator boost::int64_t() const { return value; }
+  operator int64_t() const { return value; }
   #endif
   operator long() const { return (long)value; }
 
@@ -1595,7 +1538,7 @@ protected:
   ValueSetPtr rep;
 };
 
-typedef boost::shared_ptr<ObjectSetConstraintElement> ObjectSetConstraintElementPtr;
+typedef shared_ptr<ObjectSetConstraintElement> ObjectSetConstraintElementPtr;
 
 class ValueSetFromObjects : public ValueSet
 {
@@ -1621,12 +1564,12 @@ protected:
 // object class
 class FieldSetting;
 
-typedef boost::shared_ptr<FieldSetting> FieldSettingPtr;
+typedef shared_ptr<FieldSetting> FieldSettingPtr;
 typedef vector<FieldSettingPtr> FieldSettingList;
 
 class FieldSpec;
 //PLIST(FieldSpecsList, FieldSpec);
-typedef boost::shared_ptr<FieldSpec> FieldSpecPtr;
+typedef shared_ptr<FieldSpec> FieldSpecPtr;
 typedef vector<FieldSpecPtr> FieldSpecsList;
 
 class FieldSpec : public Printable
@@ -1702,7 +1645,8 @@ public:
 protected:
   TypePtr type;
 };
-
+class FixedTypeValueFieldSpec;
+typedef shared_ptr<FixedTypeValueFieldSpec> FixedTypeValueFieldSpecPtr;
 class FixedTypeValueFieldSpec : public FieldSpec
 {
 public:
@@ -1806,7 +1750,7 @@ protected:
 };
 
 class DefinedObjectClass;
-typedef boost::shared_ptr<DefinedObjectClass> DefinedObjectClassPtr;
+typedef shared_ptr<DefinedObjectClass> DefinedObjectClassPtr;
 class ObjectFieldSpec : public FieldSpec
 {
 public:
@@ -1924,7 +1868,7 @@ private:
   FieldSpec* field;
 };
 
-typedef boost::shared_ptr<TokenOrGroupSpec> TokenOrGroupSpecPtr;
+typedef shared_ptr<TokenOrGroupSpec> TokenOrGroupSpecPtr;
 typedef vector<TokenOrGroupSpecPtr> TokenOrGroupSpecList;
 
 class TokenGroup : public TokenOrGroupSpec
@@ -1952,7 +1896,7 @@ private:
   size_t cursor;
 };
 
-typedef boost::shared_ptr<TokenGroup> TokenGroupPtr;
+typedef shared_ptr<TokenGroup> TokenGroupPtr;
 
 class DefaultSyntaxBuilder
 {
@@ -1996,6 +1940,8 @@ protected:
   string name;
 };
 
+class ObjectClassDefn;
+typedef shared_ptr<ObjectClassDefn> ObjectClassDefnPtr;
 typedef vector<ObjectClassBasePtr> ObjectClassesList;
 class ObjectClassDefn : public ObjectClassBase
 {
@@ -2062,16 +2008,19 @@ protected:
   mutable ObjectClassBase* reference;
 };
 
+class ModuleDefinition;
+typedef shared_ptr<ModuleDefinition> ModuleDefinitionPtr;
+typedef vector<ModuleDefinitionPtr> ModuleList;
+
 class ImportedObjectClass : public DefinedObjectClass
 {
 public:
-  ImportedObjectClass(const string& modName,
-    const string& nam,
-    ObjectClassBase* ref)
-    : DefinedObjectClass(nam, ref), moduleName(modName){}
+  ImportedObjectClass(const string& modName, const string& nam,  ObjectClassBase* ref);
   const string& GetModuleName() const { return moduleName;}
+  const ModuleDefinitionPtr& GetModule() const { return module;}
 private:
-  string moduleName;
+  string				moduleName;
+  ModuleDefinitionPtr	module;
 };
 
 class Setting : public Printable
@@ -2080,7 +2029,7 @@ public:
 
   enum
   {
-    has_type_setting = 0x01,
+	  has_type_setting = 0x01,
       has_value_setting = 0x02,
       has_valueSet_setting = 0x04,
       has_object_setting = 0x08,
@@ -2143,7 +2092,7 @@ protected:
 };
 
 class InformationObject;
-typedef boost::shared_ptr<InformationObject> InformationObjectPtr;
+typedef shared_ptr<InformationObject> InformationObjectPtr;
 class ObjectSetting : public Setting
 {
 public:
@@ -2394,7 +2343,7 @@ private:
   string moduleName;
 };
 
-typedef boost::shared_ptr<InformationObjectSet> InformationObjectSetPtr;
+typedef shared_ptr<InformationObjectSet> InformationObjectSetPtr;
 typedef vector<InformationObjectSetPtr> InformationObjectSetList;
 class ObjectSetConstraintElement : public ConstraintElementBase
 {
@@ -2643,7 +2592,7 @@ protected:
 class ActualObjectSetParameter : public ActualParameter
 {
 public:
-  ActualObjectSetParameter(boost::shared_ptr<ObjectSetConstraintElement> objectSet);
+  ActualObjectSetParameter(shared_ptr<ObjectSetConstraintElement> objectSet);
   ~ActualObjectSetParameter();
   bool GenerateTemplateArgument(string& name) const;
   virtual bool UseType(const TypeBase & ) const ;
@@ -2652,12 +2601,12 @@ public:
   void PrintOn(ostream & strm) const;
   virtual bool IsTemplateArgument() const { return true;}
 protected:
-  boost::shared_ptr<ObjectSetConstraintElement> param;
+  shared_ptr<ObjectSetConstraintElement> param;
 };
 
 
 
-typedef boost::shared_ptr<Symbol> SymbolPtr;
+typedef shared_ptr<Symbol> SymbolPtr;
 typedef vector<SymbolPtr> SymbolList;
 
 class ImportModule : public Printable
@@ -2686,10 +2635,8 @@ protected:
   string   filename;
 };
 
-typedef boost::shared_ptr<ImportModule> ImportModulePtr;
+typedef shared_ptr<ImportModule> ImportModulePtr;
 typedef vector<ImportModulePtr> ImportsList;
-typedef boost::shared_ptr<ModuleDefinition> ModuleDefinitionPtr;
-typedef vector<ModuleDefinitionPtr> ModuleList;
 
 
 typedef map<string, TypePtr> TypeMap;
@@ -2698,7 +2645,7 @@ class ModuleDefinition : public Printable
 {
 public:
   ModuleDefinition(const string& name);
-  ModuleDefinition(const string& name, Tag::Mode defTagMode);
+  ModuleDefinition(const string& name, const string& filePath, Tag::Mode defTagMode);
   ~ModuleDefinition();
 
   void PrintOn(ostream &) const;
@@ -2762,58 +2709,149 @@ public:
   void RemoveReferences(bool verbose);
   ImportModule* FindImportedModule(const string& theModuleName);
 
+  const string& GetModulePath() const { return modulePath; }
   void dump() const;
 
 private:
   ModuleDefinition& operator = (const ModuleDefinition&);
   typedef map<string, string> PStringMap;
-  const string            moduleName;
-  string                  classNamePrefix;
-  bool                     separateClassFiles;
-  StringList              definitiveId;
-  Tag::Mode                defaultTagMode;
-  SymbolList               exports;
-  bool                     exportAll;
-  ImportsList              imports;
-  PStringMap               importNames;
-  TypesVector              types;
-  TypeMap                  typeMap;
-  ValuesList               values;
-//    MibList         mibs;
-  int                      indentLevel;
-  bool                     usingInlines;
-  ObjectClassesList        objectClasses;
-  InformationObjectList    informationObjects;
-  InformationObjectSetList informationObjectSets;
-  map<string,int>    identifiers;
-  string              shortModuleName;
-  string              cModuleName;
-  string            path;
-  ModuleList             subModules;
-  vector<string>     removeList;
+  const string				moduleName;
+  const string				modulePath;
+  string					classNamePrefix;
+  bool						separateClassFiles;
+  StringList				definitiveId;
+  Tag::Mode					defaultTagMode;
+  SymbolList				exports;
+  bool						exportAll;
+  ImportsList				imports;
+  PStringMap				importNames;
+  TypesVector				types;
+  TypeMap					typeMap;
+  ValuesList				values;
+  int						indentLevel;
+  bool						usingInlines;
+  ObjectClassesList			objectClasses;
+  InformationObjectList		informationObjects;
+  InformationObjectSetList	informationObjectSets;
+  map<string,int>			identifiers;
+  string					shortModuleName;
+  string					cModuleName;
+  string					generatedPath;
+  ModuleList				subModules;
+  vector<string>			removeList;
 };
 
 template <class T>
-boost::shared_ptr<T> FindWithName(const vector<boost::shared_ptr<T> >& cont, const string& name)
+shared_ptr<T> FindWithName(const vector<shared_ptr<T> >& cont, const string& name)
 {
-  typedef vector<boost::shared_ptr<T> > Cont;
+  typedef vector<shared_ptr<T> > Cont;
 
   typename Cont::const_iterator itr = cont.begin(), last = cont.end();
   for (; itr != last; ++itr)
     if ((*itr)->GetName() == name)
       return *itr;
-    return boost::shared_ptr<T>();
+    return shared_ptr<T>();
 
 }
+typedef stack<ObjectClassBase*> ClassStack;
 
-extern ModuleDefinition * Module;
 extern ModuleList Modules;
 
-typedef stack<ObjectClassBase*> ClassStack;
-extern ClassStack *classStack;
+#ifndef REENTRANT_PARSER
+extern ModuleDefinition * Module;
 extern ParameterList * DummyParameters;
+extern ClassStack *classStack;
+#endif
+
 
 ModuleDefinition* FindModule(const char* name);
 ModuleDefinition* CreateModule(const char* name);
 void AddRemoveItem(const char* item);
+
+class UsefulModuleDef;
+class ModuleDefinition;
+
+class ParserContext {
+public:
+	ParserContext();
+	ParserContext(FILE* file);
+	~ParserContext();
+
+	FILE*				file			= NULL;
+	ModuleDefinition *	Module			= NULL;
+	ClassStack *		classStack		= NULL;
+	ParameterList *		DummyParameters = NULL;
+	UsefulModuleDef *	UsefulModule	= NULL;
+	TypePtr				ValueTypeContext;
+	vector<string>		RemoveList;
+	int					IdentifierTokenContext;// = IDENTIFIER; chicken/egg problem 
+	int					ReferenceTokenContext /* = MODULEREFERENCE */; 
+	int					NullTokenContext;// = NULL_TYPE; chicken/egg problem
+	int					BraceTokenContext				= '{';
+	int					InOIDContext					= FALSE;
+	int					InMacroContext					= FALSE;
+	int					InMIBContext					= FALSE;
+	int					InObjectSetContext				= 0;
+	int					InWithSyntaxContext				= FALSE;
+	int					HasObjectTypeMacro				= FALSE;
+const ObjectClassBase * InformationFromObjectContext	= NULL;
+	int					ParsingConstructedType			= FALSE;
+};
+struct Environment {
+	int i;
+};
 #endif
+/*
+ *
+ * $Log: main.h,v $
+ * Revision 1.5  2011/08/09 18:12:43  arunasr
+ * Genesys fixes: 3.0 release candidate
+ *
+ *  /main/12 2009/10/13 15:51:28 BST arunasr
+ *     UNCTime added; compiler warnings cleanup
+ * Revision 1.13  2006/05/12 20:53:28  arunasr
+ * UTCTime sorted
+ *
+ * Revision 1.12  2005/09/14 17:34:58  arunasr
+ * Parsing of Enumerated and Integer field default values as names fixed
+ *
+ * Revision 1.11  2005/09/14 10:05:12  arunasr
+ * Value parsing corrected in BIT STRING context
+ * Generation of named bits corrected
+ *
+ * Revision 1.10  2005/05/24 10:12:04  arunasr
+ * Imported original changes from SF
+ *
+ * Revision 1.3.2.1  2005/05/23 14:57:55  arunasr
+ * Exported object set code to be generated if exported,
+ * even if not used in the current module
+ * "using" directive should be generated for an imported object set
+ *
+ * Flattening of CHOICE corrected
+ *
+ * Portable code generation
+ *
+ * Quick and dirty fix for fields that have default values:
+ *   code generated as for optional fields
+ *
+ * Fixes for ABSTRACT-SYNTAX
+ *
+ * Handling of tag modes (Explicit) fixed
+ *
+ * Got rid of .inl files
+ *
+ * Revision 1.3  2002/07/02 02:03:26  mangelo
+ * Remove Pwlib dependency
+ *
+ * Revision 1.2  2001/09/07 22:39:17  mangelo
+ * add Log keyword substitution
+ *
+ *
+ * May 3, 2001 Huang-Ming Huang
+ *   Fixed the problem with my wrong interpretation to varaible constraint.
+ *
+ * March, 2001 Huang-Ming Huang
+ *            Add support for Information Object Class and generate code that follows
+ *            X/Open ASN.1/C++ interface.
+ *
+ */
