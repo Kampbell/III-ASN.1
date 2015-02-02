@@ -100,8 +100,8 @@ static std::string * ConcatNames(std::string * s1, char c, std::string * s2)
 #define YYPRINT(a,b,c)
 
 #ifdef REENTRANT_PARSER
-extern int yylex(YYSTYPE* yylval_param, ParserContext* context, Environment* env);
-extern int yyerror(ParserContext* context, Environment* env, const char* msg);
+extern int yylex(YYSTYPE* yylval_param, YYLTYPE* yyloc, yyscan_t scanner, ParserContext* context);
+extern int yyerror(YYLTYPE* yyloc, yyscan_t scanner, ParserContext* context, const char* msg);
 #else 
 extern int yyparse();
 void yyerror(const char* str);
@@ -116,9 +116,11 @@ extern int iddebug;
 
 %}
 %define api.pure	full
+%lex-param			{yyscan_t scanner}
 %lex-param			{ParserContext* context}
+%parse-param		{yyscan_t scanner}
 %parse-param		{ParserContext* context}
-%param				{Environment *env}
+%locations
 
 %token MODULEREFERENCE
 %token TYPEREFERENCE
@@ -502,7 +504,6 @@ extern int iddebug;
 %printer { if ($$ != NULL) fprintf (yyoutput, "'%s'", $$->c_str()); } <sval>
 %printer { if ($$ != NULL) fprintf (yyoutput, "'%s'", $$->GetName().c_str()); } <tval> <vval> <objt> <para> <symb> <fspc> <objc> <ocft>
 
-
 %%
 
 ModuleDefinitionList
@@ -521,8 +522,8 @@ ModuleDefinition
 		}
 		ModuleBody END
 		{
-			context->Module->ResolveObjectClassReferences();
-			// FIXME context->Module = NULL;
+			//context->Module->ResolveObjectClassReferences();
+			context->Module = NULL;
 		}
 ;
 DefinitiveIdentifier
