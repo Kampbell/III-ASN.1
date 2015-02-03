@@ -458,43 +458,43 @@ extern int iddebug;
 %type <slst> AtNotations
 
 %union {
-  boost::int64_t       ival;
-  std::string	        * sval;
-  StringList			* slst;
-  TypeBase				* tval;
-  TypePtr				* tptr;
-  TypesVector			* tlst;
-  ValueBase				* vval;
-  ValuesList            * vlst;
-  NamedNumber	        * nval;
-  NamedNumberList       * nlst;
-  Constraint            * cons;
-  ConstraintElementVector * elst;
-  ConstraintElementBase * elmt;
-  FieldSpec             * fspc;
-  FieldSpecsList		* flst;
-  ObjectClassBase		* objc;
-  DefinedObjectClass    * dobj;
-  TokenGroup            * tgrp;
-  TokenOrGroupSpec      * togs;
-  Setting				* sett;
-  InformationObject     * objt;
-  InformationObjectSet  * objs;
-  FieldSettingList      * fldl;
-  DefaultSyntaxBuilder  * bldr;
-  DefinedSyntaxToken    * tken;
-  ValueSet              * vset;
+  boost::int64_t			ival;
+  std::string				* sval;
+  StringList				* slst;
+  TypeBase					* tval;
+  TypePtr					* tptr;
+  TypesVector				* tlst;
+  ValueBase					* vval;
+  ValuesList				* vlst;
+  NamedNumber				* nval;
+  NamedNumberList			* nlst;
+  Constraint				* cons;
+  ConstraintElementVector	* elst;
+  ConstraintElementBase		* elmt;
+  FieldSpec					* fspc;
+  FieldSpecsList			* flst;
+  ObjectClassBase			* objc;
+  DefinedObjectClass		* dobj;
+  TokenGroup				* tgrp;
+  TokenOrGroupSpec			* togs;
+  Setting					* sett;
+  InformationObject			* objt;
+  InformationObjectSet		* objs;
+  FieldSettingList			* fldl;
+  DefaultSyntaxBuilder		* bldr;
+  DefinedSyntaxToken		* tken;
+  ValueSet					* vset;
   ObjectSetConstraintElement* osce;
-  Symbol                * symb;
-  SymbolList            * syml;
-  Parameter             * para;
-  ParameterList         * plst;
-  ActualParameter       * apar;
-  ActualParameterList   * aplt;
-  TableConstraint       * tcons;
-  ObjectClassFieldType  * ocft;
-  DefinedObjectSet      * dos;
-  ModuleDefinition*		modd;
+  Symbol					* symb;
+  SymbolList				* syml;
+  Parameter					* para;
+  ParameterList				* plst;
+  ActualParameter			* apar;
+  ActualParameterList		* aplt;
+  TableConstraint			* tcons;
+  ObjectClassFieldType		* ocft;
+  DefinedObjectSet			* dos;
+  ModuleDefinition			* modd;
 
   struct {
     Tag::Type tagClass;
@@ -755,6 +755,7 @@ ValueSetTypeAssignment
       }
     ASSIGNMENT ValueSet
       {
+	$2->EndParseValueSet();
 	context->Module->AddType($5->MakeValueSetType());
 	delete $5;
       }
@@ -2369,34 +2370,34 @@ ObjectDefn
 DefaultSyntax
   : OBJECT_BRACE FieldSettings '}'
       {
-    $$ = $2;
-    if (context->InObjectSetContext)
-	  context->classStack->top()->PreParseObject();
+		$$ = $2;
+		if (context->InObjectSetContext)
+		  context->classStack->top()->PreParseObject();
 	  }
   ;
 
 FieldSettings
   : FieldSettings ',' PrimitiveFieldName
       {
-	context->classStack->top()->GetField(*$3)->BeginParseSetting($1);
+		context->classStack->top()->GetField(*$3)->BeginParseSetting($1);
 	  }
 	Setting
 	  {
-	$$ = $1;
-	context->classStack->top()->GetField(*$3)->EndParseSetting();
-    $1->push_back(FieldSettingPtr(new FieldSetting(*$3, std::auto_ptr<Setting>($5))));
-    delete $3;
+		$$ = $1;
+		context->classStack->top()->GetField(*$3)->EndParseSetting();
+		$1->push_back(FieldSettingPtr(new FieldSetting(*$3, std::auto_ptr<Setting>($5))));
+		delete $3;
 	  }
   | PrimitiveFieldName
 	  {
-	context->classStack->top()->GetField(*$1)->BeginParseSetting(NULL);
+		context->classStack->top()->GetField(*$1)->BeginParseSetting(NULL);
 	  }
 	Setting
 	  {
-	$$ = new FieldSettingList;
-	context->classStack->top()->GetField(*$1)->EndParseSetting();
-	$$->push_back(FieldSettingPtr(new FieldSetting(*$1, std::auto_ptr<Setting>($3))));
-	delete $1;
+		$$ = new FieldSettingList;
+		context->classStack->top()->GetField(*$1)->EndParseSetting();
+		$$->push_back(FieldSettingPtr(new FieldSetting(*$1, std::auto_ptr<Setting>($3))));
+		delete $1;
 	  }
   ;
 
@@ -2404,10 +2405,10 @@ FieldSettings
 DefinedSyntax
   : OBJECT_BRACE DefinedSyntaxTokens '}'
 	  {
-	$$ = $2;
-	$$->ResetTokenGroup();
-    if (context->InObjectSetContext)
-	  context->classStack->top()->PreParseObject();
+		$$ = $2;
+		$$->ResetTokenGroup();
+		if (context->InObjectSetContext)
+		  context->classStack->top()->PreParseObject();
 	  }
   ;
 
@@ -2418,9 +2419,9 @@ DefinedSyntaxTokens
 		$$->AddToken($2);
 	}
   | /* empty */
-  {
+	{
 		$$ = new DefaultSyntaxBuilder(context->classStack->top()->GetWithSyntax());
-  }
+	}
   ;
 
 DefinedSyntaxToken
