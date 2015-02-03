@@ -753,3 +753,191 @@ RecurrenceRange 	::= ValueRange ;
 ExceptionSpec 		::= "!" ExceptionIdentification | empty ;
 
 ExceptionIdentification	::= SignedNumber | DefinedValue | Type ":" Value;
+
+DefinedObjectClass 			::= ExternalObjectClassReference | objectclassreference | UsefulObjectClassReference;
+
+ExternalObjectClassReference::= modulereference "." objectclassreference;
+
+UsefulObjectClassReference 	::= TYPE-IDENTIFIER | ABSTRACT-SYNTAX;
+
+ObjectClassAssignment 		::= objectclassreference "::=" ObjectClass;
+
+ObjectClass 				::= DefinedObjectClass | ObjectClassDefn | ParameterizedObjectClass;
+
+ObjectClassDefn 			::= CLASS "{" FieldSpec "," + "}" WithSyntaxSpec? ;
+
+FieldSpec 					::=
+TypeFieldSpec
+| FixedTypeValueFieldSpec
+| VariableTypeValueFieldSpec
+| FixedTypeValueSetFieldSpec
+| VariableTypeValueSetFieldSpec
+| ObjectFieldSpec
+| ObjectSetFieldSpec
+;
+
+PrimitiveFieldName 			::=
+typefieldreference
+| valuefieldreference
+| valuesetfieldreference
+| objectfieldreference
+| objectsetfieldreference
+;
+
+FieldName 					::= PrimitiveFieldName "." +;
+
+TypeFieldSpec 				::= typefieldreference TypeOptionalitySpec? ;
+
+TypeOptionalitySpec 		::= OPTIONAL | DEFAULT Type;
+
+FixedTypeValueFieldSpec 	::= valuefieldreference Type UNIQUE ? ValueOptionalitySpec ? ;
+
+ValueOptionalitySpec 		::= OPTIONAL | DEFAULT Value;
+
+VariableTypeValueFieldSpec 	::= valuefieldreference FieldName ValueOptionalitySpec ? ;
+
+FixedTypeValueSetFieldSpec 	::= valuesetfieldreference Type ValueSetOptionalitySpec ? ;
+
+ValueSetOptionalitySpec 	::= OPTIONAL | DEFAULT ValueSet;
+
+VariableTypeValueSetFieldSpec 	::= valuesetfieldreference FieldName ValueSetOptionalitySpec? ;
+
+ObjectFieldSpec 			::= objectfieldreference DefinedObjectClass ObjectOptionalitySpec? ;
+
+ObjectOptionalitySpec 		::= OPTIONAL | DEFAULT Object;
+
+ObjectSetFieldSpec 			::= objectsetfieldreference DefinedObjectClass ObjectSetOptionalitySpec ? ;
+
+ObjectSetOptionalitySpec 	::= OPTIONAL | DEFAULT ObjectSet;
+
+WithSyntaxSpec 				::= WITH SYNTAX SyntaxList;
+
+SyntaxList 					::= "{" TokenOrGroupSpec empty + "}";
+
+TokenOrGroupSpec 			::= RequiredToken | OptionalGroup;
+
+OptionalGroup 				::= "[" TokenOrGroupSpec empty + "]";
+
+RequiredToken 				::= Literal | PrimitiveFieldName;
+
+Literal 					::= word | ",";
+
+DefinedObject 				::= ExternalObjectReference | objectreference;
+
+ExternalObjectReference 	::= modulereference "." objectreference;
+
+ObjectAssignment 			::= objectreference DefinedObjectClass "::=" Object;
+
+Object 						::= DefinedObject | ObjectDefn | ObjectFromObject | ParameterizedObject;
+
+ObjectDefn 					::= DefaultSyntax | DefinedSyntax;
+
+DefaultSyntax 				::= "{" FieldSetting "," * "}";
+
+FieldSetting 				::= PrimitiveFieldName Setting;
+
+DefinedSyntax 				::= "{" DefinedSyntaxToken empty * "}";
+
+DefinedSyntaxToken 			::= Literal | Setting;
+
+Setting 					::= Type | Value | ValueSet | Object | ObjectSet;
+
+DefinedObjectSet 			::= ExternalObjectSetReference | objectsetreference;
+
+ExternalObjectSetReference 	::= modulereference "." objectsetreference;
+
+ObjectSetAssignment 		::= objectsetreference DefinedObjectClass "::=" ObjectSet;
+
+ObjectSet 					::= "{" ObjectSetSpec "}";
+
+ObjectSetSpec 				::= RootElementSetSpec | RootElementSetSpec "," "..." | "..." | "..." "," AdditionalElementSetSpec | RootElementSetSpec "," "..." "," AdditionalElementSetSpec;
+
+ObjectSetElements 			::= Object | DefinedObjectSet | ObjectSetFromObjects | ParameterizedObjectSet;
+
+ObjectClassFieldType 		::= DefinedObjectClass "." FieldName;
+
+ObjectClassFieldValue 		::= OpenTypeFieldVal | FixedTypeFieldVal;
+
+OpenTypeFieldVal 			::= Type ":" Value;
+
+FixedTypeFieldVal 			::= BuiltinValue | ReferencedValue;
+
+XMLObjectClassFieldValue 	::= XMLOpenTypeFieldVal | XMLFixedTypeFieldVal;
+
+XMLOpenTypeFieldVal 		::= XMLTypedValue | xmlhstring;
+
+XMLFixedTypeFieldVal 		::= XMLBuiltinValue;
+
+InformationFromObjects 		::= ValueFromObject | ValueSetFromObjects | TypeFromObject | ObjectFromObject | ObjectSetFromObjects;
+
+ReferencedObjects 			::= DefinedObject | ParameterizedObject | DefinedObjectSet | ParameterizedObjectSet;
+
+ValueFromObject 			::= ReferencedObjects "." FieldName;
+
+ValueSetFromObjects 		::= ReferencedObjects "." FieldName;
+
+TypeFromObject 				::= ReferencedObjects "." FieldName;
+
+ObjectFromObject 			::= ReferencedObjects "." FieldName;
+
+ObjectSetFromObjects 		::= ReferencedObjects "." FieldName;
+
+InstanceOfType 				::= INSTANCE OF DefinedObjectClass;
+
+InstanceOfValue 			::= Value;
+
+XMLInstanceOfValue 			::= XMLValue;
+
+ParameterizedAssignment 	::=
+ParameterizedTypeAssignment
+| ParameterizedValueAssignment
+| ParameterizedValueSetTypeAssignment
+| ParameterizedObjectClassAssignment
+| ParameterizedObjectAssignment
+| ParameterizedObjectSetAssignment;
+
+ParameterizedTypeAssignment 	::= typereference ParameterList "::=" Type;
+
+ParameterizedValueAssignment 	::= valuereference ParameterList Type "::=" Value;
+
+ParameterizedValueSetTypeAssignment 	::= typereference ParameterList Type "::=" ValueSet;
+
+ParameterizedObjectClassAssignment 	::= objectclassreference ParameterList "::=" ObjectClass
+
+ParameterizedObjectAssignment 	::= objectreference ParameterList DefinedObjectClass "::=" Object;
+
+ParameterizedObjectSetAssignment::= objectsetreference ParameterList DefinedObjectClass "::=" ObjectSet;
+
+ParameterList 				::= "{" Parameter "," + "}";
+
+Parameter 					::= ParamGovernor ":" DummyReference | DummyReference;
+
+ParamGovernor 				::= Governor | DummyGovernor;
+
+Governor 					::= Type | DefinedObjectClass;
+
+DummyGovernor 				::= DummyReference;
+
+DummyReference 				::= Reference;
+
+ParameterizedReference 		::= Reference | Reference "{" "}";
+
+SimpleDefinedType 			::= ExternalTypeReference | typereference;
+
+SimpleDefinedValue 			::= ExternalValueReference | valuereference;
+
+ParameterizedType 			::= SimpleDefinedType ActualParameterList;
+
+ParameterizedValue 			::= SimpleDefinedValue ActualParameterList;
+
+ParameterizedValueSetType 	::= SimpleDefinedType ActualParameterList;
+
+ParameterizedObjectClass 	::= DefinedObjectClass ActualParameterList;
+
+ParameterizedObjectSet 		::= DefinedObjectSet ActualParameterList;
+
+ParameterizedObject 		::= DefinedObject ActualParameterList;
+
+ActualParameterList 		::= "{" ActualParameter "," + "}";
+
+ActualParameter 			::= Type | Value | ValueSet | DefinedObjectClass | Object | ObjectSet;
