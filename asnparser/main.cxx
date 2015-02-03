@@ -138,12 +138,7 @@ extern int IsUpper(const char* text);
 static	stack<ParserContext*>	contexts;
 static 	vector<FILE*>			fds;
 
-ParserContext::ParserContext() {
-	IdentifierTokenContext = IDENTIFIER;
-	NullTokenContext= NULL_TYPE;
-	classStack = new ClassStack;
-	ReferenceTokenContext = MODULEREFERENCE;
-}
+
 ParserContext::ParserContext(FILE* file) : file(file) {
 	IdentifierTokenContext = IDENTIFIER;
 	NullTokenContext= NULL_TYPE;
@@ -196,6 +191,7 @@ static const char * const StandardClasses[] = {
   "ASN1::BIT_STRING",
   "ASN1::OCTET_STRING",
   "ASN1::NumericString",
+  "ASN1::T61String",
   "ASN1::PrintableString",
   "ASN1::VisibleString",
   "ASN1::GraphicString",

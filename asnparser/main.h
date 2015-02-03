@@ -2779,12 +2779,11 @@ typedef void* yyscan_t;
 
 class ParserContext {
 public:
-	ParserContext();
-	ParserContext(FILE* file);
+	ParserContext(FILE* file = NULL);
 	~ParserContext();
 
 	yyscan_t			lexer;
-	FILE*				file			= NULL;
+	FILE*				file;
 	ModuleDefinition *	Module			= NULL;
 	ClassStack *		classStack		= NULL;
 	ParameterList *		DummyParameters = NULL;
