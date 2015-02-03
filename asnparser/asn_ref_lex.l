@@ -66,13 +66,12 @@ extern int LexEcho;
 
 extern "C" int yywrap() { return 1; }
 
-int braceCount, parenthesisCount;
-//#define YY_DECL int yylex(YYSTYPE * yylval_param, ParserContext* yyscanner)
-//%option reentrant bison-bridge
+int braceCount = 0;
+int parenthesisCount = 0;
+
 #define YY_DECL int idlex(ParserContext* context)
 
 %}
-
 
 %x multiline_comment comment_line brace parenthesis square_bracket
 
