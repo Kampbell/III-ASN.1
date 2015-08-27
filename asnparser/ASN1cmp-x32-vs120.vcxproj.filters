@@ -53,6 +53,9 @@
     <ClCompile Include="csn\remote_operations_abstract_syntaxes.cxx">
       <Filter>csn</Filter>
     </ClCompile>
+    <ClCompile Include="csn\bug_001.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -91,6 +94,9 @@
     <ClInclude Include="csn\remote_operations_abstract_syntaxes.h">
       <Filter>csn</Filter>
     </ClInclude>
+    <ClInclude Include="csn\bug_001.h">
+      <Filter>csn</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="csn\iso8823_presentation.inl">
@@ -106,8 +112,11 @@
       <Filter>csn</Filter>
     </None>
     <None Include="ASN.1.bnf" />
-    <None Include="asn_grammar.out" />
     <None Include="asn_ref_grammar.out" />
+    <None Include="asn\bug-001.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn_grammar.out" />
   </ItemGroup>
   <ItemGroup>
     <Bison Include="asn_grammar.y" />

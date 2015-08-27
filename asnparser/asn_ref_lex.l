@@ -27,19 +27,6 @@
  *    Arunas Ruksnaitis <arunas.ruksnaitis@genesyslab.com>
  *    Rustam Mirzaev <rustam.mirzaev@genesyslab.com>
  *
- * $Log: asn_ref_lex.l,v $
- * Revision 1.5  2011/08/09 18:12:43  arunasr
- * Genesys fixes: 3.0 release candidate
- *
- * Revision 1.1  2002/11/05 14:07:03  arunasr
- * Initial revision
- *
- * Revision 1.3  2002/07/02 02:03:25  mangelo
- * Remove Pwlib dependency
- *
- * Revision 1.2  2001/09/07 22:37:32  mangelo
- * add Log keyword substitution
- *
  */
 
 #include "main.h"
@@ -77,7 +64,7 @@ int parenthesisCount = 0;
 
 %%
 "::="								{ return ASSIGNMENT; }
-
+"..."								{ return ELLIPSIS; }
 "ABSENT"                           { return ABSENT; }
 "ABSTRACT-SYNTAX"                  { return ABSTRACT_SYNTAX; }
 "ALL"                              { return ALL; }
@@ -323,7 +310,7 @@ int parenthesisCount = 0;
     yylval.sval = new std::string(yytext);
 	int result;
 	if (context->Module)
-	  if ((result = context->Module->GetIdentifierType(yytext)) == OBJECTCLASSREFERENCE)
+	  if ((result = context->Module->getIdentifierType(yytext)) == OBJECTCLASSREFERENCE)
 	     return OBJECTCLASSREFERENCE;
 	return WOULDBE_OBJECTCLASSREFERENCE;
 }
@@ -344,3 +331,18 @@ int parenthesisCount = 0;
 
 
 %%
+/*
+ * $Log: asn_ref_lex.l,v $
+ * Revision 1.5  2011/08/09 18:12:43  arunasr
+ * Genesys fixes: 3.0 release candidate
+ *
+ * Revision 1.1  2002/11/05 14:07:03  arunasr
+ * Initial revision
+ *
+ * Revision 1.3  2002/07/02 02:03:25  mangelo
+ * Remove Pwlib dependency
+ *
+ * Revision 1.2  2001/09/07 22:37:32  mangelo
+ * add Log keyword substitution
+ *
+ */

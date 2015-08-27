@@ -68,6 +68,9 @@
     <ClCompile Include="csn\remote_operations_useful_definitions.cxx">
       <Filter>csn</Filter>
     </ClCompile>
+    <ClCompile Include="csn\remote_operations_generic_ros_pdus_t.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\ISO.ITU.OSI\cpp\src\iso\itu\osi\asn1\asn\Reliable-Transfer-APDU.asn">
@@ -110,6 +113,15 @@
       <Filter>asn</Filter>
     </None>
     <None Include="csn\iso8823_presentation.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\reliable_transfer_apdu.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\remote_operations_generic_ros_pdus.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\remote_operations_information_objects.inl">
       <Filter>csn</Filter>
     </None>
   </ItemGroup>

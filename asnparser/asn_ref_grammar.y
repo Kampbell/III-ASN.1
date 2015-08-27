@@ -29,23 +29,6 @@
  *    Arunas Ruksnaitis <arunas.ruksnaitis@genesyslab.com>
  *    Rustam Mirzaev <rustam.mirzaev@genesyslab.com>
  *
- * $Log: asn_ref_grammar.y,v $
- * Revision 1.4  2011/08/09 18:12:43  arunasr
- * Genesys fixes: 3.0 release candidate
- *
- * Revision 1.2  2002/11/15 18:02:22  arunasr
- * Added SignedInteger as valid constant definition
- *
- * Revision 1.1.1.1  2002/11/05 14:07:03  arunasr
- * no message
- *
- * Revision 1.3  2002/07/02 02:03:25  mangelo
- * Remove Pwlib dependency
- *
- * Revision 1.2  2001/09/07 22:38:28  mangelo
- * add Log keyword substitution
- *
- *
  */
 
 #undef malloc
@@ -124,7 +107,8 @@ extern int iderror(ParserContext* context, const string& path, const char* msg);
 %token CONSTRAINED      
 %token DEFAULT          
 %token DEFINED
-%token DEFINITIONS      
+%token DEFINITIONS 
+%token ELLIPSIS     
 %token EMBEDDED         
 %token END
 %token ENUMERATED       
@@ -298,7 +282,7 @@ SymbolsFromModuleList
 SymbolsFromModule
   : SymbolList FROM GlobalModuleReference
       {
-    context->Module->AddImportedIdentifiers(*$1, *$3);
+    context->Module->addImportedIdentifiers(*$1, *$3);
     delete $1;
     delete $3;
 	  }
@@ -369,11 +353,11 @@ Assignment
 ValueSetTypeAssignment
   : TYPEREFERENCE Type ASSIGNMENT '{' '}'
       {
-	context->Module->AddIdentifier($1, TYPEREFERENCE);
+	context->Module->addIdentifier($1, TYPEREFERENCE);
       }
    | WOULDBE_OBJECTCLASSREFERENCE Type ASSIGNMENT '{' '}'
       {
-	context->Module->AddIdentifier($1, TYPEREFERENCE);
+	context->Module->addIdentifier($1, TYPEREFERENCE);
       }
     
    ;
@@ -381,11 +365,11 @@ ValueSetTypeAssignment
 TypeAssignment
   : TYPEREFERENCE ASSIGNMENT Type
       {
-	context->Module->AddIdentifier($1, TYPEREFERENCE);
+	context->Module->addIdentifier($1, TYPEREFERENCE);
       }
   | WOULDBE_OBJECTCLASSREFERENCE ASSIGNMENT Type
       {
-	context->Module->AddIdentifier($1, TYPEREFERENCE);
+	context->Module->addIdentifier($1, TYPEREFERENCE);
       } 
   ;
 
@@ -656,25 +640,25 @@ SizeConstraint
 ObjectClassAssignment
   : WOULDBE_OBJECTCLASSREFERENCE ASSIGNMENT ObjectClass
     {
-  context->Module->AddIdentifier($1, OBJECTCLASSREFERENCE);
+  context->Module->addIdentifier($1, OBJECTCLASSREFERENCE);
     }
   ;
 
 ObjectAssignment
   : IDENTIFIER DefinedObjectClass ASSIGNMENT Object
     {
-  context->Module->AddIdentifier($1, OBJECTREFERENCE);
+  context->Module->addIdentifier($1, OBJECTREFERENCE);
 	}
   ;
 
 ObjectSetAssignment
   : TYPEREFERENCE DefinedObjectClass ASSIGNMENT ObjectSet
     {
-  context->Module->AddIdentifier($1, OBJECTSETREFERENCE);
+  context->Module->addIdentifier($1, OBJECTSETREFERENCE);
 	}
   | WOULDBE_OBJECTCLASSREFERENCE DefinedObjectClass ASSIGNMENT ObjectSet
     {
-  context->Module->AddIdentifier($1, OBJECTSETREFERENCE);
+  context->Module->addIdentifier($1, OBJECTSETREFERENCE);
 	}
   ;
 
@@ -779,11 +763,11 @@ ParameterizedAssignment
 ParameterizedTypeAssignment
   : ParameterizedTypeReference ASSIGNMENT Type
       {
-    context->Module->AddIdentifier($1, PARAMETERIZEDTYPEREFERENCE);
+    context->Module->addIdentifier($1, PARAMETERIZEDTYPEREFERENCE);
       }
   | ParameterizedWouldbeObjectClassReference ASSIGNMENT Type
       {
-    context->Module->AddIdentifier($1, PARAMETERIZEDTYPEREFERENCE);
+    context->Module->addIdentifier($1, PARAMETERIZEDTYPEREFERENCE);
       }
      
   ;
@@ -791,43 +775,43 @@ ParameterizedTypeAssignment
 ParameterizedValueAssignment
   : ParameterizedIdentifier Type	ASSIGNMENT Value
       {
-    context->Module->AddIdentifier($1, PARAMETERIZEDVALUEREFERENCE); 
+    context->Module->addIdentifier($1, PARAMETERIZEDVALUEREFERENCE); 
 	  }
   ;
 
 ParameterizedValueSetTypeAssignment
   : ParameterizedTypeReference Type ASSIGNMENT '{' '}'
       { 
-    context->Module->AddIdentifier($1, PARAMETERIZEDTYPEREFERENCE);
+    context->Module->addIdentifier($1, PARAMETERIZEDTYPEREFERENCE);
 	  }
   | ParameterizedWouldbeObjectClassReference Type ASSIGNMENT '{' '}'
       { 
-    context->Module->AddIdentifier($1, PARAMETERIZEDTYPEREFERENCE);
+    context->Module->addIdentifier($1, PARAMETERIZEDTYPEREFERENCE);
 	  }
   ;
 
 ParameterizedObjectClassAssignment
   : ParameterizedWouldbeObjectClassReference ASSIGNMENT ObjectClass
       { 
-    context->Module->AddIdentifier($1, PARAMETERIZEDOBJECTCLASSREFERENCE);
+    context->Module->addIdentifier($1, PARAMETERIZEDOBJECTCLASSREFERENCE);
 	  }
   ;
 
 ParameterizedObjectAssignment
   : ParameterizedIdentifier DefinedObjectClass ASSIGNMENT Object
       { 
-    context->Module->AddIdentifier($1, PARAMETERIZEDOBJECTREFERENCE);
+    context->Module->addIdentifier($1, PARAMETERIZEDOBJECTREFERENCE);
 	  }
   ;
 
 ParameterizedObjectSetAssignment
   : ParameterizedTypeReference DefinedObjectClass ASSIGNMENT ObjectSet
       { 
-    context->Module->AddIdentifier($1, PARAMETERIZEDOBJECTSETREFERENCE);
+    context->Module->addIdentifier($1, PARAMETERIZEDOBJECTSETREFERENCE);
 	  }
   | ParameterizedWouldbeObjectClassReference DefinedObjectClass ASSIGNMENT ObjectSet
       { 
-    context->Module->AddIdentifier($1, PARAMETERIZEDOBJECTSETREFERENCE);
+    context->Module->addIdentifier($1, PARAMETERIZEDOBJECTSETREFERENCE);
 	  }
   ;
 
@@ -853,7 +837,7 @@ ParameterList
 ValueAssignment 
   : IDENTIFIER Type ASSIGNMENT Value
       {
-  context->Module->AddIdentifier($1, VALUEREFERENCE);
+  context->Module->addIdentifier($1, VALUEREFERENCE);
       }
   ;
 
@@ -884,8 +868,8 @@ BuiltinValue
   | SequenceValue 
   | SequenceOfValue
 */
-/*| SetValue	      synonym to SequenceValue */
-/*| SetOfValue	      synonym to SequenceOfValue */
+/*| setValue	      synonym to SequenceValue */
+/*| setOfValue	      synonym to SequenceOfValue */
 /*| TaggedValue	      synonym to Value */
   ;
 
@@ -1008,4 +992,22 @@ SignedNumber
   {}
   ;
 
-/** End of File ****/
+/*
+ * $Log: asn_ref_grammar.y,v $
+ * Revision 1.4  2011/08/09 18:12:43  arunasr
+ * Genesys fixes: 3.0 release candidate
+ *
+ * Revision 1.2  2002/11/15 18:02:22  arunasr
+ * added SignedInteger as valid constant definition
+ *
+ * Revision 1.1.1.1  2002/11/05 14:07:03  arunasr
+ * no message
+ *
+ * Revision 1.3  2002/07/02 02:03:25  mangelo
+ * Remove Pwlib dependency
+ *
+ * Revision 1.2  2001/09/07 22:38:28  mangelo
+ * add Log keyword substitution
+ *
+ *
+ */

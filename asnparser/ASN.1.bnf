@@ -1,3 +1,14 @@
+/*
+If the field name 	and if it is 	 						then the field of the 
+starts with 		followed by 	 						object contains 
+---------------------------------------------------------------
+&Upper-case 		nothing 								a type 
+&lower-case 		a type, a type reference (Upper-case)	a fixed-type value 
+&lower-case 		a type field (&Upper-case) 				a variable-type value 
+&Upper-case 		a type or a type reference (Upper-case) a fixed-type value set 
+&Upper-case 		a type field (&Upper-case) 				a variable-type value set
+*/
+
 ModuleDefinition 		::= ModuleIdentifier DEFINITIONS EncodingReferenceDefault TagDefault ExtensionDefault "::=" BEGIN ModuleBody EncodingControlSections END;
 
 ModuleIdentifier 		::= modulereference DefinitiveIdentification;
@@ -127,7 +138,7 @@ BitStringType
 | RelativeOIDType
 | SequenceType
 | SequenceOfType
-| SetType
+| setType
 | SetOfType
 | PrefixedType
 | TimeType
@@ -174,8 +185,8 @@ BitStringValue
 | RelativeOIDValue
 | SequenceValue
 | SequenceOfValue
-| SetValue
-| SetOfValue
+| setValue
+| setOfValue
 | PrefixedValue
 | TimeValue
 ;
@@ -244,12 +255,12 @@ EnumeratedType 		::= ENUMERATED "{" Enumerations "}" ;
 Enumerations 		::=
 RootEnumeration
 | RootEnumeration "," "..." ExceptionSpec
-| RootEnumeration "," "..." ExceptionSpec "," AdditionalEnumeration
+| RootEnumeration "," "..." ExceptionSpec "," additionalEnumeration
 ;
 
 RootEnumeration 	::= Enumeration ;
 
-AdditionalEnumeration 	::= Enumeration ;
+additionalEnumeration 	::= Enumeration ;
 
 Enumeration 		::= EnumerationItem | EnumerationItem "," Enumeration ;
 
@@ -323,26 +334,26 @@ OptionalExtensionMarker ::= "," "..." | empty ;
 
 ComponentTypeLists 	::=
 RootComponentTypeList
-| RootComponentTypeList "," ExtensionAndException ExtensionAdditions
+| RootComponentTypeList "," ExtensionAndException Extensionadditions
 OptionalExtensionMarker
-| RootComponentTypeList "," ExtensionAndException ExtensionAdditions
+| RootComponentTypeList "," ExtensionAndException Extensionadditions
 ExtensionEndMarker "," RootComponentTypeList
-| ExtensionAndException ExtensionAdditions ExensionEndMarker ","
+| ExtensionAndException Extensionadditions ExensionEndMarker ","
 RootComponentTypeList
-| ExtensionAndException ExtensionAdditions OptionalExtensionMarker
+| ExtensionAndException Extensionadditions OptionalExtensionMarker
 ;
 
 RootComponentTypeList 	::= ComponentTypeList ;
 
 ExtensionEndMarker 	::= "," "..." ;
 
-ExtensionAdditions 	::= "," ExtensionAdditionList | empty ;
+Extensionadditions 	::= "," ExtensionadditionList | empty ;
 
-ExtensionAdditionList 	::= ExtensionAddition | ExtensionAdditionList "," ExtensionAddition ;
+ExtensionadditionList 	::= Extensionaddition | ExtensionadditionList "," Extensionaddition ;
 
-ExtensionAddition 	::= ComponentType | ExtensionAdditionGroup ;
+Extensionaddition 	::= ComponentType | ExtensionadditionGroup ;
 
-ExtensionAdditionGroup 	::= "[[" VersionNumber ComponentTypeList "]]" ;
+ExtensionadditionGroup 	::= "[[" VersionNumber ComponentTypeList "]]" ;
 
 VersionNumber 		::= empty | number ":" ;
 
@@ -401,25 +412,25 @@ ChoiceType 		::= CHOICE "{" AlternativeTypeLists "}" ;
 AlternativeTypeLists 	::=
 RootAlternativeTypeList
 | RootAlternativeTypeList ","
-ExtensionAndException ExtensionAdditionAlternatives
+ExtensionAndException ExtensionadditionAlternatives
 OptionalExtensionMarker
 ;
 
 RootAlternativeTypeList	::= AlternativeTypeList ;
 
-ExtensionAdditionAlternatives 	::= "," ExtensionAdditionAlternativesList | empty ;
+ExtensionadditionAlternatives 	::= "," ExtensionadditionAlternativesList | empty ;
 
-ExtensionAdditionAlternativesList 	::=
-ExtensionAdditionAlternative
-| ExtensionAdditionAlternativesList "," ExtensionAdditionAlternative
+ExtensionadditionAlternativesList 	::=
+ExtensionadditionAlternative
+| ExtensionadditionAlternativesList "," ExtensionadditionAlternative
 ;
 
-ExtensionAdditionAlternative 	::=
-ExtensionAdditionAlternativesGroup
+ExtensionadditionAlternative 	::=
+ExtensionadditionAlternativesGroup
 | NamedType
 ;
 
-ExtensionAdditionAlternativesGroup 	::=
+ExtensionadditionAlternativesGroup 	::=
 "[[" VersionNumber AlternativeTypeList "]]"
 ;
 
@@ -640,12 +651,12 @@ SubtypeConstraint 	::= ElementSetSpecs
 ElementSetSpecs 	::=
 RootElementSetSpec
 | RootElementSetSpec "," "..."
-| RootElementSetSpec "," "..." "," AdditionalElementSetSpec
+| RootElementSetSpec "," "..." "," additionalElementSetSpec
 ;
 
 RootElementSetSpec 	::= ElementSetSpec ;
 
-AdditionalElementSetSpec::= ElementSetSpec ;
+additionalElementSetSpec::= ElementSetSpec ;
 
 ElementSetSpec 		::= Unions | ALL Exclusions ;
 
@@ -738,7 +749,7 @@ PropertySettings 	::= SETTINGS simplestring ;
 
 PropertySettingsList 	::= PropertyAndSettingPair | PropertySettingsList PropertyAndSettingPair ;
 
-PropertyAndSettingPair 	::= PropertyName "=" SettingName ;
+PropertyAndSettingPair 	::= PropertyName "=" settingName ;
 
 PropertyName 		::= psname ;
 
@@ -834,11 +845,11 @@ ObjectDefn 					::= DefaultSyntax | DefinedSyntax;
 
 DefaultSyntax 				::= "{" FieldSetting "," * "}";
 
-FieldSetting 				::= PrimitiveFieldName Setting;
+FieldSetting 				::= PrimitiveFieldName setting;
 
 DefinedSyntax 				::= "{" DefinedSyntaxToken empty * "}";
 
-DefinedSyntaxToken 			::= Literal | Setting;
+DefinedSyntaxToken 			::= Literal | setting;
 
 Setting 					::= Type | Value | ValueSet | Object | ObjectSet;
 
@@ -850,7 +861,7 @@ ObjectSetAssignment 		::= objectsetreference DefinedObjectClass "::=" ObjectSet;
 
 ObjectSet 					::= "{" ObjectSetSpec "}";
 
-ObjectSetSpec 				::= RootElementSetSpec | RootElementSetSpec "," "..." | "..." | "..." "," AdditionalElementSetSpec | RootElementSetSpec "," "..." "," AdditionalElementSetSpec;
+ObjectSetSpec 				::= RootElementSetSpec | RootElementSetSpec "," "..." | "..." | "..." "," additionalElementSetSpec | RootElementSetSpec "," "..." "," additionalElementSetSpec;
 
 ObjectSetElements 			::= Object | DefinedObjectSet | ObjectSetFromObjects | ParameterizedObjectSet;
 
@@ -941,3 +952,31 @@ ParameterizedObject 		::= DefinedObject ActualParameterList;
 ActualParameterList 		::= "{" ActualParameter "," + "}";
 
 ActualParameter 			::= Type | Value | ValueSet | DefinedObjectClass | Object | ObjectSet;
+
+GeneralConstraint 			::= UserDefinedConstraint | TableConstraint | ContentsConstraint;
+
+UserDefinedConstraint 		::= CONSTRAINED BY "{" UserDefinedConstraintParameter "," * "}";
+
+UserDefinedConstraintParameter ::= 
+Governor ":" Value
+| Governor ":" ValueSet
+| Governor ":" Object
+| Governor ":" ObjectSet
+| Type
+| DefinedObjectClass;
+
+TableConstraint ::= SimpleTableConstraint | ComponentRelationConstraint;
+
+SimpleTableConstraint ::= ObjectSet;
+
+ComponentRelationConstraint ::= "{" DefinedObjectSet "}" "{" AtNotation "," + "}";
+
+AtNotation ::= "@" ComponentIdList | "@." Level ComponentIdList;
+
+Level ::= "." Level | empty;
+
+ComponentIdList ::= identifier "." +
+ContentsConstraint ::=
+CONTAINING Type
+| ENCODED BY Value
+| CONTAINING Type ENCODED BY Value;

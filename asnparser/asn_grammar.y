@@ -39,36 +39,6 @@
  *    Arunas Ruksnaitis <arunas.ruksnaitis@genesyslab.com>
  *    Rustam Mirzaev <rustam.mirzaev@genesyslab.com>
  *
- * $Log: asn_grammar.y,v $
- * Revision 1.4  2011/08/09 18:12:43  arunasr
- * Genesys fixes: 3.0 release candidate
- *
- *  /main/4 2009/10/13 15:51:26 BST arunasr
- *     UNCTime added; compiler warnings cleanup
- * Revision 1.4  2006/05/12 20:49:49  arunasr
- * UTCTime added
- *
- * Revision 1.3  2005/09/14 10:02:59  arunasr
- * BSTRING and HSTRING parsing corrected in BIT STRING context
- * Generation of named bits corrected
- *
- * Revision 1.2  2004/02/06 16:13:05  arunasr
- * Module exports uncommented so all exported types can be  generatedd
- * (otherwise only used types are generated)
- *
- * Revision 1.1.1.1  2002/11/05 14:07:03  arunasr
- * no message
- *
- * Revision 1.3  2002/07/02 02:03:25  mangelo
- * Remove Pwlib dependency
- *
- * Revision 1.2  2001/09/07 22:38:10  mangelo
- * add Log keyword substitution
- *
- *
- * March, 2001. Huang-Ming Huang
- *            Add support for Information Object Class.
- *
  */
 
 #undef malloc
@@ -85,8 +55,7 @@
 static int UnnamedFieldCount = 1;
 
 
-static std::string * ConcatNames(std::string * s1, char c, std::string * s2)
-{
+static std::string * ConcatNames(std::string * s1, char c, std::string * s2) {
   *s1 += c;*s1 += *s2;delete s2;return s1;
 }
 
@@ -182,6 +151,7 @@ extern int iddebug;
 %token DEFAULT
 %token DEFINED
 %token DEFINITIONS
+%token ELLIPSIS
 %token EMBEDDED
 %token END
 %token ENUMERATED
@@ -355,7 +325,7 @@ extern int iddebug;
 %type <vval> BitStringValue
 %type <vval> ExceptionSpec
 %type <vval> ExceptionIdentification
-%type <vval> LowerEndpoint LowerEndValue UpperEndpoint UpperEndValue
+%type <vval> Lowerendpoint LowerendValue Upperendpoint UpperendValue
 %type <vval> ReferencedValue
 %type <vval> BooleanValue
 %type <vval> CharacterStringValue RestrictedCharacterStringValue
@@ -502,7 +472,7 @@ extern int iddebug;
   } tagv;
 }
 %printer { if ($$ != NULL) fprintf (yyoutput, "'%s'", $$->c_str()); } <sval>
-%printer { if ($$ != NULL) fprintf (yyoutput, "'%s'", $$->GetName().c_str()); } <tval> <vval> <objt> <para> <symb> <fspc> <objc> <ocft>
+%printer { if ($$ != NULL) fprintf (yyoutput, "'%s'", $$->getName().c_str()); } <tval> <vval> <objt> <para> <symb> <fspc> <objc> <ocft>
 
 %%
 
@@ -515,9 +485,9 @@ ModuleDefinitionList
 ModuleDefinition
 	: MODULEREFERENCE DefinitiveIdentifier DEFINITIONS TagDefault ASSIGNMENT BEGIN_t
 		{
-			context->Module = FindModule($1->c_str());
+			context->Module = findModule($1->c_str());
 			if ($2) {
-				context->Module->SetDefinitiveObjId(*$2); delete $2;
+				context->Module->setDefinitiveObjId(*$2); delete $2;
 			}
 		}
 		ModuleBody END
@@ -609,12 +579,12 @@ Exports
 SymbolsExported
   : SymbolList
       {
-	context->Module->SetExports(*$1);
+	context->Module->setExports(*$1);
   delete $1;
       }
   | /* empty */
       {
-	context->Module->SetExportAll();
+	context->Module->setExportAll();
       }
   ;
 
@@ -639,12 +609,12 @@ SymbolsFromModuleList
 SymbolsFromModule
   : SymbolList FROM GlobalModuleReference
       {
-		if (!context->HasObjectTypeMacro) {
-		  context->HasObjectTypeMacro = FindWithName(*$1,"OBJECT-TYPE").get() != NULL;
-		  if (context->HasObjectTypeMacro)
+		if (!context->hasObjectTypeMacro) {
+		  context->hasObjectTypeMacro = findWithName(*$1,"OBJECT-TYPE").get() != NULL;
+		  if (context->hasObjectTypeMacro)
 			std::cerr << "Info: including OBJECT-TYPE macro" << std::endl;
 		}
-		context->Module->AddImport(ImportModulePtr(new ImportModule($3, $1)));
+		context->Module->addImport(ImportModulePtr(new ImportModule($3, $1)));
       }
   ;
 
@@ -749,14 +719,14 @@ Assignment
 ValueSetTypeAssignment
   : TYPEREFERENCE Type
       {
-	$2->SetName(*$1); delete $1;
+	$2->setName(*$1); delete $1;
     context->ValueTypeContext.reset($2);
-	$2->BeginParseValueSet();
+	$2->beginParseValueSet();
       }
     ASSIGNMENT ValueSet
       {
-	$2->EndParseValueSet();
-	context->Module->AddType($5->MakeValueSetType());
+	$2->endParseValueSet();
+	context->Module->addType($5->MakeValueSetType());
 	delete $5;
       }
   ;
@@ -769,8 +739,8 @@ ValueSetTypeAssignment
 TypeAssignment
   : TYPEREFERENCE ASSIGNMENT Type
       {
-	$3->SetName(*$1); delete $1;
-	context->Module->AddType(TypePtr($3));
+	$3->setName(*$1); delete $1;
+	context->Module->addType(TypePtr($3));
       }
   ;
 
@@ -871,7 +841,7 @@ NamedBit
       }
   | IDENTIFIER '(' DefinedValue ')'
       {
-	$$ = new NamedNumber($1, ((DefinedValue*)$3)->GetReference());
+	$$ = new NamedNumber($1, ((DefinedValue*)$3)->getReference());
 	delete $3;
       }
   ;
@@ -991,14 +961,14 @@ AlternativeTypeList
 
 
 ExtensionAndException
-  : '.' '.' '.' ExceptionSpec
+  : ELLIPSIS ExceptionSpec
   ;
 
 
 NamedType
   : IDENTIFIER Type
       {
-	$2->SetName(*$1); delete $1;
+	$2->setName(*$1); delete $1;
 	$$ = $2;
       }
   | Type	     /* ITU-T Rec. X.680 Appendix H.1 */
@@ -1006,7 +976,7 @@ NamedType
 	std::cerr << StdError(Warning) << "unnamed field." << std::endl;
 	std::stringstream strm;
 	strm << "_unnamed" << UnnamedFieldCount++<< std::ends;
-	$1->SetName(strm.str());
+	$1->setName(strm.str());
       }
 /*| SelectionType    /* Unnecessary as have rule in Type for this */
   ;
@@ -1033,14 +1003,14 @@ Enumerations
 	$$ = new EnumeratedType(*$1, false, NULL);
 	delete $1;
       }
-  | Enumeration  ',' '.' '.' '.'
+  | Enumeration  ',' ELLIPSIS
       {
 	$$ = new EnumeratedType(*$1, true, NULL);
 	delete $1;
       }
-  | Enumeration  ',' '.' '.' '.' ',' Enumeration
+  | Enumeration  ',' ELLIPSIS ',' Enumeration
       {
-	$$ = new EnumeratedType(*$1, true, $7);
+	$$ = new EnumeratedType(*$1, true, $5);
 	delete $1;
       }
   ;
@@ -1053,7 +1023,7 @@ Enumeration
       }
   | Enumeration ',' EnumerationItem
       {
-	$3->SetAutoNumber(*($1->back()));
+	$3->setAutoNumber(*($1->back()));
 	$1->push_back(NamedNumberPtr($3));
 	$$ = $1;
       }
@@ -1119,12 +1089,12 @@ ObjectClassFieldType
 	  }
   | SimpleObjectClassFieldType '(' TableConstraint ExceptionSpec ')'
 	  {
-  $1->AddTableConstraint(boost::shared_ptr<TableConstraint>($3));
+  $1->addTableConstraint(boost::shared_ptr<TableConstraint>($3));
   $$ = $1;
 	  }
   | SimpleObjectClassFieldType '(' ConstraintSpec ExceptionSpec ')'
       {
-  $1->AddConstraint(ConstraintPtr($3));
+  $1->addConstraint(ConstraintPtr($3));
   $$ = $1;
 	  }
   ;
@@ -1230,19 +1200,19 @@ ComponentType
       }
   | NamedType OPTIONAL_t
       {
-	$1->SetOptional();
+	$1->setOptional();
 	$$ = new TypePtr($1);
       }
   | NamedType
       {
    	context->ValueTypeContext.reset($1);
-    $1->BeginParseValue();
+    $1->beginParseValue();
 	  }
 	DEFAULT Value
       {
-   $1->SetDefaultValue(ValuePtr($4));
+   $1->setDefaultValue(ValuePtr($4));
    $$ = new TypePtr(context->ValueTypeContext);
-   $1->EndParseValue();
+   $1->endParseValue();
       }
   | COMPONENTS OF_t Type
       {
@@ -1292,17 +1262,17 @@ SetOfType
 TaggedType
   : Tag Type
       {
-	$2->SetTag($1.tagClass, $1.tagNumber, context->Module->GetDefaultTagMode());
+	$2->setTag($1.tagClass, $1.tagNumber, context->Module->getDefaultTagMode());
 	$$ = $2;
       }
   | Tag IMPLICIT Type
       {
-	$3->SetTag($1.tagClass, $1.tagNumber, Tag::Implicit);
+	$3->setTag($1.tagClass, $1.tagNumber, Tag::Implicit);
 	$$ = $3;
       }
   | Tag EXPLICIT Type
       {
-	$3->SetTag($1.tagClass, $1.tagNumber, Tag::Explicit);
+	$3->setTag($1.tagClass, $1.tagNumber, Tag::Explicit);
 	$$ = $3;
       }
   ;
@@ -1447,7 +1417,7 @@ ParameterizedObject
 ConstrainedType
   : Type Constraint
       {
-	$1->AddConstraint(ConstraintPtr($2));
+	$1->addConstraint(ConstraintPtr($2));
       }
   | TypeWithConstraint
   ;
@@ -1508,11 +1478,11 @@ ExceptionIdentification
   | Type
       {
    	context->ValueTypeContext.reset($1);
-    $1->BeginParseValue();
+    $1->beginParseValue();
 	  }
     ':' Value
       {
-	$1->EndParseValue();
+	$1->endParseValue();
 	$$ = $4;
       }
   ;
@@ -1523,21 +1493,21 @@ ElementSetSpecs
       {
 	$$ = new Constraint(std::auto_ptr<ConstraintElementVector>($1), false);
       }
-  | ElementSetSpec  ',' '.' '.' '.'
+  | ElementSetSpec  ',' ELLIPSIS
       {
 	$$ = new Constraint(std::auto_ptr<ConstraintElementVector>($1), true);
       }
-  | '.' '.' '.' ',' ElementSetSpec
+  | ELLIPSIS ',' ElementSetSpec
       {
 	$$ = new Constraint(std::auto_ptr<ConstraintElementVector>(),
 						true,
-						std::auto_ptr<ConstraintElementVector>($5));
+						std::auto_ptr<ConstraintElementVector>($3));
       }
-  | ElementSetSpec  ',' '.' '.' '.' ',' ElementSetSpec
+  | ElementSetSpec  ',' ELLIPSIS ',' ElementSetSpec
       {
 	$$ = new Constraint(std::auto_ptr<ConstraintElementVector>($1),
 						true,
-						std::auto_ptr<ConstraintElementVector>($7));
+						std::auto_ptr<ConstraintElementVector>($5));
       }
   ;
 
@@ -1596,7 +1566,7 @@ IntersectionElements
   : Elements
   | Elements Exclusions
       {
-	$1->SetExclusions(ConstraintElementPtr($2));
+	$1->setExclusions(ConstraintElementPtr($2));
       }
   ;
 
@@ -1644,26 +1614,26 @@ SubtypeElements
   ;
 
 ValueRange
-  : LowerEndpoint '.' '.' UpperEndpoint
+  : Lowerendpoint '.' '.' Upperendpoint
       {
 	$$ = new ValueRangeConstraintElement(ValuePtr($1), ValuePtr($4));
       }
   ;
 
-LowerEndpoint
-  : LowerEndValue
-  | LowerEndValue '<'
+Lowerendpoint
+  : LowerendValue
+  | LowerendValue '<'
   ;
 
-UpperEndpoint
-  : UpperEndValue
-  | '<' UpperEndValue
+Upperendpoint
+  : UpperendValue
+  | '<' UpperendValue
       {
 	$$ = $2;
       }
   ;
 
-LowerEndValue
+LowerendValue
   : Value
   | MIN
       {
@@ -1671,7 +1641,7 @@ LowerEndValue
       }
   ;
 
-UpperEndValue
+UpperendValue
   : Value
   | MAX
       {
@@ -1728,9 +1698,9 @@ MultipleTypeConstraints
       {
 	$$ = new InnerTypeConstraintElement(std::auto_ptr<ConstraintElementVector>($2), false);
       }
-  | '{'  '.' '.' '.' ',' TypeConstraints '}'	/* PartialSpecification */
+  | '{'  ELLIPSIS ',' TypeConstraints '}'	/* PartialSpecification */
       {
-	$$ = new InnerTypeConstraintElement(std::auto_ptr<ConstraintElementVector>($6), true);
+	$$ = new InnerTypeConstraintElement(std::auto_ptr<ConstraintElementVector>($4), true);
       }
   ;
 
@@ -1896,8 +1866,8 @@ ComponentIdList
 ObjectClassAssignment
   : OBJECTCLASSREFERENCE ASSIGNMENT ObjectClass
     {
-		$3->SetName(*$1); delete $1;
-		context->Module->AddObjectClass(ObjectClassBasePtr($3));
+		$3->setName(*$1); delete $1;
+		context->Module->addObjectClass(ObjectClassBasePtr($3));
 	}
   ;
 
@@ -1905,26 +1875,26 @@ ObjectClassAssignment
 ObjectAssignment
   : OBJECTREFERENCE DefinedObjectClass
     {
-	   $2->BeginParseObject();
+	   $2->beginParseObject();
     }
   ASSIGNMENT Object
     {
-	   $2->EndParseObject();
+	   $2->endParseObject();
        context->classStack->pop();
-	   $5->SetName(*$1); delete $1;
-       $5->SetObjectClass($2);
-       context->Module->AddInformationObject(InformationObjectPtr($5));
+	   $5->setName(*$1); delete $1;
+       $5->setObjectClass($2);
+       context->Module->addInformationObject(InformationObjectPtr($5));
 	}
   ;
 
 ObjectSetAssignment
   : OBJECTSETREFERENCE DefinedObjectClass
     {
-	   $2->BeginParseObjectSet();
+	   $2->beginParseObjectSet();
 	}
   ASSIGNMENT ObjectSet
     {
-	   context->Module->AddInformationObjectSet(InformationObjectSetPtr(
+	   context->Module->addInformationObjectSet(InformationObjectSetPtr(
 			new InformationObjectSetDefn(*$1,
 			                             ObjectClassBasePtr($2),
 			                             ConstraintPtr($5))));
@@ -1987,8 +1957,8 @@ ObjectClassDefn
     {
 	    ObjectClassDefn* ocd = new ObjectClassDefn;
 		$$ = ocd;
-		ocd->SetFieldSpecs(std::auto_ptr<FieldSpecsList>($3));
-		ocd->SetWithSyntaxSpec(TokenGroupPtr($5));
+		ocd->setFieldSpecs(std::auto_ptr<FieldSpecsList>($3));
+		ocd->setWithSyntaxSpec(TokenGroupPtr($5));
 		context->InWithSyntaxContext = false;
     }
   ;
@@ -2052,13 +2022,13 @@ FixedTypeValueFieldSpec
   | fieldreference Type
     {
       context->ValueTypeContext.reset($2);
-  	  $2->BeginParseValue();
+  	  $2->beginParseValue();
 	}
 	DEFAULT Value
 	{
 	  FixedTypeValueFieldSpec* spec = new FixedTypeValueFieldSpec(*$1, context->ValueTypeContext);
-  	  $2->EndParseValue();
-	  spec->SetDefault(ValuePtr($5));
+  	  $2->endParseValue();
+	  spec->setDefault(ValuePtr($5));
 	  $$ = spec;
   	  delete $1;
 	}
@@ -2070,14 +2040,14 @@ FixedTypeValueFieldSpec
   | fieldreference Type UNIQUE
     {
 	  context->ValueTypeContext.reset($2);
-	  $2->BeginParseValue();
+	  $2->beginParseValue();
 	}
 	DEFAULT Value
 	{
 	  TypePtr t = context->ValueTypeContext;
-	  $2->EndParseValue();
+	  $2->endParseValue();
 	  FixedTypeValueFieldSpec* spec = new FixedTypeValueFieldSpec(*$1, t, false, true);
-	  spec->SetDefault(ValuePtr($6));
+	  spec->setDefault(ValuePtr($6));
 	  $$ = spec;
   	  delete $1;
 	}
@@ -2111,13 +2081,13 @@ FixedTypeValueSetFieldSpec
   | FieldReference Type
       {
     context->ValueTypeContext.reset($2);
-	$2->BeginParseValueSet();
+	$2->beginParseValueSet();
 	  }
     DEFAULT ValueSet
 	  {
 	FixedTypeValueSetFieldSpec* spec = new FixedTypeValueSetFieldSpec(*$1, context->ValueTypeContext);
-	$2->EndParseValueSet();
-	spec->SetDefault(ValueSetPtr($5));
+	$2->endParseValueSet();
+	spec->setDefault(ValueSetPtr($5));
 	$$ = spec;
 	  }
   ;
@@ -2146,14 +2116,14 @@ ObjectFieldSpec
 	  }
   | fieldreference DefinedObjectClass
       {
-	$2->BeginParseObject();
+	$2->beginParseObject();
 	  }
     DEFAULT Object
       {
-	$2->EndParseObject();
+	$2->endParseObject();
     context->classStack->pop();
 	ObjectFieldSpec* spec = new  ObjectFieldSpec(*$1, $2); delete $1;
-	spec->SetDefault(InformationObjectPtr($5));
+	spec->setDefault(InformationObjectPtr($5));
 	$$ = spec;
 	  }
   ;
@@ -2170,13 +2140,13 @@ ObjectSetFieldSpec
 	}
   | FieldReference DefinedObjectClass
     {
-	    $2->BeginParseObjectSet();
+	    $2->beginParseObjectSet();
 	}
   DEFAULT ObjectSet
     {
 	    ObjectSetFieldSpec* spec = new  ObjectSetFieldSpec(*$1, DefinedObjectClassPtr($2));
 	    delete $1;
-		spec->SetDefault(ConstraintPtr($5));
+		spec->setDefault(ConstraintPtr($5));
 		$$= spec;
     	context->classStack->pop();
 	}
@@ -2214,13 +2184,13 @@ TokenOrGroupSpecs
   : TokenOrGroupSpecs TokenOrGroupSpec
 	{
 		$$ = $1;
-		$$->AddToken(TokenOrGroupSpecPtr($2));
+		$$->addToken(TokenOrGroupSpecPtr($2));
 
 	}
   | TokenOrGroupSpec
     {
 		$$ = new TokenGroup;
-		$$->AddToken(TokenOrGroupSpecPtr($1));
+		$$->addToken(TokenOrGroupSpecPtr($1));
     }
   ;
 
@@ -2232,7 +2202,7 @@ TokenOrGroupSpec
 OptionalGroup
   : '[' TokenOrGroupSpecs ']'
   {
-	$2->SetOptional();
+	$2->setOptional();
     $$ = $2;
   }
   ;
@@ -2358,7 +2328,7 @@ Object
 ObjectDefn
   : DefinedSyntax
     {
-		$$ = new DefaultObjectDefn($1->GetDefaultSyntax());
+		$$ = new DefaultObjectDefn($1->getDefaultSyntax());
 		delete $1;
 	}
   | DefaultSyntax
@@ -2379,23 +2349,23 @@ DefaultSyntax
 FieldSettings
   : FieldSettings ',' PrimitiveFieldName
       {
-		context->classStack->top()->GetField(*$3)->BeginParseSetting($1);
+		context->classStack->top()->getField(*$3)->beginParseSetting($1);
 	  }
 	Setting
 	  {
 		$$ = $1;
-		context->classStack->top()->GetField(*$3)->EndParseSetting();
+		context->classStack->top()->getField(*$3)->endParseSetting();
 		$1->push_back(FieldSettingPtr(new FieldSetting(*$3, std::auto_ptr<Setting>($5))));
 		delete $3;
 	  }
   | PrimitiveFieldName
 	  {
-		context->classStack->top()->GetField(*$1)->BeginParseSetting(NULL);
+		context->classStack->top()->getField(*$1)->beginParseSetting(NULL);
 	  }
 	Setting
 	  {
 		$$ = new FieldSettingList;
-		context->classStack->top()->GetField(*$1)->EndParseSetting();
+		context->classStack->top()->getField(*$1)->endParseSetting();
 		$$->push_back(FieldSettingPtr(new FieldSetting(*$1, std::auto_ptr<Setting>($3))));
 		delete $1;
 	  }
@@ -2416,11 +2386,11 @@ DefinedSyntaxTokens
   : DefinedSyntaxTokens DefinedSyntaxToken
 	{
 		$$ = $1;
-		$$->AddToken($2);
+		$$->addToken($2);
 	}
   | /* empty */
 	{
-		$$ = new DefaultSyntaxBuilder(context->classStack->top()->GetWithSyntax());
+		$$ = new DefaultSyntaxBuilder(context->classStack->top()->getWithSyntax());
 	}
   ;
 
@@ -2467,7 +2437,7 @@ ObjectSet
   : OBJECTSET_BRACE ObjectSetSpec '}'
       {
 	$$ = $2;
-	context->classStack->top()->EndParseObjectSet();
+	context->classStack->top()->endParseObjectSet();
 	  }
   ;
 
@@ -2508,7 +2478,7 @@ ObjectSetFromObjects
 ReferencedObjectsDot
   : ReferencedObjects
     {
-  context->InformationFromObjectContext = $1->GetObjectClass();
+  context->InformationFromObjectContext = $1->getObjectClass();
     }
   '.'
     {
@@ -2519,7 +2489,7 @@ ReferencedObjectsDot
 ReferencedObjectDot
   : ReferencedObject
     {
-  context->InformationFromObjectContext = $1->GetObjectClass();
+  context->InformationFromObjectContext = $1->getObjectClass();
     }
   '.'
     {
@@ -2546,9 +2516,9 @@ ParameterizedTypeAssignment
     ASSIGNMENT Type
       {
 	context->DummyParameters = NULL;
-	$5->SetName(*$1); delete $1;
-	$5->SetParameters(*$2); delete $2;
-	context->Module->AddType(TypePtr($5));
+	$5->setName(*$1); delete $1;
+	$5->setParameters(*$2); delete $2;
+	context->Module->addType(TypePtr($5));
       }
   ;
 
@@ -2585,17 +2555,17 @@ ParameterizedObjectAssignment
   : PARAMETERIZEDOBJECTREFERENCE ParameterList DefinedObjectClass
       {
 	context->DummyParameters = $2;
-	$3->BeginParseObject();
+	$3->beginParseObject();
       }
     ASSIGNMENT Object
       {
-	$3->EndParseObject();
+	$3->endParseObject();
    	context->classStack->pop();
 	context->DummyParameters = NULL;
-	$6->SetName(*$1); delete $1;
-    $6->SetObjectClass($3);
-	$6->SetParameters(std::auto_ptr<ParameterList>($2));
-    context->Module->AddInformationObject(InformationObjectPtr($6));
+	$6->setName(*$1); delete $1;
+    $6->setObjectClass($3);
+	$6->setParameters(std::auto_ptr<ParameterList>($2));
+    context->Module->addInformationObject(InformationObjectPtr($6));
 	  }
   ;
 
@@ -2603,12 +2573,12 @@ ParameterizedObjectSetAssignment
   : PARAMETERIZEDOBJECTSETREFERENCE ParameterList DefinedObjectClass
       {
 	context->DummyParameters = $2;
-    $3->BeginParseObjectSet();
+    $3->beginParseObjectSet();
       }
     ASSIGNMENT ObjectSet
       {
 	context->DummyParameters = NULL;
-    context->Module->AddInformationObjectSet(InformationObjectSetPtr(
+    context->Module->addInformationObjectSet(InformationObjectSetPtr(
 		new InformationObjectSetDefn(*$1,
 		                            ObjectClassBasePtr($3),
 		                            ConstraintPtr($6),
@@ -2740,13 +2710,13 @@ ValueAssignment
   : VALUEREFERENCE Type
       {
     context->ValueTypeContext.reset($2);
-	$2->BeginParseValue();
+	$2->beginParseValue();
       }
     ASSIGNMENT Value
       {
-	$2->EndParseValue();
-	$5->SetValueName(*$1); delete $1;
-	context->Module->AddValue(ValuePtr($5));
+	$2->endParseValue();
+	$5->setValueName(*$1); delete $1;
+	context->Module->addValue(ValuePtr($5));
       }
   ;
 
@@ -2781,8 +2751,8 @@ BuiltinValue
 /*!!!!
   | SequenceOfValue
 */
-/*| SetValue	      synonym to SequenceValue */
-/*| SetOfValue	      synonym to SequenceOfValue */
+/*| setValue	      synonym to SequenceValue */
+/*| setOfValue	      synonym to SequenceOfValue */
 /*| TaggedValue	      synonym to Value */
   ;
 
@@ -2810,10 +2780,13 @@ ExternalValueReference
   ;
 
 ObjectIdentifierValue
-  : '{' ObjIdComponentList '}'
-      {
-	$$ = new ObjectIdentifierValue(*$2); delete $2;
-      }
+  : '{' { context->InOIDContext = TRUE; }
+		ObjIdComponentList 
+	'}' 
+	{ 
+		context->InOIDContext = FALSE;
+		$$ = new ObjectIdentifierValue(*$3); delete $3;
+	}
 /*!!!
   | '{' DefinedValue_OID ObjIdComponentList '}'
       {
@@ -2843,17 +2816,15 @@ ObjIdComponentList
 	delete $2;
       }
   ;
-
+  
 ObjIdComponent
-  : OID_IDENTIFIER
+  : OID_IDENTIFIER NumberFormOptional
   | OID_INTEGER
-  | OID_IDENTIFIER '(' NumberForm ')'
-      {
-	delete $1;
-	$$ = $3;
-      }
   ;
-
+NumberFormOptional
+  : %empty
+  | '(' NumberForm ')'
+;
 NumberForm
   : OID_INTEGER
   | ExternalValueReference
@@ -2958,7 +2929,7 @@ CharsDefn
   | DefinedValue
       {
 	std::cerr << StdError(Warning) << "DefinedValue in string unsupported" << *$1 << std::endl;
-	$$ = new std::string(((DefinedValue*)($1))->GetReference());
+	$$ = new std::string(((DefinedValue*)($1))->getReference());
       }
   ;
 
@@ -3050,7 +3021,7 @@ ComponentValueList
 NamedValue
   : IDENTIFIER Value
       {
-	$2->SetValueName(*$1); delete $1;
+	$2->setValueName(*$1); delete $1;
 	$$ = $2;
       }
   ;
@@ -3097,8 +3068,8 @@ ReferencedValue
 ValueFromObject
   : ReferencedObjectDot VALUEFIELDREFERENCE
     {
-	  ValueSetting* setting = (ValueSetting*) $1->GetSetting(*$2);
-	  $$ = new DefinedValue(setting->GetValue());
+	  ValueSetting* setting = (ValueSetting*) $1->getSetting(*$2);
+	  $$ = new DefinedValue(setting->getValue());
 	  delete $1;
 	  delete $2;
       context->InformationFromObjectContext = NULL;
@@ -3163,7 +3134,7 @@ ValueSet
      std::cerr << StdError(Warning) << "";
   // $$ = new ValueSetDefn(TypePtr(new DefinedType(context->ValueTypeContext)), ConstraintPtr($2));
   $$ = new ValueSetDefn(context->ValueTypeContext, ConstraintPtr($2));
-  context->ValueTypeContext->EndParseValueSet();
+  context->ValueTypeContext->endParseValueSet();
 	}
   ;
 
@@ -3330,7 +3301,7 @@ NamedNumber
       }
   | IDENTIFIER '(' DefinedValue ')'
       {
-	$$ = new NamedNumber($1, ((DefinedValue*)$3)->GetReference());
+	$$ = new NamedNumber($1, ((DefinedValue*)$3)->getReference());
 	delete $3;
       }
   ;
@@ -3344,4 +3315,35 @@ SignedNumber
       }
   ;
 
-/** End of File ****/
+/*
+ * $Log: asn_grammar.y,v $
+ * Revision 1.4  2011/08/09 18:12:43  arunasr
+ * Genesys fixes: 3.0 release candidate
+ *
+ *  /main/4 2009/10/13 15:51:26 BST arunasr
+ *     UNCTime added; compiler warnings cleanup
+ * Revision 1.4  2006/05/12 20:49:49  arunasr
+ * UTCTime added
+ *
+ * Revision 1.3  2005/09/14 10:02:59  arunasr
+ * BSTRING and HSTRING parsing corrected in BIT STRING context
+ * Generation of named bits corrected
+ *
+ * Revision 1.2  2004/02/06 16:13:05  arunasr
+ * Module exports uncommented so all exported types can be  generatedd
+ * (otherwise only used types are generated)
+ *
+ * Revision 1.1.1.1  2002/11/05 14:07:03  arunasr
+ * no message
+ *
+ * Revision 1.3  2002/07/02 02:03:25  mangelo
+ * Remove Pwlib dependency
+ *
+ * Revision 1.2  2001/09/07 22:38:10  mangelo
+ * add Log keyword substitution
+ *
+ *
+ * March, 2001. Huang-Ming Huang
+ *            add support for Information Object Class.
+ *
+ */

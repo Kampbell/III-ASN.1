@@ -59,7 +59,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
-      <Command>..\lib\ASN1cmpd -c -v -o csn -m ACSE_1 -i ..\..\ISO.ITU.OSI\cpp\src\iso\itu\osi\asn1\asn ISO8823-PRESENTATION.asn Reliable-Transfer-APDU.asn Remote-Operations-Information-Objects.asn Remote-Operations-Useful-Definitions.asn Remote-Operations-Generic-ROS-PDUs.asn</Command>
+      <Command>..\lib\ASN1cmpd -c -v -o csn -m ACSE_1 -i ..\..\ISO.ITU.OSI\cpp\src\iso\itu\osi\asn1\asn  ISO8823-PRESENTATION.asn Reliable-Transfer-APDU.asn Remote-Operations-Information-Objects.asn Remote-Operations-Useful-Definitions.asn Remote-Operations-Generic-ROS-PDUs.asn</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -94,6 +94,7 @@
     <ClCompile Include="csn\iso8823_presentation.cxx" />
     <ClCompile Include="csn\reliable_transfer_apdu.cxx" />
     <ClCompile Include="csn\remote_operations_generic_ros_pdus.cxx" />
+    <ClCompile Include="csn\remote_operations_generic_ros_pdus_t.cxx" />
     <ClCompile Include="csn\remote_operations_information_objects.cxx" />
     <ClCompile Include="csn\remote_operations_useful_definitions.cxx" />
     <ClCompile Include="dllmain.cpp">
@@ -124,6 +125,9 @@
     <None Include="..\..\ISO.ITU.OSI\cpp\src\iso\itu\osi\asn1\asn\UpperBounds.asn" />
     <None Include="..\..\ISO.ITU.OSI\cpp\src\iso\itu\osi\asn1\asn\UsefulDefinitions.asn" />
     <None Include="csn\iso8823_presentation.inl" />
+    <None Include="csn\reliable_transfer_apdu.inl" />
+    <None Include="csn\remote_operations_generic_ros_pdus.inl" />
+    <None Include="csn\remote_operations_information_objects.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

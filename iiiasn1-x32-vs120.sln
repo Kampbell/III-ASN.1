@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Express 2013 for Windows Desktop
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ASN1", "asn1\ASN1-x32-vs120.vcxproj", "{CC4DCE75-9957-4642-A86B-EA14DBCEBF54}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -15,6 +15,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "H323", "asnh323\H323-x32-vs120.vcxproj", "{4E4B52F7-9D54-4183-99A7-00212102BCBF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ASN1cmp", "asnparser\ASN1cmp-x32-vs120.vcxproj", "{1EED4B13-2A75-4C49-A198-12F2A46F5944}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CC4DCE75-9957-4642-A86B-EA14DBCEBF54} = {CC4DCE75-9957-4642-A86B-EA14DBCEBF54}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Q931", "h323parser\Q931-x32-vs120.vcxproj", "{EF024D3D-64DA-4ED8-9C2B-CF9CE434D5C9}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -37,6 +40,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACSE-1", "ACSE-1\ACSE-1.vcx
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RDP", "RDP\RDP.vcxproj", "{57DED76E-C068-4DC7-8513-623BC2A9CC46}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6AC2EA98-D59C-454F-A81E-5BC18D792CE9}"
+	ProjectSection(SolutionItems) = preProject
+		iiiasn1.properties = iiiasn1.properties
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -47,6 +47,7 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>../boost;$(IncludePath);../asn1</IncludePath>
     <TargetName>$(ProjectName)d</TargetName>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\Release\</OutDir>
@@ -65,7 +66,7 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\Debug/asnparser.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>.\Debug/$(TargetName).pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\Debug/</AssemblerListingLocation>
       <ObjectFileName>.\Debug/</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
@@ -84,10 +85,11 @@
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>../lib/$(TargetFileName)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>.\Debug/$(TargetName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>../lib/$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
+      <ProfileGuidedDatabase>../lib/$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
     <PreBuildEvent>
       <Command>
@@ -135,6 +137,9 @@
     <ClCompile Include="asn_lex.cxx" />
     <ClCompile Include="asn_ref_grammar.cxx" />
     <ClCompile Include="asn_ref_lex.cxx" />
+    <ClCompile Include="csn\bug_001.cxx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="csn\iso8823_presentation.cxx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -163,6 +168,7 @@
     <ClInclude Include="asn_lex.hxx" />
     <ClInclude Include="asn_ref_grammar.hxx" />
     <ClInclude Include="asn_ref_lex.hxx" />
+    <ClInclude Include="csn\bug_001.h" />
     <ClInclude Include="csn\iso8823_presentation.h" />
     <ClInclude Include="csn\reliable_transfer_apdu.h" />
     <ClInclude Include="csn\remote_operations_abstract_syntaxes.h" />
@@ -179,7 +185,7 @@
       <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</DefinesFile>
       <Report Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">all</Report>
       <ReportFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).out</ReportFile>
-      <NoLines Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</NoLines>
+      <NoLines Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</NoLines>
     </Bison>
     <Bison Include="asn_ref_grammar.y">
       <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
@@ -204,6 +210,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ASN.1.bnf" />
+    <None Include="asn\bug-001.asn" />
     <None Include="asn_grammar.out" />
     <None Include="asn_ref_grammar.out" />
     <None Include="csn\iso8823_presentation.inl" />
