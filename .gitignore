@@ -4,7 +4,12 @@ KAMPBELL/
 ISO8823-PRESENTATION/
 RDP/
 asn/
-csn/
+
+
+# Git submodule #
+#################
+boost/
+
 
 # Bison & Flex #
 ################
