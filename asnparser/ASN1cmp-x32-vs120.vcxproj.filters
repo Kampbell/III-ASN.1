@@ -15,6 +15,12 @@
     <Filter Include="asn">
       <UniqueIdentifier>{5cb3d35c-5846-4829-bf4f-51faa7d9a737}</UniqueIdentifier>
     </Filter>
+    <Filter Include="out">
+      <UniqueIdentifier>{fd4cb569-c994-4248-86ac-3aec3b497d71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bnf">
+      <UniqueIdentifier>{9f04ef3d-8da0-4d6e-a252-b2a761f749f1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="getopt.c">
@@ -23,38 +29,23 @@
     <ClCompile Include="main.cxx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="csn\iso8823_presentation.cxx">
-      <Filter>csn</Filter>
-    </ClCompile>
-    <ClCompile Include="csn\reliable_transfer_apdu.cxx">
-      <Filter>csn</Filter>
-    </ClCompile>
-    <ClCompile Include="csn\remote_operations_information_objects.cxx">
-      <Filter>csn</Filter>
-    </ClCompile>
-    <ClCompile Include="csn\remote_operations_generic_ros_pdus.cxx">
-      <Filter>csn</Filter>
-    </ClCompile>
-    <ClCompile Include="csn\remote_operations_useful_definitions.cxx">
+    <ClCompile Include="csn\bug_001.cxx">
       <Filter>csn</Filter>
     </ClCompile>
     <ClCompile Include="asn_grammar.cxx">
-      <Filter>Source Files</Filter>
+      <Filter>out</Filter>
     </ClCompile>
     <ClCompile Include="asn_lex.cxx">
-      <Filter>Source Files</Filter>
+      <Filter>out</Filter>
     </ClCompile>
     <ClCompile Include="asn_ref_grammar.cxx">
-      <Filter>Source Files</Filter>
+      <Filter>out</Filter>
     </ClCompile>
     <ClCompile Include="asn_ref_lex.cxx">
+      <Filter>out</Filter>
+    </ClCompile>
+    <ClCompile Include="IndentStream.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="csn\remote_operations_abstract_syntaxes.cxx">
-      <Filter>csn</Filter>
-    </ClCompile>
-    <ClCompile Include="csn\bug_001.cxx">
-      <Filter>csn</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -64,26 +55,11 @@
     <ClInclude Include="unixstd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="csn\iso8823_presentation.h">
-      <Filter>csn</Filter>
-    </ClInclude>
     <ClInclude Include="asn_grammar.hxx">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="asn_ref_grammar.hxx">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="csn\reliable_transfer_apdu.h">
-      <Filter>csn</Filter>
-    </ClInclude>
-    <ClInclude Include="csn\remote_operations_information_objects.h">
-      <Filter>csn</Filter>
-    </ClInclude>
-    <ClInclude Include="csn\remote_operations_generic_ros_pdus.h">
-      <Filter>csn</Filter>
-    </ClInclude>
-    <ClInclude Include="csn\remote_operations_useful_definitions.h">
-      <Filter>csn</Filter>
     </ClInclude>
     <ClInclude Include="asn_lex.hxx">
       <Filter>Header Files</Filter>
@@ -91,39 +67,52 @@
     <ClInclude Include="asn_ref_lex.hxx">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="csn\remote_operations_abstract_syntaxes.h">
-      <Filter>csn</Filter>
-    </ClInclude>
     <ClInclude Include="csn\bug_001.h">
       <Filter>csn</Filter>
     </ClInclude>
+    <ClInclude Include="IndentStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="csn\iso8823_presentation.inl">
-      <Filter>csn</Filter>
-    </None>
-    <None Include="csn\reliable_transfer_apdu.inl">
-      <Filter>csn</Filter>
-    </None>
-    <None Include="csn\remote_operations_information_objects.inl">
-      <Filter>csn</Filter>
-    </None>
-    <None Include="csn\remote_operations_generic_ros_pdus.inl">
-      <Filter>csn</Filter>
-    </None>
     <None Include="ASN.1.bnf" />
-    <None Include="asn_ref_grammar.out" />
     <None Include="asn\bug-001.asn">
       <Filter>asn</Filter>
     </None>
-    <None Include="asn_grammar.out" />
+    <None Include="asn_grammar.out">
+      <Filter>out</Filter>
+    </None>
+    <None Include="asn_ref_grammar.out">
+      <Filter>out</Filter>
+    </None>
+    <None Include="asn\ISO8823-PRESENTATION.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\ACSE-1.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\Shop.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\Items.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\Product.asn" />
   </ItemGroup>
   <ItemGroup>
-    <Bison Include="asn_grammar.y" />
-    <Bison Include="asn_ref_grammar.y" />
+    <Bison Include="asn_grammar.y">
+      <Filter>bnf</Filter>
+    </Bison>
+    <Bison Include="asn_ref_grammar.y">
+      <Filter>bnf</Filter>
+    </Bison>
   </ItemGroup>
   <ItemGroup>
-    <Flex Include="asn_lex.l" />
-    <Flex Include="asn_ref_lex.l" />
+    <Flex Include="asn_ref_lex.l">
+      <Filter>bnf</Filter>
+    </Flex>
+    <Flex Include="asn_lex.l">
+      <Filter>bnf</Filter>
+    </Flex>
   </ItemGroup>
 </Project>
