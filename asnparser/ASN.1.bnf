@@ -7,6 +7,8 @@ starts with 		followed by 	 						object contains
 &lower-case 		a type field (&Upper-case) 				a variable-type value 
 &Upper-case 		a type or a type reference (Upper-case) a fixed-type value set 
 &Upper-case 		a type field (&Upper-case) 				a variable-type value set
+&lower-case 		a class name (UPPER-CASES) 				an information object 
+&Upper-case 		a class name (UPPER-CASES) 				an information object  set
 */
 
 ModuleDefinition 		::= ModuleIdentifier DEFINITIONS EncodingReferenceDefault TagDefault ExtensionDefault "::=" BEGIN ModuleBody EncodingControlSections END;
