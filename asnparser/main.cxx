@@ -198,6 +198,7 @@ extern int optind;
 #include <iomanip>
 #include <cstring>
 #include <assert.h>
+#include <limits.h>
 #include "asn_grammar.h"
 
 #ifdef _WIN32
