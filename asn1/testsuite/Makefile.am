@@ -21,23 +21,27 @@
 #
 
 AUTOMAKE_OPTIONS = dist-zip
+EXTRA_DIST = asn1test.dsp asn1test.vcproj test.asn
 
-EXTRA_DIST		= h323test.dsp h323test.vcproj
+AM_CPPFLAGS =  @PIPEFLAG@ @DEBUGFLAG@ -I$(top_builddir)/asn1 -I$(top_srcdir)/asn1 -I$(top_builddir)/asnh323
 
-TESTS = h323test
-check_PROGRAMS = h323test
+TESTS = asn1test
 
-noinst_HEADERS 	= asn1test.h
+check_PROGRAMS = asn1test
 
-AM_CPPFLAGS =  @PIPEFLAG@ @DEBUGFLAG@  -I$(top_builddir)/asn1 -I$(top_srcdir)/asn1 -I$(top_builddir)/asnh323
+asn1test_LDADD =$(top_builddir)/asn1/libasn1.a @LIBSTL@
 
-h323test_LDADD =$(top_builddir)/asnh323/libasnh323.a $(top_builddir)/asn1/libasn1.a @LIBSTL@
-			
-h323test_SOURCES = \
-	h323test.cpp \
-	h225test.cpp \
-	h245test.cpp \
-	h248test.cpp \
-	h450test.cpp 
-			        
-h323test_LDFLAGS = @LDFLAGS@
+BUILT_SOURCES = myhttp.cxx test1.cxx test1.h test1.inl myhttp.h myhttp.inl
+	
+asn1test_SOURCES = $(BUILT_SOURCES) asn1test.cpp 	
+	
+
+$(BUILT_SOURCES) : test1.asn
+	@ASNPARSER@ -v -c $(srcdir)/test1.asn
+	@ASNPARSER@ -v -c -o cxx $(srcdir)/test1.asn
+
+DISTFILES = $(DIST_COMMON) $(EXTRA_DIST) asn1test.h asn1test.cpp
+
+CLEANFILES = $(BUILT_SOURCES)
+
+asn1test_LDFLAGS = @LDFLAGS@

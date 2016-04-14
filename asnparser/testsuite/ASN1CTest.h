@@ -16,7 +16,7 @@ namespace ASN1 {
 		~ASN1CTest();
 
 		void test03_enum_OK();
-		void test07_int_OK();
+		void test17_tags_OK();
 
 		void setUp();
 		void tearDown();

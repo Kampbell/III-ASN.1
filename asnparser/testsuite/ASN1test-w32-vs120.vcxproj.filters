@@ -4,7 +4,6 @@
     <ClCompile Include="ASN1CTest.cpp" />
     <ClCompile Include="asn1test.cpp" />
     <ClCompile Include="ASN1TestSuite.cpp" />
-    <ClCompile Include="csn\TEST.cxx" />
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="TESTTest.cpp" />
     <ClCompile Include="csn\ModuleTestEmpty.cxx">
@@ -40,12 +39,14 @@
     <ClCompile Include="csn\MyHTTP.cxx">
       <Filter>csn</Filter>
     </ClCompile>
+    <ClCompile Include="csn\TEST.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ASN1CTest.h" />
     <ClInclude Include="asn1test.h" />
     <ClInclude Include="ASN1TestSuite.h" />
-    <ClInclude Include="csn\TEST.h" />
     <ClInclude Include="TESTTest.h" />
     <ClInclude Include="csn\ModuleTestEmpty.h">
       <Filter>csn</Filter>
@@ -80,14 +81,12 @@
     <ClInclude Include="csn\MyHTTP.h">
       <Filter>csn</Filter>
     </ClInclude>
+    <ClInclude Include="csn\TEST.h">
+      <Filter>csn</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="asn\TEST.asn" />
-    <None Include="csn\TEST.inl" />
     <None Include="x" />
-    <None Include="asn1c\TEST.asn">
-      <Filter>asn</Filter>
-    </None>
     <None Include="asn\00-empty-OK.asn1">
       <Filter>asn</Filter>
     </None>
@@ -453,6 +452,12 @@
     </None>
     <None Include="asn\32-sequence-of-OK.asn1-TODO">
       <Filter>asn</Filter>
+    </None>
+    <None Include="asn\TEST.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="csn\TEST.inl">
+      <Filter>csn</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

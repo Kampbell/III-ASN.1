@@ -273,7 +273,6 @@
     <None Include="asn1c\96-type-identifier-OK.asn1" />
     <None Include="asn1c\98-attribute-class-OK.asn1" />
     <None Include="asn1c\99-class-sample-OK.asn1" />
-    <None Include="asn1c\TEST.asn" />
     <None Include="asn\00-empty-OK.asn1" />
     <None Include="asn\01-empty-OK.asn1" />
     <None Include="asn\03-enum-OK.asn1" />

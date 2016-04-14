@@ -7,11 +7,13 @@
 #endif
 
 #include "csn/ModuleTestEnum1.h"
+#include "csn/ModuleTestTags.h"
 
 #include "ASN1CTest.h"
 using namespace std;
 using namespace ASN1;
 using namespace ModuleTestEnum1;
+using namespace ModuleTestTags;
 
 void enc(CoderEnv& env,  vector<char>& strm, const AbstractData& v1, const char* encodedStrm) {
 	bool result = true;
@@ -122,6 +124,21 @@ void ASN1CTest::test03_enum_OK() {
 		assert(asn2.asInt() == 12);
 	}
 }
+void ASN1CTest::test17_tags_OK() {
+	bool result = true;
+	vector<char> strm;
+	const char* data;
+	{
+		strm.clear();
+		T1 i1(12);
+		T1 i2(10);
+		assert(i1 == 12);
+		assert(i2 == 10);
+		T1 i3(i1 + i2);
+		assert(i3 == 22);
+	}
+}
+
 void ASN1CTest::setUp() {
 	env.set_encodingRule(CoderEnv::ber);
 }
@@ -132,6 +149,7 @@ CppUnit::Test* ASN1CTest::suite() {
 	CppUnit::TestSuite* pSuite = new CppUnit::TestSuite("ASN1CTest");
 
 	CppUnit_addTest(pSuite, ASN1CTest, test03_enum_OK);
+	CppUnit_addTest(pSuite, ASN1CTest, test17_tags_OK);
 
 	return pSuite;
 }
