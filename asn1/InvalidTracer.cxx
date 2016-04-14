@@ -59,8 +59,10 @@ private:
   using ConstVisitor::do_visit;
   bool do_visit(const Null& value);
   bool do_visit(const BOOLEAN& value);
+  bool do_visit(const REAL& value);
   bool do_visit(const INTEGER& value);
   bool do_visit(const ENUMERATED& value);
+  bool do_visit(const RELATIVE_OID& value);
   bool do_visit(const OBJECT_IDENTIFIER& value);
   bool do_visit(const BIT_STRING& value) ;
   bool do_visit(const OCTET_STRING& value);
@@ -92,7 +94,11 @@ bool InvalidTracer::do_visit(const BOOLEAN& value)
   return true;
 }
 
-bool InvalidTracer::do_visit(const INTEGER& value)
+bool InvalidTracer::do_visit(const REAL& value)
+{
+	return true;
+}
+ bool InvalidTracer::do_visit(const INTEGER& value)
 {
   if (value.getLowerLimit() >= 0)
   {
@@ -121,6 +127,16 @@ bool InvalidTracer::do_visit(const ENUMERATED& value)
   if (value.asInt() > value.getMaximum())
   {
     strm << " This ENUMERATED has invalid value " << value.asInt();
+    return false;
+  }
+  return true;
+}
+
+bool InvalidTracer::do_visit(const RELATIVE_OID& value)
+{
+  if (value.levels() == 0)
+  {
+    strm << " This RELATIVE_OID is not assigned";
     return false;
   }
   return true;

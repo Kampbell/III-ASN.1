@@ -111,6 +111,11 @@ bool AVNEncoder::do_visit(const BOOLEAN& value)
   return strm.good();
 }
 
+bool AVNEncoder::do_visit(const REAL& value)
+{
+	return false;
+}
+
 bool AVNEncoder::do_visit(const INTEGER& value)
 {
   if (!value.constrained() || value.getLowerLimit() < 0)
@@ -137,6 +142,15 @@ bool AVNEncoder::do_visit(const ENUMERATED& value)
     strm << name;
   else
     strm << value.asInt();
+  return strm.good();
+}
+
+bool AVNEncoder::do_visit(const RELATIVE_OID& value)
+{
+  strm << "{ ";
+  for (unsigned i = 0;  i < value.levels() && strm.good(); ++i)
+    strm << value[i] << ' ';
+  strm << "}";
   return strm.good();
 }
 
@@ -210,6 +224,31 @@ bool AVNEncoder::do_visit(const OCTET_STRING& value)
 bool AVNEncoder::do_visit(const AbstractString& value)
 {
   strm << '\"' << static_cast<const ASN1_STD string&>(value) << '\"';
+  return strm.good();
+}
+
+bool AVNEncoder::do_visit(const UTF8String& value)
+{
+  ASN1_STD vector<char> tmp;
+  tmp.resize(value.size()*2+1, 0);
+  int len = wcstombs(&*tmp.begin(), &*value.begin(), value.size());
+  if (len != -1)
+  {
+    tmp[len] = 0;
+    strm << '\"' << &(*tmp.begin()) << '\"';
+  }
+  else // output Quadruple form
+  {
+    strm << '{';
+    for (unsigned i = 0; i < value.size() && strm.good(); ++i)
+    {
+      strm << "{ 0, 0, " << (int) (value[i] >> 8) << ", " << (int) value[i]  << '}';
+      if (strm.good() && i != value.size()-1)
+        strm << ", ";
+    }
+    if (strm.good())
+      strm << '}';
+  }
   return strm.good();
 }
 
@@ -356,6 +395,11 @@ bool AVNPrinter::do_visit(const BOOLEAN& value)
   return true;
 }
 
+bool AVNPrinter::do_visit(const REAL& value)
+{
+	return false;
+}
+
 bool AVNPrinter::do_visit(const INTEGER& value)
 {
   if (!value.constrained() || value.getLowerLimit() < 0)
@@ -382,6 +426,15 @@ bool AVNPrinter::do_visit(const ENUMERATED& value)
     helper.Print("%s", name);
   else
     helper.Print("%d", value.asInt());
+  return true;
+}
+
+bool AVNPrinter::do_visit(const RELATIVE_OID& value)
+{
+  helper.Print("{ ");
+  for (unsigned i = 0;  i < value.levels(); ++i)
+    helper.Print("%u ", value[i]);
+  helper.Print("}");
   return true;
 }
 
@@ -447,6 +500,30 @@ bool AVNPrinter::do_visit(const OCTET_STRING& value)
 bool AVNPrinter::do_visit(const AbstractString& value)
 {
   helper.Print("\"%s\"", static_cast<const ASN1_STD string&>(value).c_str());
+  return true;
+}
+
+bool AVNPrinter::do_visit(const UTF8String& value)
+{
+  ASN1_STD vector<char> tmp;
+  tmp.resize(value.size()*2+1, 0);
+  int len = wcstombs(&*tmp.begin(), &*value.begin(), value.size());
+  if (len != -1)
+  {
+    tmp[len] = 0;
+    helper.Print("\"%s\"", &(*tmp.begin()));
+  }
+  else // output Quadruple form
+  {
+    helper.Print("{");
+    for (unsigned i = 0; i < value.size() && true; ++i)
+    {
+      helper.Print("{ 0, 0, %d, %d }", (int) (value[i] >> 8), (int) value[i]);
+      if (i != value.size()-1)
+        helper.Print(", ");
+    }
+    helper.Print("}");
+  }
   return true;
 }
 

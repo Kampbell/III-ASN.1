@@ -168,6 +168,7 @@
 #endif
 
 #else
+  #define  REAL_TYPE          double
   #define  INT_TYPE           int
   #define UINT_TYPE  unsigned int
 #endif
@@ -447,15 +448,8 @@ namespace ASN1 {
 
 
   public:
-    friend ASN1_STD ostream & operator<<(
-             ASN1_STD ostream &strm,        // Stream to print the object into.
-             const AbstractData & obj       // Object to print to the stream.
-             );
-
-    friend ASN1_STD istream & operator >>(
-              ASN1_STD istream &strm,       // Stream which stores the object into.
-              AbstractData & obj            // Object to retrive from the stream.
-              );
+    friend ASN1_STD ostream & operator<<(ASN1_STD ostream &strm, const AbstractData & obj);
+    friend ASN1_STD istream & operator >>(ASN1_STD istream &strm, AbstractData & obj);
 
     iostate get_from(ASN1_STD istream &);
     iostate print_on(ASN1_STD ostream &) const ;
@@ -591,6 +585,98 @@ namespace ASN1 {
     virtual bool do_accept(Visitor&);
     virtual bool do_accept(ConstVisitor&) const;
     bool value;
+  };
+
+  class ASN1_API REAL : public ConstrainedObject
+  {
+  protected:
+    REAL(const void* info);
+  public:
+    typedef REAL_TYPE real_type;
+    typedef REAL_TYPE value_type;
+    typedef real_type& reference;
+    typedef real_type const_reference;
+
+    REAL() : ConstrainedObject(&theInfo), value(0){}
+    REAL(real_type val, const void* info = &theInfo);
+    REAL(const REAL& other);
+
+    REAL& operator = (const REAL& val) { setValue(val.value) ; return *this;}
+    REAL& operator = (real_type val) { setValue(val); return *this;}
+    real_type getValue() const { return static_cast<real_type>(value);}
+
+    bool isValid() const { return isStrictlyValid() || getConstraintType() == ExtendableConstraint;  }
+    bool isStrictlyValid() const;
+
+    REAL* clone() const { return static_cast<REAL*>(do_clone()); }
+    static AbstractData* create(const void*);
+    void swap(REAL& that) { ASN1_STD swap(value, that.value); }
+
+    bool operator == (const REAL& rhs) const { return getValue() == rhs.getValue(); }
+    bool operator != (const REAL& rhs) const { return getValue() != rhs.getValue(); }
+    bool operator <  (const REAL& rhs) const { return getValue() <  rhs.getValue(); }
+    bool operator >  (const REAL& rhs) const { return getValue() >  rhs.getValue(); }
+    bool operator <= (const REAL& rhs) const { return getValue() <= rhs.getValue(); }
+    bool operator >= (const REAL& rhs) const { return getValue() >= rhs.getValue(); }
+
+#if __GNUC__> 2 || __GNUC_MINOR__ > 95
+    friend bool operator == (real_type lhs, const REAL& rhs) { return lhs == rhs.getValue(); }
+    friend bool operator != (real_type lhs, const REAL& rhs) { return lhs != rhs.getValue(); }
+    friend bool operator <  (real_type lhs, const REAL& rhs) { return lhs <  rhs.getValue(); }
+    friend bool operator >  (real_type lhs, const REAL& rhs) { return lhs >  rhs.getValue(); }
+    friend bool operator <= (real_type lhs, const REAL& rhs) { return lhs <= rhs.getValue(); }
+    friend bool operator >= (real_type lhs, const REAL& rhs) { return lhs >= rhs.getValue(); }
+#endif
+
+    bool operator == (real_type rhs) const { return getValue() == rhs; }
+    bool operator != (real_type rhs) const { return getValue() != rhs; }
+    bool operator <  (real_type rhs) const { return getValue() <  rhs; }
+    bool operator >  (real_type rhs) const { return getValue() >  rhs; }
+    bool operator <= (real_type rhs) const { return getValue() <= rhs; }
+    bool operator >= (real_type rhs) const { return getValue() >= rhs; }
+
+    REAL& operator += (real_type val) { value += val; return *this; }
+    REAL& operator -= (real_type val) { value -= val; return *this; }
+    REAL& operator *= (real_type val) { value *= val; return *this; }
+    REAL& operator /= (real_type val) { value /= val; return *this; }
+
+    REAL& operator += (const REAL& val) { value += val.getValue(); return *this; }
+    REAL& operator -= (const REAL& val) { value -= val.getValue(); return *this; }
+    REAL& operator *= (const REAL& val) { value *= val.getValue(); return *this; }
+    REAL& operator /= (const REAL& val) { value /= val.getValue(); return *this; }
+
+    REAL& operator ++ ()    { ++ value  ; return *this;}
+    REAL  operator ++ (int) { REAL result(*this); ++value; return result;}
+    REAL& operator -- ()    { -- value  ; return *this;}
+    REAL  operator -- (int) { REAL result(*this); --value; return result;}
+
+    real_type operator + (const REAL& rhs) const { real_type t(getValue()); return t+=rhs.getValue();}
+    real_type operator - (const REAL& rhs) const { real_type t(getValue()); return t-=rhs.getValue();}
+    real_type operator * (const REAL& rhs) const { real_type t(getValue()); return t*=rhs.getValue();}
+    real_type operator / (const REAL& rhs) const { real_type t(getValue()); return t/=rhs.getValue();}
+
+    friend real_type operator + (real_type lhs, const REAL& rhs) { real_type t(lhs); return t+=rhs.getValue();}
+    friend real_type operator - (real_type lhs, const REAL& rhs) { real_type t(lhs); return t-=rhs.getValue();}
+    friend real_type operator * (real_type lhs, const REAL& rhs) { real_type t(lhs); return t*=rhs.getValue();}
+    friend real_type operator / (real_type lhs, const REAL& rhs) { real_type t(lhs); return t/=rhs.getValue();}
+
+    real_type operator + (real_type rhs) { real_type t(getValue()); return t+=rhs;}
+    real_type operator - (real_type rhs) { real_type t(getValue()); return t-=rhs;}
+    real_type operator * (real_type rhs) { real_type t(getValue()); return t*=rhs;}
+    real_type operator / (real_type rhs) { real_type t(getValue()); return t/=rhs;}
+
+    static const InfoType theInfo;
+    static bool equal_type(const ASN1::AbstractData& type)
+    { return type.info() == reinterpret_cast<const ASN1::AbstractData::InfoType*>(&theInfo); }
+
+  protected:
+    void setValue(real_type val) { value = static_cast<REAL_TYPE>(val); }
+    REAL_TYPE value;
+  private:
+    virtual INT_TYPE do_compare(const AbstractData& other) const;
+    virtual AbstractData* do_clone() const ;
+    virtual bool do_accept(Visitor&);
+    virtual bool do_accept(ConstVisitor&) const;
   };
 
   /** Class for ASN Integer type.
@@ -924,6 +1010,75 @@ namespace ASN1 {
     const char* getName() const;
     bool setFromName(const ASN1_STD string&);
     const char** names() { return info()->names; }
+  };
+
+
+  /** Class for ASN Relative Object Identifier type.
+   */
+  class ASN1_API RELATIVE_OID : public AbstractData
+  {
+  protected:
+    RELATIVE_OID(const void* info) : AbstractData(info) {}
+  public:
+    static const InfoType theInfo;
+
+    RELATIVE_OID() : AbstractData(&theInfo) {}
+
+    template <class InputIterator>
+    RELATIVE_OID(InputIterator first, InputIterator last, const void* info = &theInfo)
+      : AbstractData(info),value(first, last)
+      { }
+
+    RELATIVE_OID(const RELATIVE_OID & other);
+    RELATIVE_OID(unsigned nelem, .../*list of unsigned*/);
+    RELATIVE_OID & operator=(const RELATIVE_OID & other)
+    {
+      // extensibility and tags are not to be assigned,
+      // therefore the parent assignment operator is not called
+      value = other.value;
+      return *this;
+    }
+
+
+    RELATIVE_OID * clone() const { return static_cast<RELATIVE_OID*>(do_clone());}
+    static AbstractData* create(const void* info);
+    void swap(RELATIVE_OID& that) { value.swap(that.value); }
+
+    bool isValid() const { return value.size() != 0;}
+    bool isStrictlyValid() const { return value.size() != 0;}
+
+    unsigned levels() const { return (unsigned)value.size(); }
+    const unsigned operator[](unsigned idx) const { return value[idx]; }
+    void append(unsigned arcValue) { value.push_back(arcValue); }
+    void trim(unsigned levels = 1) { value.erase(value.end()-levels, value.end()); }
+
+    void assign(unsigned nelem, ... /*list of unsigned*/);
+    void assign(unsigned nelem, va_list lst);
+
+    template <class InputIterator>
+    void assign(InputIterator first, InputIterator last)
+    { value.assign(first, last); }
+
+    bool decodeCommon(const char* data, unsigned dataLen);
+    void encodeCommon(ASN1_STD vector<char> & eObjId) const;
+
+    // comparison operators
+    bool operator == (const RELATIVE_OID& rhs) const { return value == rhs.value; }
+    bool operator != (const RELATIVE_OID& rhs) const { return value != rhs.value; }
+    bool operator <  (const RELATIVE_OID& rhs) const { return value <  rhs.value; }
+    bool operator >  (const RELATIVE_OID& rhs) const { return value >  rhs.value; }
+    bool operator <= (const RELATIVE_OID& rhs) const { return value <= rhs.value; }
+    bool operator >= (const RELATIVE_OID& rhs) const { return value >= rhs.value; }
+
+    static bool equal_type(const ASN1::AbstractData& type)
+    { return type.info() == reinterpret_cast<const ASN1::AbstractData::InfoType*>(&theInfo); }
+
+  private:
+    virtual INT_TYPE do_compare(const AbstractData& other) const;
+    virtual AbstractData * do_clone() const;
+    virtual bool do_accept(Visitor&);
+    virtual bool do_accept(ConstVisitor&) const;
+    ASN1_STD vector<unsigned> value;
   };
 
 
@@ -1483,11 +1638,7 @@ namespace ASN1 {
     //
     // AbstractData standard derived class methods.
     //
-#ifdef FIXME
-	static const AbstractType* typeStatic();
-#else
 	static const AbstractData* typeStatic();
-#endif
 	//
     // Specialized access: same methods as ANSI Standard Library String.
     //
@@ -1556,6 +1707,94 @@ namespace ASN1 {
     static const InfoType theInfo;
     static bool equal_type(const ASN1::AbstractData& type)
     {return type.info() == reinterpret_cast<const ASN1::AbstractData::InfoType*>(&theInfo);}
+  };
+
+  /**
+   * Class for ASN UTF8 String type.
+   */
+  class ASN1_API UTF8String : public ConstrainedObject, public ASN1_STD wstring
+  {
+  protected:
+    typedef ASN1_STD wstring base_string;
+    UTF8String(const void* info);
+    struct InfoType
+    {
+      CreateFun create;
+      unsigned tag;
+      const void* parent_info;
+      unsigned type;
+      INT_TYPE lowerLimit;
+      UINT_TYPE upperLimit;
+      wchar_t firstChar, lastChar;
+      unsigned charSetUnalignedBits;
+      unsigned charSetAlignedBits;
+    };
+  public:
+    typedef base_string::value_type value_type;
+    typedef base_string::size_type size_type;
+    typedef base_string::difference_type difference_type;
+    typedef base_string::reference reference;
+    typedef base_string::const_reference const_reference;
+
+    UTF8String();
+    UTF8String(const base_string& str, const void* info = &theInfo);
+    UTF8String(const value_type* str, const void* info = &theInfo);
+    UTF8String(const UTF8String & other);
+    UTF8String & operator=(const value_type * str) { return assign(str);}
+    UTF8String & operator=(const base_string & str) { return  assign(str);}
+    UTF8String & operator=(value_type c) { return  assign(1,c);}
+    UTF8String& operator+=(const base_string& rhs) { return append(rhs);}
+    UTF8String& operator+=(const value_type *s) { return append(s);}
+    UTF8String& operator+=(value_type c) { return append(1, c);}
+    UTF8String& append(const base_string& str) { base_string::append(str); return *this;}
+    UTF8String& append(const base_string& str, size_type pos, size_type n) { base_string::append(str,pos, n); return *this;}
+    UTF8String& append(const value_type *s, size_type n) { base_string::append(s,n); return *this;}
+    UTF8String& append(const value_type *s) { base_string::append(s); return *this;}
+    UTF8String& append(size_type n, value_type c) { base_string::append(n,c); return *this;}
+    UTF8String& append(const_iterator first, const_iterator last) { base_string::append(first, last); return *this;}
+    UTF8String& assign(const base_string& str) { base_string::assign(str); return *this;}
+    UTF8String& assign(const base_string& str,size_type pos, size_type n) { base_string::assign(str,pos,n); return *this;}
+    UTF8String& assign(const value_type *s, size_type n) { base_string::assign(s,n); return *this;}
+    UTF8String& assign(const value_type *s) { base_string::assign(s); return *this;}
+    UTF8String& assign(size_type n, value_type c) { base_string::assign(n,c); return *this;}
+    UTF8String& assign(const_iterator first, const_iterator last) { base_string::assign(first,last); return *this;}
+    UTF8String& insert(size_type p0, const base_string& str) { base_string::insert(p0, str); return *this;}
+    UTF8String& insert(size_type p0, const base_string& str, size_type pos, size_type n) { base_string::insert(p0,str,pos,n); return *this;}
+    UTF8String& insert(size_type p0, const value_type *s, size_type n) { base_string::insert(p0,s,n); return *this;}
+    UTF8String& insert(size_type p0, const value_type *s) { base_string::insert(p0,s); return *this;}
+    UTF8String& insert(size_type p0, size_type n, value_type c) { base_string::insert(p0,n,c); return *this;}
+
+    INT_TYPE compare(const UTF8String& other) const { return base_string::compare(other); }
+
+    UTF8String * clone() const { return static_cast<UTF8String *>(do_clone()); }
+    static AbstractData* create(const void* info);
+    void swap(UTF8String& other) { base_string::swap(other); }
+
+    bool isValid() const;
+    bool isStrictlyValid() const;
+
+    friend ASN1_STD ostream& operator << (ASN1_STD ostream& os, const UTF8String& data)
+    { return os << static_cast<const AbstractData&>(data); }
+
+    wchar_t getFirstChar() const { return info()->firstChar; }
+    wchar_t getLastChar() const { return info()->lastChar; }
+    unsigned getNumBits(bool align) const {
+      return align ? info()->charSetAlignedBits : info()->charSetUnalignedBits;
+    }
+
+    static const InfoType theInfo;
+    static bool equal_type(const ASN1::AbstractData& type)
+    {return type.info() == reinterpret_cast<const ASN1::AbstractData::InfoType*>(&theInfo);}
+    size_type first_illegal_at() const;
+
+  private:
+    bool legalCharacter(wchar_t ch) const;
+    const InfoType* info() const { return static_cast<const InfoType*>(info_);}
+
+    INT_TYPE do_compare(const AbstractData& other) const;
+    virtual AbstractData * do_clone() const;
+    virtual bool do_accept(Visitor&);
+    virtual bool do_accept(ConstVisitor&) const;
   };
 
   /**
@@ -2446,6 +2685,7 @@ namespace ASN1 {
     static const InfoType theInfo;
     static bool equal_type(const ASN1::AbstractData& type)
     {return type.info() == reinterpret_cast<const ASN1::AbstractData::InfoType*>(&theInfo);}
+	const T& get_type() const;// { return *static_cast<type::const_pointer>(fields[0]); }
 
   private:
     void clean(iterator i)  { delete &*i; }
@@ -2554,6 +2794,7 @@ namespace ASN1 {
     static const InfoType theInfo;
     static bool equal_type(const ASN1::AbstractData& type)
     {return type.info() == reinterpret_cast<const ASN1::AbstractData::InfoType*>(&theInfo);}
+
   };
 
   template <class T, class Constraint>
@@ -2730,13 +2971,16 @@ namespace ASN1 {
     virtual ~Visitor(){}
     bool visit(Null& value) { return do_visit(value); }
     bool visit(BOOLEAN& value) { return do_visit(value); }
+    bool visit(REAL& value) { return do_visit(value); }
     bool visit(INTEGER& value) { return do_visit(value); }
     bool visit(IntegerWithNamedNumber& value) { return do_visit(value); }
     bool visit(ENUMERATED& value) { return do_visit(value); }
+    bool visit(RELATIVE_OID& value) { return do_visit(value); }
     bool visit(OBJECT_IDENTIFIER& value) { return do_visit(value); }
     bool visit(OCTET_STRING& value)  { return do_visit(value); }
     bool visit(BIT_STRING& value) { return do_visit(value); }
     bool visit(AbstractString& value) { return do_visit(value); }
+    bool visit(UTF8String& value) { return do_visit(value); }
     bool visit(BMPString& value) { return do_visit(value); }
     bool visit(CHOICE& value) { return do_visit(value); }
     bool visit(SEQUENCE_OF_Base& value) { return do_visit(value); }
@@ -2762,13 +3006,16 @@ namespace ASN1 {
   protected:
     virtual bool do_visit(Null& value)=0;
     virtual bool do_visit(BOOLEAN& value)=0;
+    virtual bool do_visit(REAL& value)=0;
     virtual bool do_visit(INTEGER& value)=0;
     virtual bool do_visit(IntegerWithNamedNumber& value) { return visit(static_cast<INTEGER&>(value));}
     virtual bool do_visit(ENUMERATED& value)=0;
+    virtual bool do_visit(RELATIVE_OID& value)=0;
     virtual bool do_visit(OBJECT_IDENTIFIER& value)=0;
     virtual bool do_visit(OCTET_STRING& value) =0;
     virtual bool do_visit(BIT_STRING& value)=0;
     virtual bool do_visit(AbstractString& value)=0;
+    virtual bool do_visit(UTF8String& value)=0;
     virtual bool do_visit(BMPString& value)=0;
     virtual bool do_visit(CHOICE& value)=0;
     virtual bool do_visit(SEQUENCE_OF_Base& value)=0;
@@ -2867,10 +3114,12 @@ namespace ASN1 {
     bool visit(const INTEGER& value) { return do_visit(value); }
     bool visit(const IntegerWithNamedNumber& value) { return do_visit(value);}
     bool visit(const ENUMERATED& value) { return do_visit(value); }
+    bool visit(const RELATIVE_OID& value) { return do_visit(value); }
     bool visit(const OBJECT_IDENTIFIER& value) { return do_visit(value); }
     bool visit(const BIT_STRING& value) { return do_visit(value); }
     bool visit(const OCTET_STRING& value) { return do_visit(value); }
     bool visit(const AbstractString& value) { return do_visit(value); }
+    bool visit(const UTF8String& value) { return do_visit(value); }
     bool visit(const BMPString& value) { return do_visit(value); }
     bool visit(const CHOICE& value) { return do_visit(value); }
     bool visit(const OpenData& value) { return do_visit(value); }
@@ -2885,10 +3134,12 @@ namespace ASN1 {
     virtual bool do_visit(const INTEGER& value) { return do_visit(static_cast<const AbstractData&>(value)); }
     virtual bool do_visit(const IntegerWithNamedNumber& value) { return do_visit(static_cast<const INTEGER&>(value));}
     virtual bool do_visit(const ENUMERATED& value) { return do_visit(static_cast<const AbstractData&>(value)); }
+    virtual bool do_visit(const RELATIVE_OID& value) { return do_visit(static_cast<const AbstractData&>(value)); }
     virtual bool do_visit(const OBJECT_IDENTIFIER& value) { return do_visit(static_cast<const AbstractData&>(value)); }
     virtual bool do_visit(const BIT_STRING& value) { return do_visit(static_cast<const AbstractData&>(value)); }
     virtual bool do_visit(const OCTET_STRING& value) { return do_visit(static_cast<const AbstractData&>(value)); }
     virtual bool do_visit(const AbstractString& value) { return do_visit(static_cast<const AbstractData&>(value)); }
+    virtual bool do_visit(const UTF8String& value) { return do_visit(static_cast<const AbstractData&>(value)); }
     virtual bool do_visit(const BMPString& value) { return do_visit(static_cast<const AbstractData&>(value)); }
     virtual bool do_visit(const CHOICE& value) { return do_visit(static_cast<const AbstractData&>(value)); }
     virtual bool do_visit(const OpenData& value) { return do_visit(static_cast<const AbstractData&>(value)); }
@@ -2944,10 +3195,12 @@ namespace ASN1 {
     virtual bool do_visit(const BOOLEAN& value);
     virtual bool do_visit(const INTEGER& value);
     virtual bool do_visit(const ENUMERATED& value);
+    virtual bool do_visit(const RELATIVE_OID& value);
     virtual bool do_visit(const OBJECT_IDENTIFIER& value);
     virtual bool do_visit(const BIT_STRING& value);
     virtual bool do_visit(const OCTET_STRING& value);
     virtual bool do_visit(const AbstractString& value);
+    virtual bool do_visit(const UTF8String& value);
     virtual bool do_visit(const BMPString& value);
     virtual bool do_visit(const CHOICE& value);
     virtual bool do_visit(const SEQUENCE_OF_Base& value);
@@ -3012,12 +3265,15 @@ namespace ASN1 {
     using Visitor::do_visit;
     virtual bool do_visit(Null& value);
     virtual bool do_visit(BOOLEAN& value);
+    virtual bool do_visit(REAL& value);
     virtual bool do_visit(INTEGER& value);
     virtual bool do_visit(ENUMERATED& value);
+    virtual bool do_visit(RELATIVE_OID& value);
     virtual bool do_visit(OBJECT_IDENTIFIER& value);
     virtual bool do_visit(BIT_STRING& value);
     virtual bool do_visit(OCTET_STRING& value);
     virtual bool do_visit(AbstractString& value);
+    virtual bool do_visit(UTF8String& value);
     virtual bool do_visit(BMPString& value);
     virtual bool do_visit(CHOICE& value);
     virtual bool do_visit(SEQUENCE_OF_Base& value);
@@ -3090,12 +3346,15 @@ namespace ASN1 {
     using ConstVisitor::do_visit;
     virtual bool do_visit(const Null& value);
     virtual bool do_visit(const BOOLEAN& value);
+    virtual bool do_visit(const REAL& value);
     virtual bool do_visit(const INTEGER& value);
     virtual bool do_visit(const ENUMERATED& value);
+    virtual bool do_visit(const RELATIVE_OID& value);
     virtual bool do_visit(const OBJECT_IDENTIFIER& value);
     virtual bool do_visit(const BIT_STRING& value);
     virtual bool do_visit(const OCTET_STRING& value);
     virtual bool do_visit(const AbstractString& value);
+    virtual bool do_visit(const UTF8String& value);
     virtual bool do_visit(const BMPString& value);
     virtual bool do_visit(const CHOICE& value);
     virtual bool do_visit(const OpenData& value);
@@ -3272,12 +3531,15 @@ namespace ASN1 {
     using Visitor::do_visit;
     virtual bool do_visit(Null& value);
     virtual bool do_visit(BOOLEAN& value);
+    virtual bool do_visit(REAL& value);
     virtual bool do_visit(INTEGER& value);
     virtual bool do_visit(ENUMERATED& value);
+    virtual bool do_visit(RELATIVE_OID& value);
     virtual bool do_visit(OBJECT_IDENTIFIER& value);
     virtual bool do_visit(BIT_STRING& value);
     virtual bool do_visit(OCTET_STRING& value);
     virtual bool do_visit(AbstractString& value);
+    virtual bool do_visit(UTF8String& value);
     virtual bool do_visit(BMPString& value);
     virtual bool do_visit(CHOICE& value);
     virtual bool do_visit(SEQUENCE_OF_Base& value);
@@ -3400,13 +3662,16 @@ namespace ASN1 {
     using ConstVisitor::do_visit;
     virtual bool do_visit(const Null& value);
     virtual bool do_visit(const BOOLEAN& value);
+    virtual bool do_visit(const REAL& value);
     virtual bool do_visit(const INTEGER& value);
     virtual bool do_visit(const IntegerWithNamedNumber& value);
     virtual bool do_visit(const ENUMERATED& value);
+    virtual bool do_visit(const RELATIVE_OID& value);
     virtual bool do_visit(const OBJECT_IDENTIFIER& value);
     virtual bool do_visit(const BIT_STRING& value);
     virtual bool do_visit(const OCTET_STRING& value);
     virtual bool do_visit(const AbstractString& value);
+    virtual bool do_visit(const UTF8String& value);
     virtual bool do_visit(const BMPString& value);
     virtual bool do_visit(const CHOICE& value);
     virtual bool do_visit(const OpenData& value);
@@ -3448,13 +3713,16 @@ namespace ASN1 {
     using Visitor::do_visit;
     virtual bool do_visit(Null& value);
     virtual bool do_visit(BOOLEAN& value);
+    virtual bool do_visit(REAL& value);
     virtual bool do_visit(INTEGER& value);
     virtual bool do_visit(IntegerWithNamedNumber& value);
     virtual bool do_visit(ENUMERATED& value);
+    virtual bool do_visit(RELATIVE_OID& value);
     virtual bool do_visit(OBJECT_IDENTIFIER& value);
     virtual bool do_visit(BIT_STRING& value);
     virtual bool do_visit(OCTET_STRING& value);
     virtual bool do_visit(AbstractString& value);
+    virtual bool do_visit(UTF8String& value);
     virtual bool do_visit(BMPString& value);
     virtual bool do_visit(CHOICE& value);
     virtual bool do_visit(SEQUENCE_OF_Base& value);
@@ -3528,13 +3796,16 @@ namespace ASN1 {
       using ConstVisitor::do_visit;
       virtual bool do_visit(const Null& value);
       virtual bool do_visit(const BOOLEAN& value);
+      virtual bool do_visit(const REAL& value);
       virtual bool do_visit(const INTEGER& value);
       virtual bool do_visit(const IntegerWithNamedNumber& value);
       virtual bool do_visit(const ENUMERATED& value);
+      virtual bool do_visit(const RELATIVE_OID& value);
       virtual bool do_visit(const OBJECT_IDENTIFIER& value);
       virtual bool do_visit(const BIT_STRING& value);
       virtual bool do_visit(const OCTET_STRING& value);
       virtual bool do_visit(const AbstractString& value);
+      virtual bool do_visit(const UTF8String& value);
       virtual bool do_visit(const BMPString& value);
       virtual bool do_visit(const CHOICE& value);
       virtual bool do_visit(const OpenData& value);

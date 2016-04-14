@@ -43,12 +43,15 @@ public:
   using ConstVisitor::do_visit;
   bool do_visit(const Null& value) { return true;}
   bool do_visit(const BOOLEAN& value) { return true;}
+  bool do_visit(const REAL& value) { return value.isStrictlyValid(); }
   bool do_visit(const INTEGER& value) { return value.isStrictlyValid(); }
   bool do_visit(const ENUMERATED& value) { return value.isStrictlyValid(); }
+  bool do_visit(const RELATIVE_OID& value) { return value.isStrictlyValid(); }
   bool do_visit(const OBJECT_IDENTIFIER& value) { return value.isStrictlyValid(); }
   bool do_visit(const BIT_STRING& value) { return value.isStrictlyValid(); }
   bool do_visit(const OCTET_STRING& value) { return value.isStrictlyValid(); }
   bool do_visit(const AbstractString& value) { return value.isStrictlyValid(); }
+  bool do_visit(const UTF8String& value) { return value.isStrictlyValid(); }
   bool do_visit(const BMPString& value) { return value.isStrictlyValid(); }
   bool do_visit(const CHOICE& value) { return value.isStrictlyValid(); }
   bool do_visit(const OpenData& value){ return value.isStrictlyValid(); }
@@ -70,12 +73,15 @@ public:
   using ConstVisitor::do_visit;
   bool do_visit(const Null& value){ return true;}
   bool do_visit(const BOOLEAN& value){ return true;}
+  bool do_visit(const REAL& value){ return value.isValid(); }
   bool do_visit(const INTEGER& value){ return value.isValid(); }
   bool do_visit(const ENUMERATED& value){ return value.isValid(); }
+  bool do_visit(const RELATIVE_OID& value){ return value.isValid(); }
   bool do_visit(const OBJECT_IDENTIFIER& value){ return value.isValid(); }
   bool do_visit(const BIT_STRING& value){ return value.isValid(); }
   bool do_visit(const OCTET_STRING& value){ return value.isValid(); }
   bool do_visit(const AbstractString& value){ return value.isValid(); }
+  bool do_visit(const UTF8String& value){ return value.isValid(); }
   bool do_visit(const BMPString& value){ return value.isValid(); }
   bool do_visit(const CHOICE& value){ return value.isValid(); }
   bool do_visit(const OpenData& value){ return value.isValid(); }
@@ -103,6 +109,11 @@ bool AbstractData::isStrictlyValid() const
   return accept(checker);
 }
 
+bool REAL::isStrictlyValid() const
+{
+	return false;
+}
+
 bool INTEGER::isStrictlyValid() const
 {
   INT_TYPE v = static_cast<INT_TYPE>(value);
@@ -125,6 +136,41 @@ bool AbstractString::isStrictlyValid() const
   return size() >= static_cast<UINT_TYPE>(getLowerLimit()) &&
          size() <= getUpperLimit() &&
          find_first_invalid() == ASN1_STD string::npos;
+}
+
+bool UTF8String::legalCharacter(wchar_t ch) const
+{
+  if (ch < getFirstChar())
+    return false;
+
+  if (ch > getLastChar())
+    return false;
+
+  return true;
+}
+
+UTF8String::size_type UTF8String::first_illegal_at() const
+{
+  const_iterator first = begin(), last = end();
+  for (; first != end(); ++first)
+    if (!legalCharacter(*first))
+      break;
+
+  return first-begin();
+}
+
+bool UTF8String::isValid() const
+{
+  return size() >= static_cast<UINT_TYPE>(getLowerLimit()) &&
+         (size() <= getUpperLimit() || extendable()) &&
+         first_illegal_at() == size();
+}
+
+bool UTF8String::isStrictlyValid() const
+{
+  return size() >= static_cast<UINT_TYPE>(getLowerLimit()) &&
+         size() <= getUpperLimit() &&
+         first_illegal_at() == size();
 }
 
 bool BMPString::legalCharacter(wchar_t ch) const

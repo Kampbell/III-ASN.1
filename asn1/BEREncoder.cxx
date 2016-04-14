@@ -112,12 +112,22 @@ private:
     ++length;
     return true;
   }
+  bool do_visit(const REAL& value) {
+    length += getIntegerDataLength(value.getValue());
+    return true;
+  }
   bool do_visit(const INTEGER& value) {
     length += getIntegerDataLength(value.getValue());
     return true;
   }
   bool do_visit(const ENUMERATED& value) {
     length += getIntegerDataLength(value.asInt());
+    return true;
+  }
+  bool do_visit(const RELATIVE_OID& value) {
+    ASN1_STD vector<char> dummy;
+    value.encodeCommon(dummy);
+    length += dummy.size();
     return true;
   }
   bool do_visit(const OBJECT_IDENTIFIER& value) {
@@ -136,6 +146,10 @@ private:
   }
   bool do_visit(const AbstractString& value) {
     length += value.size();
+    return true;
+  }
+  bool do_visit(const UTF8String& value) {
+    length += value.size()*2; //FIXME
     return true;
   }
   bool do_visit(const BMPString& value) {
@@ -253,6 +267,16 @@ bool BEREncoder::do_visit(const ENUMERATED& value)
   return true;
 }
 
+bool BEREncoder::do_visit(const RELATIVE_OID& value)
+{
+  encodeHeader(value);
+  ASN1_STD vector<char> data;
+  value.encodeCommon(data);
+  if(data.size())
+    encodeBlock(&data.front(), data.size());
+  return true;
+}
+
 bool BEREncoder::do_visit(const OBJECT_IDENTIFIER& value)
 {
   encodeHeader(value);
@@ -289,6 +313,17 @@ bool BEREncoder::do_visit(const AbstractString& value)
   encodeHeader(value);
   if(value.size())
     encodeBlock((const char*)value.c_str(), value.size());
+  return true;
+}
+
+bool BEREncoder::do_visit(const UTF8String& value)
+{
+  encodeHeader(value);
+  for (unsigned i = 0; i < value.size(); ++i)
+  {
+    encodeByte(value[i] >> 8);
+    encodeByte(value[i]);
+  }
   return true;
 }
 

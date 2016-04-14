@@ -436,6 +436,148 @@ public:
 private:
     map_type rep;
 };
+
+//
+// TYPE-IDENTIFIER
+//
+
+class ASN1_API TYPE_IDENTIFIER
+{
+public:
+    typedef ASN1::OBJECT_IDENTIFIER key_type;
+    class info_type
+    {
+    public:
+        info_type();
+        ASN1::AbstractData* get_Type() const { return m_Type ? ASN1::AbstractData::create(m_Type) : NULL; }
+    protected:
+        const void* m_Type;
+    };
+
+    typedef const info_type* mapped_type;
+
+    class value_type : public ASN1_STD pair<key_type, mapped_type>
+    {
+        typedef ASN1_STD pair<key_type, mapped_type> Inherited;
+    public:
+        value_type(const key_type& key, mapped_type mt) : Inherited(key,mt) {}
+        ASN1::AbstractData* get_Type() const { return second->get_Type(); }
+    };
+
+    typedef value_type& reference;
+    typedef const value_type& const_reference;
+    typedef value_type* pointer;
+    typedef const value_type* const_pointer;
+    typedef ASN1::AssocVector<key_type, mapped_type> map_type;
+
+private:
+#if defined(HP_aCC_RW)
+    typedef ASN1_STD bidirectional_iterator<value_type> my_iterator_traits;
+    typedef ASN1_STD bidirectional_iterator<const value_type> my_const_iterator_traits;
+#else
+    typedef ASN1_STD iterator<ASN1_STD bidirectional_iterator_tag, value_type> my_iterator_traits;
+    typedef ASN1_STD iterator<ASN1_STD bidirectional_iterator_tag, const value_type> my_const_iterator_traits;
+#endif
+public:
+    class iterator : public my_iterator_traits
+    {
+    public:
+        iterator() {}
+        iterator(map_type::iterator i) : itsIter(i) {}
+        map_type::iterator base()   const { return itsIter; }
+        const_reference operator*() const { return *static_cast<const_pointer>(&*itsIter); }
+        const_pointer operator->()  const { return static_cast<const_pointer>(&*itsIter); }
+        iterator& operator++()           { ++itsIter; return *this; }
+        iterator& operator--()           { --itsIter; return *this; }
+        iterator operator++(int)         { iterator t(*this); ++itsIter; return t; }
+        iterator operator--(int)         { iterator t(*this); --itsIter; return t; }
+
+        bool operator==(const iterator& r) const    { return itsIter == r.itsIter; }
+        bool operator!=(const iterator& r) const    { return itsIter != r.itsIter; }
+    private:
+        map_type::iterator itsIter;
+    };
+    class const_iterator : public my_const_iterator_traits
+    {
+    public:
+        const_iterator() {}
+        const_iterator(TYPE_IDENTIFIER::iterator i) : itsIter(i.base()) {}
+        const_iterator(map_type::const_iterator i) : itsIter(i) {}
+        map_type::const_iterator base() const { return itsIter; }
+
+        const_reference operator*() const { return *static_cast<const_pointer>(&*itsIter); }
+        const_pointer operator->() const { return static_cast<const_pointer>(&*itsIter); }
+
+        const_iterator& operator++()          { ++itsIter; return *this; }
+        const_iterator& operator--()          { --itsIter; return *this; }
+        const_iterator operator++(int)        { const_iterator t(*this); ++itsIter; return t; }
+        const_iterator operator--(int)        { const_iterator t(*this); --itsIter; return t; }
+
+        bool operator==(const const_iterator& r) const    { return itsIter == r.itsIter; }
+        bool operator!=(const const_iterator& r) const    { return itsIter != r.itsIter; }
+    private:
+        map_type::const_iterator itsIter;
+    };
+
+//#if defined(BOOST_NO_STD_ITERATOR) || defined (BOOST_MSVC_STD_ITERATOR)
+//    typedef std::reverse_bidirectional_iterator<iterator, value_type> reverse_iterator;
+//    typedef std::reverse_bidirectional_iterator<const_iterator, const value_type> const_reverse_iterator;
+//#else
+//    typedef std::reverse_iterator<iterator, value_type> reverse_iterator;
+//    typedef std::reverse_iterator<const_iterator, const value_type> const_reverse_iterator;
+//#endif
+
+    typedef map_type::key_compare key_compare;
+    typedef map_type::difference_type difference_type;
+    typedef map_type::size_type size_type;
+
+    TYPE_IDENTIFIER(){}
+    template <class InputIterator>
+            TYPE_IDENTIFIER(InputIterator first, InputIterator last)
+        : rep(first, last) {}
+    TYPE_IDENTIFIER(const TYPE_IDENTIFIER& that)
+        : rep(that.rep) {}
+
+    TYPE_IDENTIFIER& operator=(const TYPE_IDENTIFIER& that)
+        { TYPE_IDENTIFIER tmp(that); swap(tmp);  return *this; }
+
+    // iterators
+    iterator begin() { return iterator(rep.begin()); }
+    const_iterator begin() const { return const_iterator(rep.begin()); }
+    iterator end() { return iterator(rep.end()); }
+    const_iterator end() const { return const_iterator(rep.end()); }
+
+//    reverse_iterator rbegin() { return reverse_iterator(end()); }
+//    const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+//    reverse_iterator rend() { return reverse_iterator(begin()); }
+//    const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
+    // capacity
+    bool empty() const { return rep.empty(); }
+    size_type size() const { return rep.size(); }
+    // modifiers
+    ASN1_STD pair<iterator, bool> insert(const value_type& x)
+    {
+        ASN1_STD pair<map_type::iterator, bool> r = rep.insert(x);
+        return ASN1_STD pair<iterator, bool>(r.first, r.second);
+    }
+    iterator insert(iterator position, const value_type& x)
+    { return iterator(rep.insert(position.base(), x)); }
+    void insert(const_iterator first, const_iterator last)
+    { rep.insert(first.base(), last.base()); }
+    void erase(iterator position) { rep.erase(position.base()); }
+    void erase(const key_type& key) { rep.erase(key); }
+    void erase(iterator first, iterator last) { rep.erase(first.base(), last.base()); }
+    void swap(TYPE_IDENTIFIER& that) { rep.swap(that.rep); }
+    void clear() { rep.clear(); }
+    key_compare key_comp() const { return rep.key_comp(); }
+    // operations
+    iterator find(const key_type& key) { return iterator(rep.find(key)); }
+    const_iterator find(const key_type& key) const { return const_iterator(rep.find(key)); }
+    size_type count(const key_type& key) const { return rep.count(key); }
+private:
+    map_type rep;
+};
+
 } // namespace ASN1
 
 #endif // __ASN1_USEFUL_H

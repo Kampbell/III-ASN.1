@@ -152,6 +152,11 @@ bool AVNDecoder::do_visit(BOOLEAN& value)
   return true;
 }
 
+bool AVNDecoder::do_visit(REAL& value)
+{
+	return false;
+}
+
 bool AVNDecoder::do_visit(INTEGER& value)
 {
   if (!value.constrained() || value.getLowerLimit() < 0)
@@ -194,6 +199,53 @@ bool AVNDecoder::do_visit(ENUMERATED& value)
   return false;
 }
 
+bool AVNDecoder::do_visit(RELATIVE_OID& value)
+{
+  char c;
+  if (!(strm >> c)) return false;
+
+  if (c == '{')
+  {
+    ASN1_STD string subString;
+    if (ASN1_STD getline(strm, subString, '}'))
+    {
+      asn_strstream subIs(subString);
+      while (subIs >> subString)
+      {
+        // process ObjIdComponent , either in the form "itu(0)"(NameAndNumberForm)
+        // or a number such as "2250" (NumberForm)
+        asn_strstream s(subString);
+        unsigned v;
+        if (isdigit(subString[0])) // parse NumberForm
+        {
+          if (s >> v)
+            value.append(v);
+          else
+            return false;
+        }
+        else // parse NameAndNumberForm
+        {
+          if (ASN1_STD getline(s, subString, '(') && s >> v)
+          {
+            value.append(v);
+            continue;
+          }
+
+          if (!(subIs >> c)) return false;
+
+          if (c == '(' && s >> v)
+          {
+            value.append(v);
+            if (s >> c && c == ')')
+              continue;
+          }
+        }
+      }
+      return true;
+    }
+  }
+  return false;
+}
 bool AVNDecoder::do_visit(OBJECT_IDENTIFIER& value)
 {
   char c;
@@ -340,6 +392,20 @@ bool get_string(ASN1_STD istream& strm, ASN1_STD string& str)
 bool AVNDecoder::do_visit(AbstractString& value)
 {
   return get_string(strm, value);
+}
+
+bool AVNDecoder::do_visit(UTF8String& value)
+{
+  ASN1_STD string str;
+  if (!get_string(strm, str)) return false;
+
+  ASN1_STD vector<wchar_t> tmp;
+  tmp.resize(str.size()+1, 0);
+  int len = mbstowcs(&*tmp.begin(), str.c_str(), str.size());
+  if (len == -1) return false;
+
+  value.assign(&*tmp.begin(), len);
+  return true;
 }
 
 bool AVNDecoder::do_visit(BMPString& value)

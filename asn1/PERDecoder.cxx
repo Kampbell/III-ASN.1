@@ -92,6 +92,11 @@ bool PERDecoder::do_visit(BOOLEAN& value)
   return true;
 }
 
+bool PERDecoder::do_visit(REAL& integer)
+{
+	return false;
+}
+
 bool PERDecoder::do_visit(INTEGER& integer)
 {
   // X.931 Sections 12
@@ -152,6 +157,22 @@ bool PERDecoder::do_visit(ENUMERATED& value)
   return false;
 }
 
+
+bool PERDecoder::do_visit(RELATIVE_OID& value)
+{
+  // X.691 Section 23
+
+  unsigned dataLen;
+  if (!decodeLength(0, 255, dataLen))
+    return false;
+
+  if (getBytesLeft() < dataLen)
+    return false;
+
+  beginPosition += dataLen;
+
+  return value.decodeCommon(beginPosition-dataLen, dataLen);
+}
 
 bool PERDecoder::do_visit(OBJECT_IDENTIFIER& value)
 {
@@ -278,6 +299,33 @@ bool PERDecoder::do_visit(AbstractString& value)
       value[i] = value.getCharacterSet()[theBits];
     else
       return false;
+  }
+  return true;
+}
+
+bool PERDecoder::do_visit(UTF8String& value) //FIXME
+{
+  // X.691 Section 26
+
+  unsigned len;
+  if (!decodeConstrainedLength(value, len))
+    return false;
+
+  if (len > MaximumStringSize)
+    return false;
+
+  value.resize(len);
+
+  unsigned nBits = value.getNumBits(aligned());
+  if ((value.getConstraintType() == Unconstrained || value.getUpperLimit()*nBits > 16) && aligned())
+    byteAlign();
+
+  for (unsigned i = 0; i < (unsigned)len; ++i) {
+    unsigned theBits;
+    if (!decodeMultiBit(nBits, theBits))
+      return false;
+
+    value[i] = (wchar_t)(theBits + value.getFirstChar());
   }
   return true;
 }

@@ -189,6 +189,61 @@ INT_TYPE BOOLEAN::do_compare(const AbstractData& data) const
 
 ///////////////////////////////////////////////////////////////////////
 
+ASN1_API const REAL::InfoType REAL::theInfo = {
+  &REAL::create,
+  UniversalTagClass << 30 | UniversalReal,
+  0,
+  Unconstrained,
+  0,
+  UINT_MAX
+};
+
+REAL::REAL(const void* info)
+: ConstrainedObject(info), value(0)
+{
+}
+
+REAL::REAL(real_type val, const void* info)
+: ConstrainedObject(info), value(val)
+{
+}
+
+REAL::REAL(const REAL& other)
+: ConstrainedObject(other), value(other.value)
+{
+}
+
+AbstractData* REAL::create(const void* info)
+{
+  return new REAL(info);
+}
+
+bool REAL::do_accept(Visitor& visitor)
+{
+  return visitor.visit(*this);
+}
+
+bool REAL::do_accept(ConstVisitor& visitor) const
+{
+  return visitor.visit(*this);
+}
+
+AbstractData * REAL::do_clone() const
+{
+  return new REAL(*this);
+}
+
+INT_TYPE REAL::do_compare(const AbstractData& data) const
+{
+  const REAL& that = dynamic_cast<const REAL&>(data);
+  if (getLowerLimit() >= 0)
+    return value - that.value;
+
+  return (INT_TYPE) value - (INT_TYPE) that.value;
+}
+
+///////////////////////////////////////////////////////////////////////
+
 ASN1_API const INTEGER::InfoType INTEGER::theInfo = {
   &INTEGER::create,
   UniversalTagClass << 30 | UniversalInteger,
@@ -312,6 +367,191 @@ INT_TYPE ENUMERATED::do_compare(const AbstractData& other) const
 AbstractData* ENUMERATED::create(const void* info)
 {
   return new ENUMERATED(info);
+}
+
+///////////////////////////////////////////////////////////////////////
+
+ASN1_API const RELATIVE_OID::InfoType RELATIVE_OID::theInfo = {
+    RELATIVE_OID::create,
+    UniversalTagClass << 30 | UniversalRelativeOID,
+    0
+};
+
+RELATIVE_OID::RELATIVE_OID(const RELATIVE_OID & other)
+: AbstractData(other), value(other.value)
+{
+}
+
+RELATIVE_OID::RELATIVE_OID(unsigned nelem, ...)
+: AbstractData(&theInfo)
+{
+  va_list lst;
+  va_start(lst, nelem);
+  assign(nelem, lst);
+  va_end(lst);
+}
+
+void RELATIVE_OID::assign(unsigned nelem, ... /*list of unsigned*/)
+{
+  va_list lst;
+  va_start(lst, nelem);
+  assign(nelem, lst);
+  va_end(lst);
+}
+
+void RELATIVE_OID::assign(unsigned nelem, va_list lst)
+{
+  value.resize(nelem, 0);
+  for(unsigned i=0; i<nelem; ++i)
+    value[i] = va_arg(lst, unsigned);
+}
+
+AbstractData* RELATIVE_OID::create(const void* info)
+{
+  return new RELATIVE_OID(info);
+}
+
+bool RELATIVE_OID::do_accept(Visitor& visitor)
+{
+  return visitor.visit(*this);
+}
+
+bool RELATIVE_OID::do_accept(ConstVisitor& visitor) const
+{
+  return visitor.visit(*this);
+}
+
+bool RELATIVE_OID::decodeCommon(const char* strm, unsigned dataLen)
+{
+  unsigned byteOffset=0;
+
+  value.clear();
+
+  // handle zero length strings correctly
+  if (dataLen == 0) return true;
+
+  unsigned subId;
+
+  // Avoid reallocations in the while-loop below.
+  value.reserve(dataLen+1);
+
+  // start at the second identifier in the buffer, because we will later
+  // expand the first number into the first two IDs
+  value.push_back(0);
+
+  while (dataLen > 0) {
+    unsigned byte;
+    subId = 0;
+    do {    /* shift and add in low order 7 bits */
+      if (dataLen == 0)
+        return false;
+
+      byte = strm[byteOffset++];
+      subId = (subId << 7) + (byte & 0x7f);
+      --dataLen;
+    } while ((byte & 0x80) != 0);
+    value.push_back(subId);
+  }
+
+  /*
+   * The first two subidentifiers are encoded into the first component
+   * with the value (X * 40) + Y, where:
+   *  X is the value of the first subidentifier.
+   *  Y is the value of the second subidentifier.
+  */
+  subId = value[1];
+  if (subId < 40) {
+    value[0] = 0;
+    value[1] = subId;
+  }
+  else if (subId < 80) {
+    value[0] = 1;
+    value[1] = subId-40;
+  }
+  else {
+    value[0] = 2;
+    value[1] = subId-80;
+  }
+
+  return true;
+}
+
+void RELATIVE_OID::encodeCommon(ASN1_STD vector<char> & encodecObjectId) const
+{
+  unsigned length = value.size();
+  if (length < 2) {
+    // Thise case is really illegal, but we have to do SOMETHING
+    encodecObjectId.resize(0);
+    return;
+  }
+
+  const unsigned* objId = &value[0];
+
+  unsigned subId = (objId[0] * 40) + objId[1];
+  objId += 2;
+
+  unsigned outputPosition = 0;
+  encodecObjectId.reserve(length);
+  ASN1_STD insert_iterator<ASN1_STD vector<char> > insertItr(encodecObjectId, encodecObjectId.begin());
+  while (--length > 0) {
+    if (subId < 128)
+      *insertItr++ = (char)subId;
+    else {
+      unsigned mask = 0x7F; /* handle subid == 0 case */
+      int bits = 0;
+
+      /* testmask *MUST* !!!! be of an unsigned type */
+      unsigned testmask = 0x7F;
+      int      testbits = 0;
+      while (testmask != 0) {
+        if (subId & testmask) {  /* if any bits set */
+          mask = testmask;
+          bits = testbits;
+        }
+        testmask <<= 7;
+        testbits += 7;
+      }
+
+      // mask can't be zero here
+      while (mask != 0x7F) {
+        // fix a mask that got truncated above
+        if (mask == 0x1E00000)
+          mask = 0xFE00000;
+
+        *insertItr++ = (char)(((subId & mask) >> bits) | 0x80);
+
+        mask >>= 7;
+        bits -= 7;
+      }
+
+      *insertItr++ = (char)(subId & mask);
+    }
+    if (length >1)
+      subId = *objId++;
+  }
+}
+
+AbstractData * RELATIVE_OID::do_clone() const
+{
+  return new RELATIVE_OID(*this);
+}
+
+//! \note this addition to address issue with compiling using VS6 (incorrect headers: min() is not in namespace 'std')
+template <typename T>
+T MIN_ASN1(T a, T b)
+{
+  return a < b ? a : b;
+}
+
+INT_TYPE RELATIVE_OID::do_compare(const AbstractData& other) const
+{
+  const RELATIVE_OID& that = dynamic_cast<const RELATIVE_OID&>(other);
+  int min_level = MIN_ASN1(levels(), that.levels());
+  for (int i = 0; i < min_level; ++i)
+    if (value[i] != that.value[i])
+      return value[i] - that.value[i];
+
+  return levels() - that.levels();
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -481,13 +721,6 @@ AbstractData * OBJECT_IDENTIFIER::do_clone() const
   return new OBJECT_IDENTIFIER(*this);
 }
 
-//! \note this addition to address issue with compiling using VS6 (incorrect headers: min() is not in namespace 'std')
-template <typename T>
-T MIN_ASN1(T a, T b)
-{
-  return a < b ? a : b;
-}
-
 INT_TYPE OBJECT_IDENTIFIER::do_compare(const AbstractData& other) const
 {
   const OBJECT_IDENTIFIER& that = dynamic_cast<const OBJECT_IDENTIFIER&>(other);
@@ -649,6 +882,11 @@ static const char T61StringSet[] =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   "abcdefghijklmnopqrstuvwxyz";
 
+static const char UTF8StringSet[] =
+  " '()+,-./0123456789:=?"
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  "abcdefghijklmnopqrstuvwxyz";
+
 static const char PrintableStringSet[] =
   " '()+,-./0123456789:=?"
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -736,7 +974,7 @@ ASN1_API const T61String::InfoType T61String::theInfo = {
   0,
   UINT_MAX,
   T61StringSet,
-  74,
+  sizeof(T61StringSet)-1,
   7,
   7,
   8
@@ -750,7 +988,7 @@ ASN1_API const PrintableString::InfoType PrintableString::theInfo = {
   0,
   UINT_MAX,
   PrintableStringSet,
-  74,
+  sizeof(PrintableStringSet)-1,
   7,
   7,
   8
@@ -764,7 +1002,7 @@ ASN1_API const VisibleString::InfoType VisibleString::theInfo = {
   0,
   UINT_MAX,
   VisibleStringSet,
-  95,
+  sizeof(VisibleStringSet)-1,
   7,
   7,
   8
@@ -778,7 +1016,7 @@ ASN1_API const IA5String::InfoType IA5String::theInfo = {
   0,
   UINT_MAX,
   IA5StringSet,
-  128,
+  sizeof(IA5StringSet)-1,
   7,
   7,
   8
@@ -806,11 +1044,79 @@ ASN1_API const GeneralString::InfoType GeneralString::theInfo = {
   0,
   UINT_MAX,
   GeneralStringSet,
-  256,
+  sizeof(GeneralStringSet)-1,
   8,
   8,
   8
 };
+
+///////////////////////////////////////////////////////////////////////
+
+ASN1_API const UTF8String::InfoType UTF8String::theInfo = {
+  UTF8String::create,
+  UniversalTagClass << 30 | UniversalUTF8String,
+  0,
+  Unconstrained,
+  0,
+  UINT_MAX,
+  0,
+  0xffff,
+  16,
+  16
+};
+
+UTF8String::UTF8String(const void* info)
+: ConstrainedObject(info)
+{
+}
+
+UTF8String::UTF8String()
+: ConstrainedObject(&theInfo)
+{
+}
+
+UTF8String::UTF8String(const base_string& str, const void* info)
+ : ConstrainedObject(info), base_string(str)
+{
+}
+
+UTF8String::UTF8String(const value_type* str, const void* info)
+: ConstrainedObject(info), base_string(str)
+{
+}
+
+UTF8String::UTF8String(const UTF8String & other)
+: ConstrainedObject(other)
+, base_string(other)
+{
+}
+
+AbstractData* UTF8String::create(const void* info)
+{
+  return new UTF8String(info);
+}
+
+bool UTF8String::do_accept(Visitor& visitor)
+{
+  return visitor.visit(*this);
+}
+
+bool UTF8String::do_accept(ConstVisitor& visitor) const
+{
+  return visitor.visit(*this);
+}
+
+AbstractData * UTF8String::do_clone() const
+{
+  return new UTF8String(*this);
+}
+
+INT_TYPE UTF8String::do_compare(const AbstractData& other) const
+{
+  const UTF8String& that = dynamic_cast<const UTF8String&>(other);
+  return base_string::compare(that);
+}
+
 
 ///////////////////////////////////////////////////////////////////////
 

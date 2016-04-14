@@ -77,6 +77,10 @@ bool PEREncoder::do_visit(const BOOLEAN& value)
   return true;
 }
 
+bool PEREncoder::do_visit(const REAL& integer)
+{
+	return false;
+}
 bool PEREncoder::do_visit(const INTEGER& integer)
 {
   // X.931 Sections 12
@@ -125,6 +129,20 @@ bool PEREncoder::do_visit(const ENUMERATED& value)
   return encodeUnsigned((unsigned)value.asInt(), (unsigned)0, (unsigned)value.getMaximum());  // 13.2
 }
 
+
+bool PEREncoder::do_visit(const RELATIVE_OID& value)
+{
+  // X.691 Section 23
+
+  ASN1_STD vector<char> eObjId;
+  value.encodeCommon(eObjId);
+  if (!encodeLength(eObjId.size(), 0, 255))
+    return false;
+
+  if(eObjId.size())
+    encodeBlock(&eObjId.front(), eObjId.size());
+  return true;
+}
 
 bool PEREncoder::do_visit(const OBJECT_IDENTIFIER& value)
 {
@@ -220,6 +238,25 @@ bool PEREncoder::do_visit(const AbstractString& value)
       encodeMultiBit(pos, nBits);
     }
   }
+  return true;
+}
+
+bool PEREncoder::do_visit(const UTF8String& value)
+{
+  // X.691 Section 26
+
+  unsigned len = value.size();
+  if (!encodeConstrainedLength(value, len))
+    return false;
+
+  unsigned nBits = value.getNumBits(aligned());
+
+  if ((value.getConstraintType() == Unconstrained || value.getUpperLimit()*nBits > 16) && aligned())
+    byteAlign();
+
+  for (unsigned i = 0; i < len; i++)
+    encodeMultiBit((unsigned)(value[i] - value.getFirstChar()), nBits);
+
   return true;
 }
 

@@ -267,6 +267,12 @@ bool BERDecoder::do_visit(BOOLEAN& value)
   return true;
 }
 
+bool BERDecoder::do_visit(REAL& value)
+{
+	assert(false);
+  return true;
+}
+
 bool BERDecoder::do_visit(INTEGER& value)
 {
   unsigned len;
@@ -301,6 +307,20 @@ bool BERDecoder::do_visit(ENUMERATED& value)
 
   value.setFromInt(val);
   return true;
+}
+
+bool BERDecoder::do_visit(RELATIVE_OID& value)
+{
+  unsigned len;
+  if (!decodeHeader(value, len))
+    return false;
+
+  if (atEnd())
+    return false;
+
+  beginPosition += len;
+  return value.decodeCommon(beginPosition-len, len);
+
 }
 
 bool BERDecoder::do_visit(OBJECT_IDENTIFIER& value)
@@ -355,6 +375,24 @@ bool BERDecoder::do_visit(AbstractString& value)
 
   value.resize(len);
   return decodeBlock(&*value.begin(), len) == len;
+}
+
+bool BERDecoder::do_visit(UTF8String& value)
+{
+  unsigned len;
+  if (!decodeHeader(value, len))
+    return false;
+
+  if(len == 0)
+    return true;
+
+  value.resize(len/2);
+  if ((beginPosition+len) >= endPosition)
+    return false;
+
+  for (unsigned i = 0; i < len/2; ++i)
+    value[i] = (decodeByte() << 8) | decodeByte();
+  return true;
 }
 
 bool BERDecoder::do_visit(BMPString& value)
