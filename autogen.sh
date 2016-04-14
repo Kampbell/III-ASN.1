@@ -1,4 +1,4 @@
 aclocal -I config
-automake
+automake --add-missing
 autoconf
 
