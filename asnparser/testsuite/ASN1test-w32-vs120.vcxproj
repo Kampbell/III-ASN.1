@@ -1,0 +1,337 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{F012966D-7796-4562-8587-6ADF79466B8F}</ProjectGuid>
+    <ProjectName>ASN1test</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <Import Project="$(SolutionDir)\solution.props" Condition="exists('$(SolutionDir)\solution.props')" Label="solutionPlatform" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)bin\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <ExecutablePath>$(SolutionDir)bin;$(ExecutablePath)</ExecutablePath>
+    <TargetName>$(ProjectName)d</TargetName>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
+    <LibraryPath>$(SolutionDir)lib;$(Poco)\lib;$(LibraryPath)</LibraryPath>
+    <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)bin\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <ExecutablePath>$(SolutionDir)bin;$(ExecutablePath)</ExecutablePath>
+    <LibraryPath>$(SolutionDir)lib;$(Poco)\lib;$(LibraryPath)</LibraryPath>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <CustomBuildStep>
+      <Command>..\..\bin\ASN1cmpd -c -v -o csn -i asn</Command>
+      <Outputs>csn\MyHTTP.cxx;csn\MyHTTP.inl;csn\MyHTTP.h;csn\TEST.cxx;csn\TEST.inl;csn\TEST.h;%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <PropertyGroup>
+      <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
+    </PropertyGroup>
+    <Midl>
+      <TypeLibraryName>.\Debug/asn1test.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..;csn;../asn1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;__WIN32__;WIN32;ASN1_HAS_IOSTREAM;ASN1_ALLOCATOR;KAMPBELL_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader />
+      <PrecompiledHeaderOutputFile>.\Debug/$(Targetname).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Debug/</AssemblerListingLocation>
+      <ObjectFileName>.\Debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0404</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>CppUnitd.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <ShowProgress>NotSet</ShowProgress>
+      <ForceFileOutput>MultiplyDefinedSymbolOnly</ForceFileOutput>
+    </Link>
+    <PreBuildEvent>
+      <Command>..\bin\ASN1cmpd -c -v -o csn asn/TEST.asn</Command>
+    </PreBuildEvent>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <TypeLibraryName>.\Release/asn1test.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>Release;..;csn;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;__WIN32__;WIN32;ASN1_HAS_IOSTREAM;ASN1_ALLOCATOR;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <PrecompiledHeaderOutputFile>.\Release/asn1test.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
+      <ObjectFileName>.\Release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0404</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>CppUnit.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <PreBuildEvent>
+      <Command>..\bin\ASN1cmp -c -v -o csn asn/TEST.asn</Command>
+    </PreBuildEvent>
+    <CustomBuildStep>
+      <Outputs>csn\MyHTTP.cxx;csn\MyHTTP.inl;csn\MyHTTP.h;csn\TEST.cxx;csn\TEST.inl;csn\TEST.h;%(Outputs)</Outputs>
+      <Command>..\..\bin\ASN1cmpd -c -v -o csn asn/TEST.asn</Command>
+    </CustomBuildStep>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="ASN1CTest.cpp" />
+    <ClCompile Include="asn1test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="ASN1TestSuite.cpp" />
+    <ClCompile Include="csn\ModuleTestEmpty.cxx" />
+    <ClCompile Include="csn\ModuleTestEnum1.cxx" />
+    <ClCompile Include="csn\ModuleTestInt1.cxx" />
+    <ClCompile Include="csn\ModuleTestMiscComplex.cxx" />
+    <ClCompile Include="csn\ModuleTestSequence.cxx" />
+    <ClCompile Include="csn\ModuleTestSetAndUntaggedChoice.cxx" />
+    <ClCompile Include="csn\ModuleTestSetSimple.cxx" />
+    <ClCompile Include="csn\ModuleTestTags.cxx" />
+    <ClCompile Include="csn\ModuleTestTags3.cxx" />
+    <ClCompile Include="csn\ModuleTestTagsDistinct2.cxx" />
+    <ClCompile Include="csn\MyHTTP.cxx" />
+    <ClCompile Include="csn\TEST.cxx" />
+    <ClCompile Include="Driver.cpp" />
+    <ClCompile Include="TESTTest.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="asn1c\00-empty-OK.asn1" />
+    <None Include="asn1c\01-empty-OK.asn1" />
+    <None Include="asn1c\03-enum-OK.asn1" />
+    <None Include="asn1c\07-int-OK.asn1" />
+    <None Include="asn1c\10-int-OK.asn1-FAILED" />
+    <None Include="asn1c\100-class-ref-OK.asn1" />
+    <None Include="asn1c\104-param-1-OK.asn1" />
+    <None Include="asn1c\105-param-2-OK.asn1" />
+    <None Include="asn1c\106-param-constr-OK.asn1" />
+    <None Include="asn1c\107-param-constr-2-OK.asn1" />
+    <None Include="asn1c\108-param-constr-3-OK.asn1" />
+    <None Include="asn1c\110-param-3-OK.asn1" />
+    <None Include="asn1c\112-param-class-OK.asn1" />
+    <None Include="asn1c\112-param-class-OK.asn1-FAILED" />
+    <None Include="asn1c\115-bit-string-OK.asn1" />
+    <None Include="asn1c\117-real-constraint-OK.asn1" />
+    <None Include="asn1c\118-per-constraint-OK.asn1" />
+    <None Include="asn1c\119-per-strings-OK.asn1" />
+    <None Include="asn1c\121-empty-imports-OK.asn1" />
+    <None Include="asn1c\122-pattern-OK.asn1-FAILED" />
+    <None Include="asn1c\123-valueassignment-OK.asn1-FAILED" />
+    <None Include="asn1c\124-multiconstraint-OK.asn1-FAILED" />
+    <None Include="asn1c\125-bitstring-constraint-OK.asn1" />
+    <None Include="asn1c\126-per-extensions-OK.asn1" />
+    <None Include="asn1c\127-per-long-OK.asn1-FAILED" />
+    <None Include="asn1c\129-enum-OK.asn1" />
+    <None Include="asn1c\13-resolver-OK.asn1-FAILED" />
+    <None Include="asn1c\130-enum-OK.asn1" />
+    <None Include="asn1c\131-per-empty-OK.asn1" />
+    <None Include="asn1c\132-per-choice-OK.asn1" />
+    <None Include="asn1c\133-per-constraints-OK.asn1" />
+    <None Include="asn1c\134-per-long-OK.asn1" />
+    <None Include="asn1c\14-resolver-OK.asn1-FAILED" />
+    <None Include="asn1c\16-constraint-OK.asn1-FAILED" />
+    <None Include="asn1c\17-tags-OK.asn1" />
+    <None Include="asn1c\18-class-OK.asn1-FAILED" />
+    <None Include="asn1c\19-param-OK.asn1-FAILED" />
+    <None Include="asn1c\20-constr-OK.asn1-FAILED" />
+    <None Include="asn1c\21-tags-OK.asn1-FAILED" />
+    <None Include="asn1c\22-tags-OK.asn1" />
+    <None Include="asn1c\23-bits-OK.asn1-FAILED" />
+    <None Include="asn1c\24-sequence-OK.asn1" />
+    <None Include="asn1c\25-misc-OK.asn1-FAILED" />
+    <None Include="asn1c\29-tags-OK.asn1" />
+    <None Include="asn1c\30-set-OK.asn1" />
+    <None Include="asn1c\31-set-of-OK.asn1-FAILED" />
+    <None Include="asn1c\32-sequence-of-OK.asn1" />
+    <None Include="asn1c\33-misc-OK.asn1" />
+    <None Include="asn1c\34-class-OK.asn1-FAILED" />
+    <None Include="asn1c\35-set-choice-OK.asn1" />
+    <None Include="asn1c\37-indirect-choice-OK.asn1" />
+    <None Include="asn1c\38-comments-OK.asn1-FAILED" />
+    <None Include="asn1c\39-sequence-of-OK.asn1" />
+    <None Include="asn1c\41-int-optional-OK.asn1" />
+    <None Include="asn1c\42-real-life-OK.asn1-FAILED" />
+    <None Include="asn1c\43-recursion-OK.asn1" />
+    <None Include="asn1c\44-choice-in-sequence-OK.asn1" />
+    <None Include="asn1c\46-redefine-OK.asn1" />
+    <None Include="asn1c\47-set-ext-OK.asn1-FAILED" />
+    <None Include="asn1c\48-real-life-OK.asn1" />
+    <None Include="asn1c\49-real-life-OK.asn1-FAILED" />
+    <None Include="asn1c\50-constraint-OK.asn1-FAILED" />
+    <None Include="asn1c\55-components-of-OK.asn1-FAILED" />
+    <None Include="asn1c\57-components-of-OK.asn1-FAILED" />
+    <None Include="asn1c\58-param-OK.asn1-FAILED" />
+    <None Include="asn1c\59-choice-extended-OK.asn1-FAILED" />
+    <None Include="asn1c\60-any-OK.asn1-FAILED" />
+    <None Include="asn1c\62-any-OK.asn1-TODO" />
+    <None Include="asn1c\64-oid-constr-OK.asn1" />
+    <None Include="asn1c\65-multi-tag-OK.asn1" />
+    <None Include="asn1c\66-ref-simple-OK.asn1-FAILED" />
+    <None Include="asn1c\67-embedded-choice-OK.asn1" />
+    <None Include="asn1c\68-enum-default-OK.asn1" />
+    <None Include="asn1c\69-reserved-words-OK.asn1-FAILED" />
+    <None Include="asn1c\70-xer-test-OK.asn1-FAILED" />
+    <None Include="asn1c\72-same-names-OK.asn1-FAILED" />
+    <None Include="asn1c\73-circular-OK.asn1-FAILED" />
+    <None Include="asn1c\74-int-enum-constraints-OK.asn1-FAILED" />
+    <None Include="asn1c\77-str-default-OK.asn1" />
+    <None Include="asn1c\79-constrained-by-OK.asn1" />
+    <None Include="asn1c\80-chardefs-OK.asn1" />
+    <None Include="asn1c\81-type-default-OK.asn1-FAILED" />
+    <None Include="asn1c\82-with-comps-OK.asn1-FAILED" />
+    <None Include="asn1c\83-with-comps-OK.asn1-FAILED" />
+    <None Include="asn1c\84-param-tags-OK.asn1-FAILED" />
+    <None Include="asn1c\85-comments-OK.asn1" />
+    <None Include="asn1c\86-atags-OK.asn1" />
+    <None Include="asn1c\87-old-syntax-OK.asn1" />
+    <None Include="asn1c\88-integer-enum-OK.asn1" />
+    <None Include="asn1c\89-bit-string-enum-OK.asn1" />
+    <None Include="asn1c\90-cond-int-type-OK.asn1" />
+    <None Include="asn1c\91-cond-int-blessSize-OK.asn1" />
+    <None Include="asn1c\92-circular-loops-OK.asn1" />
+    <None Include="asn1c\93-asn1c-controls-OK.asn1" />
+    <None Include="asn1c\94-set-optionals-OK.asn1" />
+    <None Include="asn1c\95-choice-per-order-OK.asn1" />
+    <None Include="asn1c\96-type-identifier-OK.asn1" />
+    <None Include="asn1c\98-attribute-class-OK.asn1" />
+    <None Include="asn1c\99-class-sample-OK.asn1" />
+    <None Include="asn1c\TEST.asn" />
+    <None Include="asn\00-empty-OK.asn1" />
+    <None Include="asn\01-empty-OK.asn1" />
+    <None Include="asn\03-enum-OK.asn1" />
+    <None Include="asn\07-int-OK.asn1" />
+    <None Include="asn\17-tags-OK.asn1" />
+    <None Include="asn\22-tags-OK.asn1" />
+    <None Include="asn\24-sequence-OK.asn1" />
+    <None Include="asn\29-tags-OK.asn1" />
+    <None Include="asn\30-set-OK.asn1" />
+    <None Include="asn\32-sequence-of-OK.asn1-TODO" />
+    <None Include="asn\33-misc-OK.asn1" />
+    <None Include="asn\35-set-choice-OK.asn1" />
+    <None Include="asn\37-indirect-choice-OK.asn1-TODO" />
+    <None Include="asn\TEST.asn" />
+    <None Include="csn\ModuleTestEnum1.inl" />
+    <None Include="csn\ModuleTestInt1.inl" />
+    <None Include="csn\ModuleTestMiscComplex.inl" />
+    <None Include="csn\ModuleTestSequence.inl" />
+    <None Include="csn\ModuleTestSetAndUntaggedChoice.inl" />
+    <None Include="csn\ModuleTestSetSimple.inl" />
+    <None Include="csn\ModuleTestTags.inl" />
+    <None Include="csn\ModuleTestTags3.inl" />
+    <None Include="csn\ModuleTestTagsDistinct2.inl" />
+    <None Include="csn\MyHTTP.inl" />
+    <None Include="csn\TEST.inl" />
+    <None Include="x" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ASN1CTest.h" />
+    <ClInclude Include="asn1test.h" />
+    <ClInclude Include="ASN1TestSuite.h" />
+    <ClInclude Include="csn\ModuleTestEmpty.h" />
+    <ClInclude Include="csn\ModuleTestEnum1.h" />
+    <ClInclude Include="csn\ModuleTestInt1.h" />
+    <ClInclude Include="csn\ModuleTestMiscComplex.h" />
+    <ClInclude Include="csn\ModuleTestSequence.h" />
+    <ClInclude Include="csn\ModuleTestSetAndUntaggedChoice.h" />
+    <ClInclude Include="csn\ModuleTestSetSimple.h" />
+    <ClInclude Include="csn\ModuleTestTags.h" />
+    <ClInclude Include="csn\ModuleTestTags3.h" />
+    <ClInclude Include="csn\ModuleTestTagsDistinct2.h" />
+    <ClInclude Include="csn\MyHTTP.h" />
+    <ClInclude Include="csn\TEST.h" />
+    <ClInclude Include="TESTTest.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+     <ProjectReference Include="..\asnparser\ASN1cmp-x32-vs120.vcxproj">
+      <Project>{1eed4b13-2a75-4c49-a198-12f2a46f5944}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\ASN1dll-x32-vs120.vcxproj">
+      <Project>{6aa1bc61-0f68-4d2d-bd3e-aec4e2f2db8e}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    -->
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
