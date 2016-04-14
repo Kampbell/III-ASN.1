@@ -137,6 +137,7 @@ int parenthesisCount = 0;
 "UNIQUE"                           { return UNIQUE; }
 "UNIVERSAL"                        { return UNIVERSAL; }
 "UniversalString"                  { return UniversalString; }
+"UTF8String"                        { return UTF8String; }
 "VALUE"								{ return VALUE; }
 "VideotexString"                   { return VideotexString; }
 "VisibleString"                    { return VisibleString; }

@@ -1,7 +1,6 @@
 %expect 14
 
 %{
-
 /*
  * asn_grammar.y
  *
@@ -59,10 +58,6 @@ static std::string * ConcatNames(std::string * s1, char c, std::string * s2) {
   *s1 += c;*s1 += *s2;delete s2;return s1;
 }
 
-#ifdef _MSC_VER
-#pragma warning(disable:4701)
-#pragma warning(disable:4127)
-#endif
 
 #define YYERROR_VERBOSE 1
 #define YYDEBUG 1
@@ -84,12 +79,13 @@ extern int iddebug;
 #endif
 
 %}
-%define api.pure	full
-%lex-param			{yyscan_t scanner}
-%lex-param			{ParserContext* context}
-%parse-param		{yyscan_t scanner}
-%parse-param		{ParserContext* context}
+%define api.pure		full
+%lex-param				{yyscan_t scanner}
+%lex-param				{ParserContext* context}
+%parse-param			{yyscan_t scanner}
+%parse-param			{ParserContext* context}
 %locations
+%no-lines
 
 %token MODULEREFERENCE
 %token TYPEREFERENCE
@@ -107,6 +103,7 @@ extern int iddebug;
 %token VALUESET_BRACE
 %token OBJECT_BRACE
 %token OBJECTSET_BRACE
+%token OID_BRACE
 
 %token IDENTIFIER
 %token BIT_IDENTIFIER
@@ -122,6 +119,7 @@ extern int iddebug;
 %token OBJECTFIELDREFERENCE
 %token OBJECTSETFIELDREFERENCE
 %token INTEGER
+%token REAL
 
 %token CSTRING
 %token BSTRING
@@ -177,6 +175,7 @@ extern int iddebug;
 %token MAX
 %token MIN
 %token MINUS_INFINITY
+%token NOT_A_NUMBER
 %token NOTATION
 %token NULL_VALUE
 %token NULL_TYPE
@@ -190,7 +189,8 @@ extern int iddebug;
 %token PRESENT
 %token PrintableString
 %token PRIVATE
-%token REAL
+%token RANGE
+%token REAL_t
 %token SEQUENCE
 %token SET
 %token SIZE_t
@@ -205,6 +205,7 @@ extern int iddebug;
 %token UNIQUE
 %token UNIVERSAL
 %token UniversalString
+%token UTF8String
 %token VideotexString
 %token VisibleString
 %token GeneralizedTime
@@ -335,7 +336,7 @@ extern int iddebug;
 %type <vval> RealValue NumericRealValue SpecialRealValue
 %type <vval> SequenceValue NamedValue
 /*!!!! %type <vval> SequenceOfValue */
-%type <vval> ParameterizedValue
+//%type <vval> ParameterizedValue
 %type <vval> ValueFromObject
 
 %type <vlst> ComponentValueList
@@ -428,84 +429,77 @@ extern int iddebug;
 %type <slst> AtNotations
 
 %union {
-  boost::int64_t			ival;
-  std::string				* sval;
-  StringList				* slst;
-  TypeBase					* tval;
-  TypePtr					* tptr;
-  TypesVector				* tlst;
-  ValueBase					* vval;
-  ValuesList				* vlst;
-  NamedNumber				* nval;
-  NamedNumberList			* nlst;
-  Constraint				* cons;
-  ConstraintElementVector	* elst;
-  ConstraintElementBase		* elmt;
-  FieldSpec					* fspc;
-  FieldSpecsList			* flst;
-  ObjectClassBase			* objc;
-  DefinedObjectClass		* dobj;
-  TokenGroup				* tgrp;
-  TokenOrGroupSpec			* togs;
-  Setting					* sett;
-  InformationObject			* objt;
-  InformationObjectSet		* objs;
-  FieldSettingList			* fldl;
-  DefaultSyntaxBuilder		* bldr;
-  DefinedSyntaxToken		* tken;
-  ValueSet					* vset;
-  ObjectSetConstraintElement* osce;
-  Symbol					* symb;
-  SymbolList				* syml;
-  Parameter					* para;
-  ParameterList				* plst;
-  ActualParameter			* apar;
-  ActualParameterList		* aplt;
-  TableConstraint			* tcons;
-  ObjectClassFieldType		* ocft;
-  DefinedObjectSet			* dos;
-  ModuleDefinition			* modd;
+  boost::int64_t					ival;
+  std::string*						sval;
+  StringList* 						slst;
+  TypeBase* 						tval;
+  TypePtr* 							tptr;
+  TypesVector*						tlst;
+  ValueBase*						vval;
+  ValuesList*						vlst;
+  NamedNumber*						nval;
+  NamedNumberList*					nlst;
+  Constraint*						cons;
+  ConstraintElementVector*			elst;
+  ConstraintElementBase*            elmt;
+  FieldSpec*						fspc;
+  FieldSpecsList*                   flst;
+  ObjectClassBase*                  objc;
+  DefinedObjectClass*               dobj;
+  TokenGroup*                       tgrp;
+  TokenOrGroupSpec*                 togs;
+  Setting*							sett;
+  InformationObject*                objt;
+  InformationObjectSet*             objs;
+  FieldSettingList*                 fldl;
+  DefaultSyntaxBuilder*             bldr;
+  DefinedSyntaxToken*               tken;
+  ValueSet*							vset;
+  ObjectSetConstraintElement*		osce;
+  Symbol*							symb;
+  SymbolList*						syml;
+  Parameter*						para;
+  ParameterList*					plst;
+  ActualParameter*					apar;
+  ActualParameterList*				aplt;
+  TableConstraint*					tcons;
+  ObjectClassFieldType*				ocft;
+  DefinedObjectSet*					dos;
+  ModuleDefinition*					modd;
 
   struct {
     Tag::Type tagClass;
     unsigned tagNumber;
   } tagv;
 }
+%printer { fprintf (yyoutput, "'%d'", $$); } <ival>
 %printer { if ($$ != NULL) fprintf (yyoutput, "'%s'", $$->c_str()); } <sval>
 %printer { if ($$ != NULL) fprintf (yyoutput, "'%s'", $$->getName().c_str()); } <tval> <vval> <objt> <para> <symb> <fspc> <objc> <ocft>
 
 %%
 
 ModuleDefinitionList
-	: ModuleDefinitionList ModuleDefinition
-      {  }
-	| ModuleDefinition
-      {  }
+	: ModuleDefinitionList ModuleDefinition		  {  }
+	| ModuleDefinition						      {  }
 ;
 ModuleDefinition
 	: MODULEREFERENCE DefinitiveIdentifier DEFINITIONS TagDefault ASSIGNMENT BEGIN_t
 		{
 			context->Module = findModule($1->c_str());
 			if ($2) {
-				context->Module->setDefinitiveObjId(*$2); delete $2;
+					context->Module->setDefinitiveObjId(*$2); delete $2;
 			}
 		}
-		ModuleBody END
+	ModuleBody END
 		{
 			//context->Module->ResolveObjectClassReferences();
 			context->Module = NULL;
 		}
 ;
 DefinitiveIdentifier
-  : '{' DefinitiveObjIdComponentList '}'
-	{
-	  $$ = $2;
-	}
-  | /* empty */
-	{
-	  $$ = NULL;
-	}
-  ;
+  : '{' DefinitiveObjIdComponentList '}'		{	  $$ = $2;		}
+  | /* empty */									{	  $$ = NULL;	}
+;
 
 DefinitiveObjIdComponentList
   : DefinitiveObjIdComponent
@@ -519,7 +513,7 @@ DefinitiveObjIdComponentList
 		$2->insert($2->begin(), std::string(*$1));
 		$$ = $2;
       }
-  ;
+;
 
 DefinitiveObjIdComponent
   : IDENTIFIER
@@ -530,7 +524,7 @@ DefinitiveObjIdComponent
 		$$ = new std::string(buf);
       }
   | DefinitiveNameAndNumberForm
-  ;
+;
 
 DefinitiveNameAndNumberForm
   : IDENTIFIER '(' INTEGER ')'
@@ -540,170 +534,101 @@ DefinitiveNameAndNumberForm
 		sprintf(buf, "%u", static_cast<unsigned>($3));
 		$$ = new std::string(buf);
       }
-  ;
+;
 
 TagDefault
-  : EXPLICIT TAGS
-      {
-		$$ = Tag::Explicit;
-      }
-  | IMPLICIT TAGS
-      {
-		$$ = Tag::Implicit;
-      }
-  | AUTOMATIC TAGS
-      {
-		$$ = Tag::Automatic;
-      }
-  | /* empty */
-      {
-		$$ = Tag::Explicit;
-      }
-  ;
-
-
-/*************************************/
+  : EXPLICIT TAGS		{	$$ = Tag::Explicit; }
+  | IMPLICIT TAGS		{	$$ = Tag::Implicit; }
+  | AUTOMATIC TAGS		{	$$ = Tag::Automatic; }
+  | /* empty */			{	$$ = Tag::Explicit; }
+;
 
 ModuleBody
   : Exports Imports AssignmentList
   | /* empty */
-  ;
-
+;
 
 Exports
   : EXPORTS SymbolsExported ';'
   | /* empty */
-  ;
-
+;
 
 SymbolsExported
   : SymbolList
       {
-	context->Module->setExports(*$1);
-  delete $1;
+		context->Module->setExports(*$1);
+		delete $1;
       }
   | /* empty */
       {
-	context->Module->setExportAll();
+		context->Module->setExportAll();
       }
-  ;
-
+;
 
 Imports
   : IMPORTS SymbolsImported ';'
   | /* empty */
-  ;
+;
 
 
 SymbolsImported
   : SymbolsFromModuleList
   | /* empty */
-  ;
+;
 
 SymbolsFromModuleList
   : SymbolsFromModule
   | SymbolsFromModuleList SymbolsFromModule
-  ;
+;
 
 
 SymbolsFromModule
   : SymbolList FROM GlobalModuleReference
       {
 		if (!context->hasObjectTypeMacro) {
-		  context->hasObjectTypeMacro = findWithName(*$1,"OBJECT-TYPE").get() != NULL;
-		  if (context->hasObjectTypeMacro)
-			std::cerr << "Info: including OBJECT-TYPE macro" << std::endl;
+			context->hasObjectTypeMacro = findWithName(*$1,"OBJECT-TYPE").get() != NULL;
+			if (context->hasObjectTypeMacro)
+				std::cerr << "Info: including OBJECT-TYPE macro" << std::endl;
 		}
 		context->Module->addImport(ImportModulePtr(new ImportModule($3, $1)));
       }
-  ;
+;
 
 
 GlobalModuleReference
-  : MODULEREFERENCE
-      {
-		context->InOIDContext = 1;
-      }
-		AssignedIdentifier
-      {
-		context->InOIDContext = 0;
-		delete $3;
-      }
-  ;
+  : MODULEREFERENCE		{	context->InOIDContext = 1;	}
+	AssignedIdentifier  {	context->InOIDContext = 0;	delete $3;	}
+;
 
 
 AssignedIdentifier
   : DefinedValue
   | ObjectIdentifierValue
-  | /* empty */
-      {
-	$$ = NULL;
-      }
-  ;
+  | /* empty */   {		$$ = NULL;  }
+;
 
 
 SymbolList
-  : Symbol
-      {
-	$$ = new SymbolList;
-	$$->push_back(SymbolPtr($1));
-      }
-  | Symbol ',' SymbolList
-      {
-	$3->push_back(SymbolPtr($1));
-	$$ = $3;
-      }
-  ;
-
+  : Symbol					{	$$ = new SymbolList;	$$->push_back(SymbolPtr($1));     }
+  | Symbol ',' SymbolList	{	$3->push_back(SymbolPtr($1));	$$ = $3;   }
+;
 
 Symbol
-  : 
-    TYPEREFERENCE 
-      {
-	$$ = new TypeReference(*$1, false); delete $1;
-      }
-  | VALUEREFERENCE 
-      {
-    $$ = new ValueReference(*$1, false); delete $1;
-	  }
-  | OBJECTCLASSREFERENCE 
-      {
-    $$ = new ObjectClassReference(*$1, false); delete $1;
-	  }
-  | OBJECTREFERENCE 
-      {
-    $$ = new ObjectReference(*$1, false); delete $1;
-	  }
-  | OBJECTSETREFERENCE 
-      {
-    $$ = new ObjectSetReference(*$1, false); delete $1;
-	  }
-  | PARAMETERIZEDTYPEREFERENCE '{' '}'
-      {
-	$$ = new TypeReference(*$1, true); delete $1;
-      }
-  | PARAMETERIZEDVALUEREFERENCE '{' '}'
-      {
-    $$ = new ValueReference(*$1, true); delete $1;
-	  }
-  | PARAMETERIZEDOBJECTCLASSREFERENCE '{' '}'
-      {
-    $$ = new ObjectClassReference(*$1, true); delete $1;
-	  }
-  | PARAMETERIZEDOBJECTREFERENCE '{' '}'
-      {
-    $$ = new ObjectReference(*$1, true); delete $1;
-	  }
-  | PARAMETERIZEDOBJECTSETREFERENCE '{' '}'
-      {
-    $$ = new ObjectSetReference(*$1, true); delete $1;
-	  }
+  : TYPEREFERENCE								{	$$ = new TypeReference(*$1, false); delete $1;	}
+  | VALUEREFERENCE								{   $$ = new ValueReference(*$1, false); delete $1; }
+  | OBJECTCLASSREFERENCE						{	$$ = new ObjectClassReference(*$1, false); delete $1;	}
+  | OBJECTREFERENCE								{	$$ = new ObjectReference(*$1, false); delete $1;	}
+  | OBJECTSETREFERENCE							{   $$ = new ObjectSetReference(*$1, false); delete $1;  }
+  | PARAMETERIZEDTYPEREFERENCE '{' '}'			{	$$ = new TypeReference(*$1, true); delete $1;	}
+  | PARAMETERIZEDVALUEREFERENCE '{' '}'			{   $$ = new ValueReference(*$1, true); delete $1;  }
+  | PARAMETERIZEDOBJECTCLASSREFERENCE '{' '}'	{  $$ = new ObjectClassReference(*$1, true); delete $1;  }
+  | PARAMETERIZEDOBJECTREFERENCE '{' '}'		{  $$ = new ObjectReference(*$1, true); delete $1;  }
+  | PARAMETERIZEDOBJECTSETREFERENCE '{' '}'     {  $$ = new ObjectSetReference(*$1, true); delete $1; }
 ;
 
 AssignmentList: Assignment
   | AssignmentList Assignment
-  ;
-
+;
 
 Assignment
   : TypeAssignment
@@ -713,44 +638,36 @@ Assignment
   | ObjectAssignment
   | ObjectSetAssignment
   | ParameterizedAssignment
-  ;
-
+;
 
 ValueSetTypeAssignment
   : TYPEREFERENCE Type
       {
-	$2->setName(*$1); delete $1;
+		$2->setName(*$1); delete $1;
     context->ValueTypeContext.reset($2);
-	$2->beginParseValueSet();
+		$2->beginParseValueSet();
       }
     ASSIGNMENT ValueSet
       {
-	$2->endParseValueSet();
-	context->Module->addType($5->MakeValueSetType());
-	delete $5;
+		$2->endParseValueSet();
+		context->Module->addType($5->MakeValueSetType());
+		delete $5;
       }
-  ;
-
-
-
-
-/********/
+;
 
 TypeAssignment
   : TYPEREFERENCE ASSIGNMENT Type
       {
-	$3->setName(*$1); delete $1;
-	context->Module->addType(TypePtr($3));
+		$3->setName(*$1); delete $1;
+		context->Module->addType(TypePtr($3));
       }
-  ;
-
+;
 
 Type
   : ConstrainedType
   | ReferencedType
   | BuiltinType
-  ;
-
+;
 
 BuiltinType
   : BitStringType
@@ -774,7 +691,7 @@ BuiltinType
   | SetType
   | SetOfType
   | TaggedType
-  ;
+;
 
 
 ReferencedType
@@ -784,414 +701,302 @@ ReferencedType
   | TypeFromObject
   | ValueSetFromObjects
     {
-  $$= $1->MakeValueSetType().get();
-  delete $1;
+		$$= $1->MakeValueSetType().get();
+		delete $1;
     }
-  ;
+;
 
 
 DefinedType
-  : SimpleDefinedType
-      {
-	$$ = new DefinedType(*$1);
-	delete $1;
-      }
+  : SimpleDefinedType				{	$$ = new DefinedType(*$1);		delete $1;      }
   | ParameterizedType
-/*| ParameterizedValueSetType	synonym for ParameterizedType */
-  ;
+/*| ParameterizedValueSetType		synonym for ParameterizedType */
+;
 
 
 ExternalTypeReference
-  : MODULEREFERENCE '.' TYPEREFERENCE
-      {
-	*$1 += *$3;
-	delete $3;
-      }
-  ;
+  : MODULEREFERENCE '.' TYPEREFERENCE	{	*$1 += *$3;		delete $3;      }
+;
 
 BitStringType
-  : BIT STRING
-      {
-	$$ = new BitStringType;
-      }
-  | BIT STRING '{' NamedBitList '}'
-      {
-	$$ = new BitStringType(*$4);
-	delete $4;
-      }
-  ;
-
+  : BIT STRING							{	$$ = new BitStringType;	}
+  | BIT STRING '{' NamedBitList '}'		{	$$ = new BitStringType(*$4);delete $4;  }
+;
 
 NamedBitList
   : NamedBit
       {
-	$$ = new NamedNumberList;
-	$$->push_back(NamedNumberPtr($1));
+		$$ = new NamedNumberList;
+		$$->push_back(NamedNumberPtr($1));
       }
   | NamedBitList ',' NamedBit
       {
-	$1->push_back(NamedNumberPtr($3));
+		$1->push_back(NamedNumberPtr($3));
       }
-  ;
+;
 
 NamedBit
   : IDENTIFIER '(' INTEGER ')'
       {
-	$$ = new NamedNumber($1, (int)$3);
+		$$ = new NamedNumber($1, (int)$3);
       }
   | IDENTIFIER '(' DefinedValue ')'
       {
-	$$ = new NamedNumber($1, ((DefinedValue*)$3)->getReference());
-	delete $3;
+		$$ = new NamedNumber($1, ((DefinedValue*)$3)->getReference());
+		delete $3;
       }
-  ;
-
+;
 
 BooleanType
-  : BOOLEAN_t
-      {
-	$$ = new BooleanType;
-      }
-  ;
-
+  : BOOLEAN_t		{	$$ = new BooleanType;	}
+;
 
 CharacterStringType
   : RestrictedCharacterStringType
   | UnrestrictedCharacterStringType
-  ;
+;
 
 RestrictedCharacterStringType
-  : BMPString
-      {
-	$$ = new BMPStringType;
-      }
-  | GeneralString
-      {
-	$$ = new GeneralStringType;
-      }
-  | GraphicString
-      {
-	$$ = new GraphicStringType;
-      }
-  | IA5String
-      {
-	$$ = new IA5StringType;
-      }
-  | ISO646String
-      {
-	$$ = new ISO646StringType;
-      }
-  | NumericString
-      {
-	$$ = new NumericStringType;
-      }
-  | PrintableString
-      {
-	$$ = new PrintableStringType;
-      }
-  | TeletexString
-      {
-	$$ = new TeletexStringType;
-      }
-  | T61String
-      {
-	$$ = new T61StringType;
-      }
-  | UniversalString
-      {
-	$$ = new UniversalStringType;
-      }
-  | VideotexString
-      {
-	$$ = new VideotexStringType;
-      }
-  | VisibleString
-      {
-	$$ = new VisibleStringType;
-      }
-  ;
-
+  : BMPString		{	$$ = new BMPStringType;	}
+  | UTF8String		{	$$ = new UTF8StringType; }
+  | GeneralString	{	$$ = new GeneralStringType; }
+  | GraphicString	{	$$ = new GraphicStringType; }
+  | IA5String		{	$$ = new IA5StringType; }
+  | ISO646String	{	$$ = new ISO646StringType; }
+  | NumericString   {	$$ = new NumericStringType; }
+  | PrintableString {	$$ = new PrintableStringType;  }
+  | TeletexString	{	$$ = new TeletexStringType;  }
+  | T61String	    {	$$ = new T61StringType; }
+  | UniversalString	{	$$ = new UniversalStringType; }
+  | VideotexString	{	$$ = new VideotexStringType; }
+  | VisibleString   {	$$ = new VisibleStringType; }
+;
 
 UnrestrictedCharacterStringType
-  : CHARACTER STRING
-      {
-	$$ = new UnrestrictedCharacterStringType;
-      }
-  ;
-
+  : CHARACTER STRING	{	$$ = new UnrestrictedCharacterStringType; }
+;
 
 ChoiceType
-  : CHOICE '{'
-      {
-		context->ParsingConstructedType++;
-	  }
-    AlternativeTypeLists '}'
-      {
-	$$ = $4;
-    context->ParsingConstructedType--;
-      }
-  ;
+  : CHOICE '{'				{	context->ParsingConstructedType++;  }
+    AlternativeTypeLists '}'{	$$ = $4;   context->ParsingConstructedType--; }
+;
 
 AlternativeTypeLists
-  : AlternativeTypeList
-      {
-	$$ = new ChoiceType($1);
-      }
-  | AlternativeTypeList ',' ExtensionAndException
-      {
-	$$ = new ChoiceType($1, true);
-      }
-  | AlternativeTypeList ',' ExtensionAndException  ','  AlternativeTypeList
-      {
-	$$ = new ChoiceType($1, true, $5);
-      }
-  ;
+  : AlternativeTypeList								{	$$ = new ChoiceType($1);	}
+  | AlternativeTypeList ',' ExtensionAndException   {	$$ = new ChoiceType($1, true); }
+  | AlternativeTypeList ',' ExtensionAndException  ','  AlternativeTypeList   {	$$ = new ChoiceType($1, true, $5);  }
+;
 
 AlternativeTypeList
   : NamedType
       {
-	$$ = new TypesVector;
-	$$->push_back(TypePtr($1));
+		$$ = new TypesVector;
+		$$->push_back(TypePtr($1));
       }
   | AlternativeTypeList ',' NamedType
       {
-	$1->push_back(TypePtr($3));
+		$1->push_back(TypePtr($3));
       }
-  ;
-
+;
 
 ExtensionAndException
   : ELLIPSIS ExceptionSpec
-  ;
-
+;
 
 NamedType
   : IDENTIFIER Type
       {
-	$2->setName(*$1); delete $1;
-	$$ = $2;
+		$2->setName(*$1); delete $1;
+		$$ = $2;
       }
-  | Type	     /* ITU-T Rec. X.680 Appendix H.1 */
+  | Type		     /* ITU-T Rec. X.680 Appendix H.1 */
       {
-	std::cerr << StdError(Warning) << "unnamed field." << std::endl;
-	std::stringstream strm;
-	strm << "_unnamed" << UnnamedFieldCount++<< std::ends;
-	$1->setName(strm.str());
+		std::cerr << StdError(Warning) << "unnamed field." << std::endl;
+		std::stringstream strm;
+		strm << "_unnamed" << UnnamedFieldCount++<< std::ends;
+		$1->setName(strm.str());
       }
 /*| SelectionType    /* Unnecessary as have rule in Type for this */
-  ;
-
+;
 
 EmbeddedPDVType
-  : EMBEDDED PDV
-      {
-	$$ = new EmbeddedPDVType;
-      }
-  ;
-
+  : EMBEDDED PDV	{	$$ = new EmbeddedPDVType;	}
+;
 
 EnumeratedType
-  : ENUMERATED '{' Enumerations '}'
-      {
-	$$ = $3;
-      }
-  ;
+  : ENUMERATED '{' Enumerations '}'      {	$$ = $3;   }
+;
 
 Enumerations
   : Enumeration
       {
-	$$ = new EnumeratedType(*$1, false, NULL);
-	delete $1;
+		$$ = new EnumeratedType(*$1, false, NULL);
+		delete $1;
       }
   | Enumeration  ',' ELLIPSIS
       {
-	$$ = new EnumeratedType(*$1, true, NULL);
-	delete $1;
+		$$ = new EnumeratedType(*$1, true, NULL);
+		delete $1;
       }
   | Enumeration  ',' ELLIPSIS ',' Enumeration
       {
-	$$ = new EnumeratedType(*$1, true, $5);
-	delete $1;
+		$$ = new EnumeratedType(*$1, true, $5);
+		delete $1;
       }
-  ;
+;
 
 Enumeration
   : EnumerationItem
       {
-	$$ = new NamedNumberList;
-	$$->push_back(NamedNumberPtr($1));
+		$$ = new NamedNumberList;
+		$$->push_back(NamedNumberPtr($1));
       }
   | Enumeration ',' EnumerationItem
       {
-	$3->setAutoNumber(*($1->back()));
-	$1->push_back(NamedNumberPtr($3));
-	$$ = $1;
+		$3->setAutoNumber(*($1->back()));
+		$1->push_back(NamedNumberPtr($3));
+		$$ = $1;
       }
-  ;
+;
 
 EnumerationItem
-  : IDENTIFIER
-      {
-	$$ = new NamedNumber($1);
-      }
+  : IDENTIFIER					{	$$ = new NamedNumber($1); }
   | NamedNumber
-  ;
+;
 
 ExternalType
-  : EXTERNAL
-      {
-	$$ = new ExternalType;
-      }
-  ;
+  : EXTERNAL					{	$$ = new ExternalType;    }
+;
 
 AnyType
-  : ANY
-      {
-	$$ = new AnyType(NULL);
-      }
-  | ANY DEFINED BY IDENTIFIER
-      {
-	$$ = new AnyType(*$4);
-	delete $4;
-      }
-  ;
-
+  : ANY							{	$$ = new AnyType(NULL);    }
+  | ANY DEFINED BY IDENTIFIER	{	$$ = new AnyType(*$4);	delete $4;  }
+;
 
 InstanceOfType
   : INSTANCE OF_t DefinedObjectClass
-  ;
-
+;
 
 IntegerType
-  : INTEGER_t
-      {
-	$$ = new IntegerType;
-      }
-  | INTEGER_t '{' NamedNumberList '}'
-      {
-	$$ = new IntegerType(*$3); delete $3;
-      }
-  ;
-
+  : INTEGER_t							{	$$ = new IntegerType;   }
+  | INTEGER_t '{' NamedNumberList '}'	{	$$ = new IntegerType(*$3); delete $3;     }
+;
 
 NullType
-  : NULL_TYPE
-      {
-	$$ = new NullType;
-      }
-  ;
+  : NULL_TYPE				      {	$$ = new NullType;    }
+;
 
 
 ObjectClassFieldType
   : SimpleObjectClassFieldType
       {
-  $$  = $1;
-	  }
+	  $$  = $1;
+		  }
   | SimpleObjectClassFieldType '(' TableConstraint ExceptionSpec ')'
-	  {
+		  {
   $1->addTableConstraint(boost::shared_ptr<TableConstraint>($3));
   $$ = $1;
-	  }
+		  }
   | SimpleObjectClassFieldType '(' ConstraintSpec ExceptionSpec ')'
       {
   $1->addConstraint(ConstraintPtr($3));
   $$ = $1;
-	  }
-  ;
+		  }
+;
 SimpleObjectClassFieldType
   : DefinedObjectClass
       {
     context->InformationFromObjectContext = $1;
-	  }
-	'.' FieldName
+		  }
+		'.' FieldName
       {
-	$$ = new ObjectClassFieldType(ObjectClassBasePtr($1), *$4); delete $4;
-	context->InformationFromObjectContext = NULL;
+		$$ = new ObjectClassFieldType(ObjectClassBasePtr($1), *$4); delete $4;
+		context->InformationFromObjectContext = NULL;
       }
-  ;
+;
 
 
 ObjectIdentifierType
   : OBJECT IDENTIFIER_t
       {
-	$$ = new ObjectIdentifierType;
+		$$ = new ObjectIdentifierType;
       }
-  ;
+;
 
 OctetStringType
   : OCTET STRING
       {
-	$$ = new OctetStringType;
+		$$ = new OctetStringType;
       }
-  ;
+;
 
 
 RealType
-  : REAL
+  : REAL_t
       {
-	$$ = new RealType;
+		$$ = new RealType;
       }
-  ;
+;
 
 
 SequenceType
   : SequenceAndBrace ComponentTypeLists '}'
-	  {
-	$$ = $2;
-    context->ParsingConstructedType--;
+		  {
+		$$ = $2;
+		context->ParsingConstructedType--;
       }
   | SequenceAndBrace  '}'
       {
-	$$ = new SequenceType(NULL, false, NULL);
-    context->ParsingConstructedType--;
+		$$ = new SequenceType(NULL, false, NULL);
+		context->ParsingConstructedType--;
       }
   | SequenceAndBrace ExtensionAndException '}'
       {
-	$$ = new SequenceType(NULL, true, NULL);
-    context->ParsingConstructedType--;
+		$$ = new SequenceType(NULL, true, NULL);
+		context->ParsingConstructedType--;
       }
-  ;
+;
 
 SequenceAndBrace
   : SEQUENCE
-	  {
-    context->ParsingConstructedType++;
-	  }
+	{
+		context->ParsingConstructedType++;
+	}
     '{'
-  ;
+;
 
 ComponentTypeLists
   : ComponentTypeList
       {
-	$$ = new SequenceType($1, false, NULL);
+		$$ = new SequenceType($1, false, NULL);
       }
   | ComponentTypeList ',' ExtensionAndException
       {
-	$$ = new SequenceType($1, true, NULL);
+		$$ = new SequenceType($1, true, NULL);
       }
   | ComponentTypeList ',' ExtensionAndException ',' ComponentTypeList
       {
-	$$ = new SequenceType($1, true, $5);
+		$$ = new SequenceType($1, true, $5);
       }
   | ExtensionAndException ',' ComponentTypeList
       {
-	$$ = new SequenceType(NULL, true, $3);
+		$$ = new SequenceType(NULL, true, $3);
       }
-  ;
+;
 
 ComponentTypeList
   : ComponentType
       {
-	$$ = new TypesVector;
-	$$->push_back(*$1);
-	delete $1;
+		$$ = new TypesVector;
+		$$->push_back(*$1);
+		delete $1;
       }
   | ComponentTypeList ',' ComponentType
       {
-	$1->push_back(*($3));
-	delete $3;
+		$1->push_back(*($3));
+		delete $3;
       }
-  ;
+;
 
 ComponentType
   : NamedType
@@ -1200,15 +1005,15 @@ ComponentType
       }
   | NamedType OPTIONAL_t
       {
-	$1->setOptional();
-	$$ = new TypePtr($1);
+		$1->setOptional();
+		$$ = new TypePtr($1);
       }
   | NamedType
       {
-   	context->ValueTypeContext.reset($1);
+   		context->ValueTypeContext.reset($1);
     $1->beginParseValue();
-	  }
-	DEFAULT Value
+		  }
+		DEFAULT Value
       {
    $1->setDefaultValue(ValuePtr($4));
    $$ = new TypePtr(context->ValueTypeContext);
@@ -1218,298 +1023,267 @@ ComponentType
       {
     $$ = new TypePtr($3);
       }
-  ;
+;
 
 
 SequenceOfType
   : SEQUENCE OF_t Type
       {
-	$$ = new SequenceOfType(TypePtr($3));
+		$$ = new SequenceOfType(TypePtr($3));
       }
-  ;
+;
 
 
 SetType
   : SetAndBrace ComponentTypeLists '}'
       {
-	$$ = new SetType(*(SequenceType*)$2); delete $2;
-    context->ParsingConstructedType--;
+		$$ = new SetType(*(SequenceType*)$2); delete $2;
+		context->ParsingConstructedType--;
       }
   | SetAndBrace  '}'
       {
-	$$ = new SetType;
-    context->ParsingConstructedType--;
+		$$ = new SetType;
+		context->ParsingConstructedType--;
       }
-  ;
+;
 
 SetAndBrace
   : SET
       {
     context->ParsingConstructedType++;
-	  }
+		  }
     '{'
-  ;
+;
 
 
 SetOfType
   : SET OF_t Type
       {
-	$$ = new SetOfType(TypePtr($3));
+		$$ = new SetOfType(TypePtr($3));
       }
-  ;
+;
 
 
 TaggedType
   : Tag Type
       {
-	$2->setTag($1.tagClass, $1.tagNumber, context->Module->getDefaultTagMode());
-	$$ = $2;
+		$2->setTag($1.tagClass, $1.tagNumber, context->Module->getDefaultTagMode());
+		$$ = $2;
       }
   | Tag IMPLICIT Type
       {
-	$3->setTag($1.tagClass, $1.tagNumber, Tag::Implicit);
-	$$ = $3;
+		$3->setTag($1.tagClass, $1.tagNumber, Tag::Implicit);
+		$$ = $3;
       }
   | Tag EXPLICIT Type
       {
-	$3->setTag($1.tagClass, $1.tagNumber, Tag::Explicit);
-	$$ = $3;
+		$3->setTag($1.tagClass, $1.tagNumber, Tag::Explicit);
+		$$ = $3;
       }
-  ;
+;
 
 Tag
   : '[' Class ClassNumber ']'
       {
-	$$.tagClass = (Tag::Type)$2;
-	$$.tagNumber = (int)$3;
+		$$.tagClass = (Tag::Type)$2;
+		$$.tagNumber = (int)$3;
       }
-  ;
+;
 
 ClassNumber
   : INTEGER
   | DefinedValue
       {
     IntegerValue* val = dynamic_cast<IntegerValue*>($1);
-	if (val) {
-	  $$ = *val;
-	  delete $1;
-	}
-	else
-	  std::cerr << StdError(Fatal) << "incorrect value type." << std::endl;
+		if (val) {
+		  $$ = *val;
+		  delete $1;
+		}
+		else
+		  std::cerr << StdError(Fatal) << "incorrect value type." << std::endl;
       }
-  ;
+;
 
 Class
-  : UNIVERSAL
-      {
-	$$ = Tag::Universal;
-      }
-  | APPLICATION
-      {
-	$$ = Tag::Application;
-      }
-  | PRIVATE
-      {
-	$$ = Tag::Private;
-      }
-  | /* empty */
-      {
-	$$ = Tag::ContextSpecific;
-      }
-  ;
+  : UNIVERSAL		{	$$ = Tag::Universal; }
+  | APPLICATION		{	$$ = Tag::Application; }
+  | PRIVATE			{	$$ = Tag::Private;  }
+  | /* empty */		{	$$ = Tag::ContextSpecific; }
+;
 
 
 SelectionType
   : IDENTIFIER '<' Type
       {
-	$$ = new SelectionType(*$1, TypePtr($3)); delete $1;
+		$$ = new SelectionType(*$1, TypePtr($3)); delete $1;
       }
-  ;
+;
 
 
 UsefulType
   : GeneralizedTime
       {
-	$$ = new GeneralizedTimeType;
+		$$ = new GeneralizedTimeType;
       }
   | UTCTime
       {
-	$$ = new UTCTimeType;
+		$$ = new UTCTimeType;
       }
   | ObjectDescriptor_t
       {
-	$$ = new ObjectDescriptorType;
+		$$ = new ObjectDescriptorType;
       }
-  ;
+;
 
 
 TypeFromObject
   : ReferencedObjectDot TYPEFIELDREFERENCE
     {
-	  $$ = new TypeFromObject(InformationObjectPtr($1), *$2); delete $2;
-	  context->InformationFromObjectContext = NULL;
-	}
-  ;
+		  $$ = new TypeFromObject(InformationObjectPtr($1), *$2); delete $2;
+		  context->InformationFromObjectContext = NULL;
+		}
+;
 
 
 ValueSetFromObjects
   : ReferencedObjectsDot FIXEDTYPEVALUEFIELDREFERENCE
    {
-	  $$ = new ValueSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
-	  context->InformationFromObjectContext = NULL;
+		  $$ = new ValueSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
+		  context->InformationFromObjectContext = NULL;
    }
   | ReferencedObjectsDot FIXEDTYPEVALUESETFIELDREFERENCE
    {
-	  $$ = new ValueSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
-	  context->InformationFromObjectContext = NULL;
+		  $$ = new ValueSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
+		  context->InformationFromObjectContext = NULL;
    }
   | ValueSetFromObject
-  ;
+;
 
 ObjectSetFromObjects
   : ReferencedObjectsDot OBJECTFIELDREFERENCE
     {
-	  $$ = new ObjectSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
-	  context->InformationFromObjectContext = NULL;
-	}
+		  $$ = new ObjectSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
+		  context->InformationFromObjectContext = NULL;
+		}
   | ReferencedObjectsDot OBJECTSETFIELDREFERENCE
     {
-	  $$ = new ObjectSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
-	  context->InformationFromObjectContext = NULL;
-	}
+		  $$ = new ObjectSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
+		  context->InformationFromObjectContext = NULL;
+		}
   | ObjectSetFromObject
-  ;
+;
 
 
 ReferencedObjects
   : DefinedObjectSet
-      {
-  $$ = $1;
-	  }
+    {
+	  $$ = $1;
+	}
   | ObjectSetFromObjects
-      {
-  $$ = $1;
-	  }
+    {
+		  $$ = $1;
+	}
   | ParameterizedObjectSet
-      {
-  $$ = $1;
-	  }
-  ;
+    {
+	  $$ = $1;
+	}
+;
 
 ReferencedObject
   : DefinedObject
   | ObjectFromObject
   | ParameterizedObject
-  ;
+;
 
 ParameterizedObject
-  : PARAMETERIZEDOBJECTREFERENCE ActualParameterList
-      {
-	  }
-  | MODULEREFERENCE '.' PARAMETERIZEDOBJECTREFERENCE ActualParameterList
-      {
-	  }
-  ;
+  : PARAMETERIZEDOBJECTREFERENCE ActualParameterList					      {  }
+  | MODULEREFERENCE '.' PARAMETERIZEDOBJECTREFERENCE ActualParameterList      {  }
+;
 
 
 /********/
-
 ConstrainedType
-  : Type Constraint
-      {
-	$1->addConstraint(ConstraintPtr($2));
-      }
+  : Type Constraint		{	$1->addConstraint(ConstraintPtr($2));   }
   | TypeWithConstraint
-  ;
+;
 
 
 TypeWithConstraint
   : SET Constraint OF_t Type
       {
-	$$ = new SetOfType(TypePtr($4), ConstraintPtr($2));
+		$$ = new SetOfType(TypePtr($4), ConstraintPtr($2));
       }
   | SET SizeConstraint OF_t Type
       {
-	ConstraintElementPtr cons($2);
-	$$ = new SetOfType(TypePtr($4), ConstraintPtr(new Constraint(cons)));
+		ConstraintElementPtr cons($2);
+		$$ = new SetOfType(TypePtr($4), ConstraintPtr(new Constraint(cons)));
       }
   | SEQUENCE Constraint OF_t Type
       {
-	$$ = new SequenceOfType(TypePtr($4), ConstraintPtr($2));
+		$$ = new SequenceOfType(TypePtr($4), ConstraintPtr($2));
       }
   | SEQUENCE SizeConstraint OF_t Type
       {
-	ConstraintElementPtr cons($2);
-	$$ = new SequenceOfType(TypePtr($4), ConstraintPtr(new Constraint(cons)));
+		ConstraintElementPtr cons($2);
+		$$ = new SequenceOfType(TypePtr($4), ConstraintPtr(new Constraint(cons)));
       }
-  ;
+;
 
 Constraint
   : '(' ConstraintSpec ExceptionSpec ')'
       {
-	$$ = $2;
+		$$ = $2;
       }
-  ;
+;
 
 ConstraintSpec
   : ElementSetSpecs
   | UserDefinedConstraint /* GeneralConstraint */
-  ;
+;
 
 
 ExceptionSpec
   : '!' ExceptionIdentification
       {
-	$$ = $2;
+		$$ = $2;
       }
   | /* empty */
       {
-	$$ = NULL;
+		$$ = NULL;
       }
-  ;
+;
 
 
 ExceptionIdentification
   : SignedNumber
       {
-	$$ = new IntegerValue($1);
+		$$ = new IntegerValue($1);
       }
   | DefinedValue
   | Type
       {
-   	context->ValueTypeContext.reset($1);
+   		context->ValueTypeContext.reset($1);
     $1->beginParseValue();
-	  }
+		  }
     ':' Value
       {
-	$1->endParseValue();
-	$$ = $4;
+		$1->endParseValue();
+		$$ = $4;
       }
-  ;
+;
 
 
 ElementSetSpecs
-  : ElementSetSpec
-      {
-	$$ = new Constraint(std::auto_ptr<ConstraintElementVector>($1), false);
-      }
-  | ElementSetSpec  ',' ELLIPSIS
-      {
-	$$ = new Constraint(std::auto_ptr<ConstraintElementVector>($1), true);
-      }
-  | ELLIPSIS ',' ElementSetSpec
-      {
-	$$ = new Constraint(std::auto_ptr<ConstraintElementVector>(),
-						true,
-						std::auto_ptr<ConstraintElementVector>($3));
-      }
+  : ElementSetSpec					{	$$ = new Constraint(std::auto_ptr<ConstraintElementVector>($1), false);   }
+  | ElementSetSpec  ',' ELLIPSIS	{	$$ = new Constraint(std::auto_ptr<ConstraintElementVector>($1), true);    }
+  | ELLIPSIS ',' ElementSetSpec		{	$$ = new Constraint(std::auto_ptr<ConstraintElementVector>(), true,
+												std::auto_ptr<ConstraintElementVector>($3));  }
   | ElementSetSpec  ',' ELLIPSIS ',' ElementSetSpec
       {
-	$$ = new Constraint(std::auto_ptr<ConstraintElementVector>($1),
-						true,
-						std::auto_ptr<ConstraintElementVector>($5));
+		$$ = new Constraint(std::auto_ptr<ConstraintElementVector>($1),	true,
+												std::auto_ptr<ConstraintElementVector>($5));
       }
-  ;
+;
 
 
 ElementSetSpec
@@ -1517,153 +1291,153 @@ ElementSetSpec
   | ALL Exclusions
       {
     $$ = new ConstraintElementVector;
-	$$->push_back(ConstraintElementPtr(
-				new ConstrainAllConstraintElement(
-					ConstraintElementPtr($2))));
+		$$->push_back(ConstraintElementPtr(
+								new ConstrainAllConstraintElement(
+										ConstraintElementPtr($2))));
       }
-  ;
+;
 
 
 Unions
   : Intersections
       {
-	if ($1->size() == 1)
-	  $$= $1;
-	else
-	{
-	  $$ = new ConstraintElementVector;
-	  $$->push_back(ConstraintElementPtr(new ElementListConstraintElement(
-												std::auto_ptr<ConstraintElementVector>($1))));
-	}
+		if ($1->size() == 1)
+		  $$= $1;
+		else
+		{
+		  $$ = new ConstraintElementVector;
+		  $$->push_back(ConstraintElementPtr(new ElementListConstraintElement(
+			std::auto_ptr<ConstraintElementVector>($1))));
+		}
       }
   | Unions UnionMark Intersections
       {
     if ($3->size() == 1)
-	{
-	  $$->push_back( (*$3)[0]);
-	  delete $3;
-	}
-	else
-	  $$->push_back(ConstraintElementPtr(new ElementListConstraintElement(
-				std::auto_ptr<ConstraintElementVector>($3))));
+		{
+		  $$->push_back( (*$3)[0]);
+		  delete $3;
+		}
+		else
+		  $$->push_back(ConstraintElementPtr(new ElementListConstraintElement(
+								std::auto_ptr<ConstraintElementVector>($3))));
       }
-  ;
+;
 
 Intersections
   : IntersectionElements
       {
-	$$ = new ConstraintElementVector;
-	$$->push_back(ConstraintElementPtr($1));
+		$$ = new ConstraintElementVector;
+		$$->push_back(ConstraintElementPtr($1));
 
       }
   | Intersections IntersectionMark IntersectionElements
       {
-   	$$->push_back(ConstraintElementPtr($3));
+   		$$->push_back(ConstraintElementPtr($3));
       }
-  ;
+;
 
 IntersectionElements
   : Elements
   | Elements Exclusions
       {
-	$1->setExclusions(ConstraintElementPtr($2));
+		$1->setExclusions(ConstraintElementPtr($2));
       }
-  ;
+;
 
 Exclusions
   : EXCEPT Elements
       {
-	$$ = $2;
+		$$ = $2;
       }
-  ;
+;
 
 UnionMark
   : '|'
   | UNION
-  ;
+;
 
 IntersectionMark
   : '^'
   | INTERSECTION
-  ;
+;
 
 Elements
   : SubtypeElements
   | ObjectSetElements
   | '(' ElementSetSpec ')'
       {
-	$$ = new ElementListConstraintElement(std::auto_ptr<ConstraintElementVector>($2));
+		$$ = new ElementListConstraintElement(std::auto_ptr<ConstraintElementVector>($2));
       }
-  ;
+;
 
 
 SubtypeElements
   : Value
       {
-	$$ = new SingleValueConstraintElement(ValuePtr($1));
+		$$ = new SingleValueConstraintElement(ValuePtr($1));
       }
   | ContainedSubtype
       {
-	$$ = new SubTypeConstraintElement(TypePtr($1));
+		$$ = new SubTypeConstraintElement(TypePtr($1));
       }
   | ValueRange
   | PermittedAlphabet
   | SizeConstraint
 /*| TypeConstraint  This is really Type and causes ambiguity with ContainedSubtype */
   | InnerTypeConstraints
-  ;
+;
 
 ValueRange
-  : Lowerendpoint '.' '.' Upperendpoint
+  : Lowerendpoint RANGE Upperendpoint
       {
-	$$ = new ValueRangeConstraintElement(ValuePtr($1), ValuePtr($4));
+		$$ = new ValueRangeConstraintElement(ValuePtr($1), ValuePtr($3));
       }
-  ;
+;
 
 Lowerendpoint
   : LowerendValue
   | LowerendValue '<'
-  ;
+;
 
 Upperendpoint
   : UpperendValue
   | '<' UpperendValue
       {
-	$$ = $2;
+		$$ = $2;
       }
-  ;
+;
 
 LowerendValue
   : Value
   | MIN
       {
-	$$ = new MinValue;
+		$$ = new MinValue;
       }
-  ;
+;
 
 UpperendValue
   : Value
   | MAX
       {
-	$$ = new MaxValue;
+		$$ = new MaxValue;
       }
-  ;
+;
 
 PermittedAlphabet
   : FROM Constraint
       {
-	$$ = new FromConstraintElement(ConstraintPtr($2));
+		$$ = new FromConstraintElement(ConstraintPtr($2));
       }
-  ;
+;
 
 ContainedSubtype
   : INCLUDES Type
       {
-	$$ = $2;
+		$$ = $2;
       }
-/*| Type	 Actual grammar has INCLUDES keyword optional but this is
-		 horribly ambiguous, so only support  a few specific Type
-		 definitions */
+/*| Type		 Actual grammar has INCLUDES keyword optional but this is
+				 horribly ambiguous, so only support  a few specific Type
+				 definitions */
   | ConstrainedType
   | BuiltinType
   | ReferencedType
@@ -1671,129 +1445,116 @@ ContainedSubtype
   | DefinedType
   | UsefulType
   */
-  ;
+;
 
 
 SizeConstraint
   : SIZE_t Constraint
       {
-	$$ = new SizeConstraintElement(ConstraintPtr($2));
+		$$ = new SizeConstraintElement(ConstraintPtr($2));
       }
-  ;
+;
 
 
 InnerTypeConstraints
   : WITH COMPONENT Constraint
       {
-	$$ = new WithComponentConstraintElement(NULL, ConstraintPtr($3), WithComponentConstraintElement::Default);
+		$$ = new WithComponentConstraintElement(NULL, ConstraintPtr($3), WithComponentConstraintElement::Default);
       }
   | WITH COMPONENTS MultipleTypeConstraints
       {
-	$$ = $3;
+		$$ = $3;
       }
-  ;
+;
 
 MultipleTypeConstraints
-  : '{' TypeConstraints '}'			/* FullSpecification */
+  : '{' TypeConstraints '}'						/* FullSpecification */
       {
-	$$ = new InnerTypeConstraintElement(std::auto_ptr<ConstraintElementVector>($2), false);
+		$$ = new InnerTypeConstraintElement(std::auto_ptr<ConstraintElementVector>($2), false);
       }
-  | '{'  ELLIPSIS ',' TypeConstraints '}'	/* PartialSpecification */
+  | '{'  ELLIPSIS ',' TypeConstraints '}'		/* PartialSpecification */
       {
-	$$ = new InnerTypeConstraintElement(std::auto_ptr<ConstraintElementVector>($4), true);
+		$$ = new InnerTypeConstraintElement(std::auto_ptr<ConstraintElementVector>($4), true);
       }
-  ;
+;
 
 TypeConstraints
   : NamedConstraint
       {
     $$ = new ConstraintElementVector;
-	$$->push_back(ConstraintElementPtr($1));
+		$$->push_back(ConstraintElementPtr($1));
       }
   | NamedConstraint ',' TypeConstraints
       {
-	$3->push_back(ConstraintElementPtr($1));
-	$$ = $3;
+		$3->push_back(ConstraintElementPtr($1));
+		$$ = $3;
       }
-  ;
+;
 
 NamedConstraint
   : IDENTIFIER PresenceConstraint
       {
-	$$ = new WithComponentConstraintElement(*$1, ConstraintPtr(), (int)$2); delete $1;
+		$$ = new WithComponentConstraintElement(*$1, ConstraintPtr(), (int)$2); delete $1;
       }
   | IDENTIFIER Constraint PresenceConstraint
       {
-	$$ = new WithComponentConstraintElement(*$1, ConstraintPtr($2), (int)$3); delete $1;
+		$$ = new WithComponentConstraintElement(*$1, ConstraintPtr($2), (int)$3); delete $1;
       }
-  ;
+;
 
 PresenceConstraint
-  : PRESENT
-      {
-	$$ = WithComponentConstraintElement::Present;
-      }
-  | ABSENT
-      {
-	$$ = WithComponentConstraintElement::Absent;
-      }
-  | OPTIONAL_t
-      {
-	$$ = WithComponentConstraintElement::Optional;
-      }
-  | /* empty */
-      {
-	$$ = WithComponentConstraintElement::Default;
-      }
-  ;
-
+  : PRESENT			{	$$ = WithComponentConstraintElement::Present;     }
+  | ABSENT			{	$$ = WithComponentConstraintElement::Absent;     }
+  | OPTIONAL_t      {	$$ = WithComponentConstraintElement::Optional;      }
+  | /* empty */     {	$$ = WithComponentConstraintElement::Default;     }
+;
 
 /*
 GeneralConstraint
   : UserDefinedConstraint
   | TableConstraint
-  ;
+;
 */
 
 UserDefinedConstraint
   : CONSTRAINED BY '{' UserDefinedConstraintParameterList '}'
     {
-	  ConstraintElementPtr cons($4);
+		  ConstraintElementPtr cons($4);
       $$ = new Constraint(cons);
     }
-  ;
+;
 
 UserDefinedConstraintParameterList
   : /* empty */
       {
-	$$ = new UserDefinedConstraintElement(ActualParameterListPtr());
+		$$ = new UserDefinedConstraintElement(ActualParameterListPtr());
       }
   | UserDefinedConstraintParameters
       {
-	$$ = new UserDefinedConstraintElement(ActualParameterListPtr($1));
+		$$ = new UserDefinedConstraintElement(ActualParameterListPtr($1));
       }
-  ;
+;
 
 UserDefinedConstraintParameters
   : UserDefinedConstraintParameter ',' UserDefinedConstraintParameters
       {
-	$3->push_back(ActualParameterPtr($1));
-	$$ = $3;
+		$3->push_back(ActualParameterPtr($1));
+		$$ = $3;
       }
   | UserDefinedConstraintParameter
       {
-	$$ = new ActualParameterList;
-	$$->push_back(ActualParameterPtr($1));
+		$$ = new ActualParameterList;
+		$$->push_back(ActualParameterPtr($1));
       }
-  ;
+;
 
 UserDefinedConstraintParameter
   : Governor ':' ActualParameter
       {
-	$$ = $3;
+		$$ = $3;
       }
   | ActualParameter
-  ;
+;
 
 Governor
   : Type
@@ -1803,178 +1564,155 @@ Governor
   | DefinedObjectClass
       {
     delete $1;
-	  }
+		  }
 
 TableConstraint
   : SimpleTableConstraint
   | ComponentRelationConstraint
-  ;
+;
 
 SimpleTableConstraint
   : '{' DefinedObjectSet '}' /* '{' ObjectSet '}'*/
       {
     $$ = new TableConstraint(DefinedObjectSetPtr($2));
-	  }
-  ;
+		  }
+;
 
 ComponentRelationConstraint
   : '{' DefinedObjectSet '}' '{' AtNotations '}'
       {
-	$$ = new TableConstraint(DefinedObjectSetPtr($2), std::auto_ptr<StringList>($5));
-	  }
-  ;
+		$$ = new TableConstraint(DefinedObjectSetPtr($2), std::auto_ptr<StringList>($5));
+		  }
+;
 
 AtNotations
   : AtNotations ',' AtNotation
       {
-  $1->push_back(*$3);
-  delete $3;
-	  }
+	  $1->push_back(*$3);
+	  delete $3;
+	}
   | AtNotation
       {
   $$ = new StringList;
   $$->push_back(*$1);
   delete $1;
-	  }
-  ;
+		  }
+;
 
 AtNotation
-  : '@' ComponentIdList
-      {
-  $$ = $2;
-	  }
-  | '@' '.' ComponentIdList
-      {
-  $3->insert(0, ".");
-  $$ = $3;
-	  }
-  ;
+  : '@' ComponentIdList		{  $$ = $2;  }
+  | '@' '.' ComponentIdList	{  $3->insert(0, ".");  $$ = $3; }
+;
 
 ComponentIdList
-  : ComponentIdList '.' IDENTIFIER
-      {
-  *($1) += '.' ;
-  *($1) += *($3);
-  $$ = $1;
-  delete $3;
-	  }
+  : ComponentIdList '.' IDENTIFIER	{  *($1) += '.' ;  *($1) += *($3);  $$ = $1;  delete $3; }
   | IDENTIFIER
-  ;
+;
 
-
-/********/
 ObjectClassAssignment
   : OBJECTCLASSREFERENCE ASSIGNMENT ObjectClass
     {
 		$3->setName(*$1); delete $1;
 		context->Module->addObjectClass(ObjectClassBasePtr($3));
 	}
-  ;
+;
 
 
 ObjectAssignment
   : OBJECTREFERENCE DefinedObjectClass
     {
-	   $2->beginParseObject();
+		$2->beginParseObject();
     }
   ASSIGNMENT Object
     {
-	   $2->endParseObject();
-       context->classStack->pop();
-	   $5->setName(*$1); delete $1;
-       $5->setObjectClass($2);
-       context->Module->addInformationObject(InformationObjectPtr($5));
+		$2->endParseObject();
+		context->classStack->pop();
+		$5->setName(*$1); delete $1;
+		$5->setObjectClass($2);
+		context->Module->addInformationObject(InformationObjectPtr($5));
 	}
-  ;
+;
 
 ObjectSetAssignment
   : OBJECTSETREFERENCE DefinedObjectClass
     {
-	   $2->beginParseObjectSet();
+		   $2->beginParseObjectSet();
 	}
   ASSIGNMENT ObjectSet
     {
-	   context->Module->addInformationObjectSet(InformationObjectSetPtr(
-			new InformationObjectSetDefn(*$1,
-			                             ObjectClassBasePtr($2),
-			                             ConstraintPtr($5))));
-	   delete $1;
-       context->classStack->pop();
+		context->Module->addInformationObjectSet(InformationObjectSetPtr(
+		new InformationObjectSetDefn(*$1, ObjectClassBasePtr($2), ConstraintPtr($5))));
+		delete $1;
+		context->classStack->pop();
 	}
-  ;
+;
 
 
 ObjectClass
-  : DefinedObjectClass
-  {
-		$$ = $1;
-  }
-  | ObjectClassDefn
-  {
-		$$ = $1;
-  }
+  : DefinedObjectClass  {	$$ = $1;  }
+  | ObjectClassDefn		{	$$ = $1;  }
 /*  | ParameterizedObjectClass */
-  ;
+;
 
 DefinedObjectClass
   : OBJECTCLASSREFERENCE
     {
-  $$ = new DefinedObjectClass(*$1);
-  delete $1;
+	  $$ = new DefinedObjectClass(*$1);
+	  delete $1;
 	}
   | ExternalObjectClassReference
     {
-  $$ = new DefinedObjectClass(*$1);
-  delete $1;
+	  $$ = new DefinedObjectClass(*$1);
+	  delete $1;
 	}
   | UsefulObjectClassReference
     {
-  $$ = new DefinedObjectClass(*$1);
-  delete $1;
+	  $$ = new DefinedObjectClass(*$1);
+	  delete $1;
 	}
-  ;
+;
 
 ExternalObjectClassReference
   : MODULEREFERENCE '.' OBJECTCLASSREFERENCE
       {
-	$$ = ConcatNames($1, '.', $3);
+		$$ = ConcatNames($1, '.', $3);
       }
-  ;
+;
 
 UsefulObjectClassReference
   : TYPE_IDENTIFIER
       {
-	$$ = new std::string("TYPE-IDENTIFIER");
+		$$ = new std::string("TYPE-IDENTIFIER");
       }
   | ABSTRACT_SYNTAX
       {
-	$$ = new std::string("ABSTRACT-SYNTAX");
+		$$ = new std::string("ABSTRACT-SYNTAX");
       }
-  ;
+;
 
 ObjectClassDefn
   : CLASS  '{'  FieldSpecs '}' WithSyntaxSpec
     {
-	    ObjectClassDefn* ocd = new ObjectClassDefn;
-		$$ = ocd;
-		ocd->setFieldSpecs(std::auto_ptr<FieldSpecsList>($3));
-		ocd->setWithSyntaxSpec(TokenGroupPtr($5));
-		context->InWithSyntaxContext = false;
+		    ObjectClassDefn* ocd = new ObjectClassDefn;
+				$$ = ocd;
+				ocd->setFieldSpecs(std::auto_ptr<FieldSpecsList>($3));
+				ocd->setWithSyntaxSpec(TokenGroupPtr($5));
+				context->InWithSyntaxContext = false;
     }
-  ;
+;
 
 FieldSpecs
   : FieldSpecs ',' FieldSpec
-	{
-		$1->push_back(FieldSpecPtr($3));
-		$$=$1;
-	}
+		{
+				$1->push_back(FieldSpecPtr($3));
+				$$=$1;
+		}
   | FieldSpec
-	{
-		$$ = new FieldSpecsList;
-		$$->push_back(FieldSpecPtr($1));
-	}
-  ;
+		{
+				$$ = new FieldSpecsList;
+				$$->push_back(FieldSpecPtr($1));
+		}
+;
 
 FieldSpec
   : TypeFieldSpec
@@ -1984,73 +1722,73 @@ FieldSpec
   | VariableTypeValueSetFieldSpec
   | ObjectFieldSpec
   | ObjectSetFieldSpec
-  ;
+;
 
 TypeFieldSpec
   : FieldReference
     {
-		$$ = new TypeFieldSpec(*$1); delete $1;
-	}
+				$$ = new TypeFieldSpec(*$1); delete $1;
+		}
   | FieldReference OPTIONAL_t
     {
-		$$ = new TypeFieldSpec(*$1, true); delete $1;
+				$$ = new TypeFieldSpec(*$1, true); delete $1;
 
     }
   | FieldReference DEFAULT Type
     {
-		$$ = new TypeFieldSpec(*$1, false, TypePtr($3)); delete $1;
+				$$ = new TypeFieldSpec(*$1, false, TypePtr($3)); delete $1;
     }
-  ;
+;
 
 
 FixedTypeValueFieldSpec
   : fieldreference Type  /* Unique ValueOptionalitySpec */
     {
-	  $$ = new FixedTypeValueFieldSpec(*$1, TypePtr($2));
-	  delete $1;
-	}
+		  $$ = new FixedTypeValueFieldSpec(*$1, TypePtr($2));
+		  delete $1;
+		}
   | fieldreference Type UNIQUE
     {
-	  $$ = new FixedTypeValueFieldSpec(*$1, TypePtr($2), false, true);
-  	  delete $1;
-	}
+		  $$ = new FixedTypeValueFieldSpec(*$1, TypePtr($2), false, true);
+  		  delete $1;
+		}
   | fieldreference Type OPTIONAL_t
     {
-	  $$ = new FixedTypeValueFieldSpec(*$1, TypePtr($2), true);
-  	  delete $1;
-	}
+		  $$ = new FixedTypeValueFieldSpec(*$1, TypePtr($2), true);
+  		  delete $1;
+		}
   | fieldreference Type
     {
       context->ValueTypeContext.reset($2);
-  	  $2->beginParseValue();
-	}
-	DEFAULT Value
-	{
-	  FixedTypeValueFieldSpec* spec = new FixedTypeValueFieldSpec(*$1, context->ValueTypeContext);
-  	  $2->endParseValue();
-	  spec->setDefault(ValuePtr($5));
-	  $$ = spec;
-  	  delete $1;
-	}
+  		  $2->beginParseValue();
+		}
+		DEFAULT Value
+		{
+		  FixedTypeValueFieldSpec* spec = new FixedTypeValueFieldSpec(*$1, context->ValueTypeContext);
+  		  $2->endParseValue();
+		  spec->setDefault(ValuePtr($5));
+		  $$ = spec;
+  		  delete $1;
+		}
   | fieldreference Type UNIQUE OPTIONAL_t
     {
-	  $$ = new FixedTypeValueFieldSpec(*$1, TypePtr($2), true, true);
-  	  delete $1;
-	}
+		  $$ = new FixedTypeValueFieldSpec(*$1, TypePtr($2), true, true);
+  		  delete $1;
+		}
   | fieldreference Type UNIQUE
     {
-	  context->ValueTypeContext.reset($2);
-	  $2->beginParseValue();
-	}
-	DEFAULT Value
-	{
-	  TypePtr t = context->ValueTypeContext;
-	  $2->endParseValue();
-	  FixedTypeValueFieldSpec* spec = new FixedTypeValueFieldSpec(*$1, t, false, true);
-	  spec->setDefault(ValuePtr($6));
-	  $$ = spec;
-  	  delete $1;
-	}
+		  context->ValueTypeContext.reset($2);
+		  $2->beginParseValue();
+		}
+		DEFAULT Value
+		{
+		  TypePtr t = context->ValueTypeContext;
+		  $2->endParseValue();
+		  FixedTypeValueFieldSpec* spec = new FixedTypeValueFieldSpec(*$1, t, false, true);
+		  spec->setDefault(ValuePtr($6));
+		  $$ = spec;
+  		  delete $1;
+		}
  ;
 
 
@@ -2058,250 +1796,176 @@ FixedTypeValueFieldSpec
 VariableTypeValueFieldSpec
   : fieldreference FieldReference /*  : valuefieldreference FieldName */
     {
-		$$ = new VariableTypeValueFieldSpec(*$1, *$2); delete $1; delete $2;
-	}
+				$$ = new VariableTypeValueFieldSpec(*$1, *$2); delete $1; delete $2;
+		}
   | fieldreference FieldReference OPTIONAL_t /*  | valuefieldreference FieldName OPTIONAL_t */
     {
-		$$ = new VariableTypeValueFieldSpec(*$1, *$2, true); delete $1; delete $2;
-	}
+				$$ = new VariableTypeValueFieldSpec(*$1, *$2, true); delete $1; delete $2;
+		}
 /*  | valuefieldreference FieldName DEFAULT Value */
-  ;
+;
 
 FixedTypeValueSetFieldSpec
   : FieldReference Type
       {
-	$$ = new FixedTypeValueSetFieldSpec(*$1, TypePtr($2));
-	delete $1;
-	  }
+		$$ = new FixedTypeValueSetFieldSpec(*$1, TypePtr($2));
+		delete $1;
+		  }
   | FieldReference Type OPTIONAL_t
       {
-	$$ = new FixedTypeValueSetFieldSpec(*$1, TypePtr($2), true);
-	delete $1;
-	  }
+		$$ = new FixedTypeValueSetFieldSpec(*$1, TypePtr($2), true);
+		delete $1;
+		  }
   | FieldReference Type
       {
     context->ValueTypeContext.reset($2);
-	$2->beginParseValueSet();
-	  }
+		$2->beginParseValueSet();
+		  }
     DEFAULT ValueSet
-	  {
-	FixedTypeValueSetFieldSpec* spec = new FixedTypeValueSetFieldSpec(*$1, context->ValueTypeContext);
-	$2->endParseValueSet();
-	spec->setDefault(ValueSetPtr($5));
-	$$ = spec;
-	  }
-  ;
+		  {
+		FixedTypeValueSetFieldSpec* spec = new FixedTypeValueSetFieldSpec(*$1, context->ValueTypeContext);
+		$2->endParseValueSet();
+		spec->setDefault(ValueSetPtr($5));
+		$$ = spec;
+		  }
+;
 
 
 VariableTypeValueSetFieldSpec
    : FieldReference FieldReference /* : VALUESETFIELDREFERENCE FieldName */
        {
-	 $$ = new VariableTypeValueSetFieldSpec(*$1, *$2); delete $1; delete $2;
-	   }
+		 $$ = new VariableTypeValueSetFieldSpec(*$1, *$2); delete $1; delete $2;
+		   }
    | FieldReference FieldReference OPTIONAL_t /* | VALUESETFIELDREFERENCE FieldName OPTIONAL_t */
        {
-	 $$ = new VariableTypeValueSetFieldSpec(*$1, *$2, true); delete $1; delete $2;
-	   }
+		 $$ = new VariableTypeValueSetFieldSpec(*$1, *$2, true); delete $1; delete $2;
+		   }
 /*  | FieldReference FieldName DEFAULT ValueSet */
-  ;
+;
 
 ObjectFieldSpec
   : fieldreference DefinedObjectClass
       {
-	$$ = new  ObjectFieldSpec(*$1, $2); delete $1;
-	  }
+		$$ = new  ObjectFieldSpec(*$1, $2); delete $1;
+		  }
   | fieldreference DefinedObjectClass OPTIONAL_t
       {
-	$$ = new  ObjectFieldSpec(*$1, $2, true); delete $1;
-	  }
+		$$ = new  ObjectFieldSpec(*$1, $2, true); delete $1;
+		  }
   | fieldreference DefinedObjectClass
       {
-	$2->beginParseObject();
-	  }
+		$2->beginParseObject();
+		  }
     DEFAULT Object
       {
-	$2->endParseObject();
+		$2->endParseObject();
     context->classStack->pop();
-	ObjectFieldSpec* spec = new  ObjectFieldSpec(*$1, $2); delete $1;
-	spec->setDefault(InformationObjectPtr($5));
-	$$ = spec;
-	  }
-  ;
+		ObjectFieldSpec* spec = new  ObjectFieldSpec(*$1, $2); delete $1;
+		spec->setDefault(InformationObjectPtr($5));
+		$$ = spec;
+		  }
+;
 
 
 ObjectSetFieldSpec
   : FieldReference DefinedObjectClass
     {
-		$$ = new  ObjectSetFieldSpec(*$1, DefinedObjectClassPtr($2)); delete $1;
-	}
+				$$ = new  ObjectSetFieldSpec(*$1, DefinedObjectClassPtr($2)); delete $1;
+		}
   | FieldReference DefinedObjectClass OPTIONAL_t
     {
-		$$ = new  ObjectSetFieldSpec(*$1, DefinedObjectClassPtr($2), true); delete $1;
-	}
+				$$ = new  ObjectSetFieldSpec(*$1, DefinedObjectClassPtr($2), true); delete $1;
+		}
   | FieldReference DefinedObjectClass
     {
-	    $2->beginParseObjectSet();
-	}
+		    $2->beginParseObjectSet();
+		}
   DEFAULT ObjectSet
     {
-	    ObjectSetFieldSpec* spec = new  ObjectSetFieldSpec(*$1, DefinedObjectClassPtr($2));
-	    delete $1;
-		spec->setDefault(ConstraintPtr($5));
-		$$= spec;
-    	context->classStack->pop();
-	}
-  ;
+		    ObjectSetFieldSpec* spec = new  ObjectSetFieldSpec(*$1, DefinedObjectClassPtr($2));
+		    delete $1;
+				spec->setDefault(ConstraintPtr($5));
+				$$= spec;
+    		context->classStack->pop();
+		}
+;
 
 
 WithSyntaxSpec
-  : WITH SYNTAX
-    {
-      context->InWithSyntaxContext = true;
-	}
-   SyntaxList
-	{
-	  $$ = $4;
-      context->InWithSyntaxContext = false;
-	}
-  | /* empty */
-    {
-	  $$ = NULL;
-	}
-  ;
+  : WITH SYNTAX					{	context->InWithSyntaxContext = true; }
+   SyntaxList					{	$$ = $4; context->InWithSyntaxContext = false; }
+  | /* empty */					{	$$ = NULL; }
+;
 
 SyntaxList
-  : '{' TokenOrGroupSpecs '}'
-    {
-		$$ = $2;
-    }
-  | '{' '}'
-    {
-	    $$ = NULL;
-	}
-  ;
+  : '{' TokenOrGroupSpecs '}'   {	$$ = $2;   }
+  | '{' '}'						{    $$ = NULL;	}
+;
 
 TokenOrGroupSpecs
-  : TokenOrGroupSpecs TokenOrGroupSpec
-	{
-		$$ = $1;
-		$$->addToken(TokenOrGroupSpecPtr($2));
-
-	}
-  | TokenOrGroupSpec
-    {
-		$$ = new TokenGroup;
-		$$->addToken(TokenOrGroupSpecPtr($1));
-    }
-  ;
+  : TokenOrGroupSpecs TokenOrGroupSpec	{ $$ = $1;	$$->addToken(TokenOrGroupSpecPtr($2));	}
+  | TokenOrGroupSpec					{ $$ = new TokenGroup;	$$->addToken(TokenOrGroupSpecPtr($1));  }
+;
 
 TokenOrGroupSpec
   : RequiredToken
   | OptionalGroup
-  ;
+;
 
 OptionalGroup
-  : '[' TokenOrGroupSpecs ']'
-  {
-	$2->setOptional();
-    $$ = $2;
-  }
-  ;
+  : '[' TokenOrGroupSpecs ']'	{	$2->setOptional();   $$ = $2;  }
+;
 
 RequiredToken
-  : Literal
-    {
-		$$= new Literal(*$1); delete $1;
-    }
-  | FieldReference
-    {
-		$$ = new PrimitiveFieldName(*$1); delete $1;
-	}
-  | fieldreference
-    {
-		$$ = new PrimitiveFieldName(*$1); delete $1;
-	}
-  ;
+  : Literal						{	$$= new Literal(*$1); delete $1;    }
+  | FieldReference				{	$$ = new PrimitiveFieldName(*$1); delete $1; }
+  | fieldreference				{	$$ = new PrimitiveFieldName(*$1); delete $1; }
+;
 
 Literal
-  : WORD_t
-	{
-		$$ = $1;
-	}
-  | ','
-    {
-	    $$ = new std::string(",");
-	}
-  ;
-
+  : WORD_t						{	$$ = $1;		}
+  | ','							{   $$ = new std::string(",");	}
+;
 
 DefinedObject
-  : OBJECTREFERENCE
-    {
-  $$ = new DefinedObject(*$1);
-  delete $1;
-	}
-  | ExternalObjectReference
-    {
-  $$ = new DefinedObject(*$1);
-  delete $1;
-	}
-  ;
-
+  : OBJECTREFERENCE				{ $$ = new DefinedObject(*$1);  delete $1; }
+  | ExternalObjectReference		{ $$ = new DefinedObject(*$1);  delete $1; }
+;
 
 ExternalObjectReference
-  : MODULEREFERENCE '.' OBJECTREFERENCE
-    {
-  $$ = ConcatNames($1, '.', $3);
-	}
-  ;
+  : MODULEREFERENCE '.' OBJECTREFERENCE   {  $$ = ConcatNames($1, '.', $3);		}
+;
 
 /*
 ParameterizedObjectClass
   : DefinedObjectClass ActualParameterList
     { }
-  ;
+;
 */
 
 DefinedObjectSet
-  : OBJECTSETREFERENCE
-    {
-		$$ = new DefinedObjectSet(*$1);
-		delete $1;
-	}
-  | ExternalObjectSetReference
-    {
-		$$ = new DefinedObjectSet(*$1);
-		delete $1;
-	}
-  ;
+  : OBJECTSETREFERENCE			{	$$ = new DefinedObjectSet(*$1);	delete $1; }
+  | ExternalObjectSetReference  {	$$ = new DefinedObjectSet(*$1);	delete $1; }
+;
 
 ExternalObjectSetReference
-  : MODULEREFERENCE '.' OBJECTSETREFERENCE
-      {
-	$$ = ConcatNames($1, '.', $3);
-	  }
-  ;
+  : MODULEREFERENCE '.' OBJECTSETREFERENCE	{ $$ = ConcatNames($1, '.', $3); }
+;
 
 ParameterizedObjectSet
   : PARAMETERIZEDOBJECTSETREFERENCE ActualParameterList
-      {
-	$$ = new ParameterizedObjectSet(*$1, ActualParameterListPtr($2));  delete $1;
-	  }
+    { $$ = new ParameterizedObjectSet(*$1, ActualParameterListPtr($2));  delete $1;	}
   | MODULEREFERENCE '.' PARAMETERIZEDOBJECTSETREFERENCE ActualParameterList
-      {
-    std::string* str = ConcatNames($1, '.', $3);
-	$$ = new ParameterizedObjectSet(*str, ActualParameterListPtr($4));
-	delete str;
-	  }
-  ;
+      { std::string* str = ConcatNames($1, '.', $3);
+		$$ = new ParameterizedObjectSet(*str, ActualParameterListPtr($4));
+		delete str;
+  }
+;
 
 FieldName
-  : FieldName '.' PrimitiveFieldName
-      {
-	$$ = ConcatNames($1, '.', $3);
-      }
+  : FieldName '.' PrimitiveFieldName	{ $$ = ConcatNames($1, '.', $3); }
   | PrimitiveFieldName
-  ;
+;
 
 
 PrimitiveFieldName
@@ -2310,7 +1974,7 @@ PrimitiveFieldName
   | VALUESETFIELDREFERENCE
   | OBJECTFIELDREFERENCE
   | OBJECTSETFIELDREFERENCE
-  ;
+;
 
 
 
@@ -2322,182 +1986,119 @@ Object
   | ParameterizedObject
     { }
 */
-  ;
+;
 
 
 ObjectDefn
-  : DefinedSyntax
-    {
-		$$ = new DefaultObjectDefn($1->getDefaultSyntax());
-		delete $1;
-	}
-  | DefaultSyntax
-    {
-		$$ = new DefaultObjectDefn(std::auto_ptr<FieldSettingList>($1));
-	}
+  : DefinedSyntax    {	$$ = new DefaultObjectDefn($1->getDefaultSyntax());	delete $1; }
+  | DefaultSyntax    {	$$ = new DefaultObjectDefn(std::auto_ptr<FieldSettingList>($1)); }
 ;
 
 DefaultSyntax
   : OBJECT_BRACE FieldSettings '}'
       {
-		$$ = $2;
-		if (context->InObjectSetContext)
-		  context->classStack->top()->PreParseObject();
-	  }
-  ;
+				$$ = $2;
+				if (context->InObjectSetContext)
+				  context->classStack->top()->PreParseObject();
+		  }
+;
 
 FieldSettings
   : FieldSettings ',' PrimitiveFieldName
       {
-		context->classStack->top()->getField(*$3)->beginParseSetting($1);
-	  }
-	Setting
-	  {
-		$$ = $1;
-		context->classStack->top()->getField(*$3)->endParseSetting();
-		$1->push_back(FieldSettingPtr(new FieldSetting(*$3, std::auto_ptr<Setting>($5))));
-		delete $3;
-	  }
+				context->classStack->top()->getField(*$3)->beginParseSetting($1);
+		  }
+		Setting
+		  {
+				$$ = $1;
+				context->classStack->top()->getField(*$3)->endParseSetting();
+				$1->push_back(FieldSettingPtr(new FieldSetting(*$3, std::auto_ptr<Setting>($5))));
+				delete $3;
+		  }
   | PrimitiveFieldName
-	  {
-		context->classStack->top()->getField(*$1)->beginParseSetting(NULL);
-	  }
-	Setting
-	  {
-		$$ = new FieldSettingList;
-		context->classStack->top()->getField(*$1)->endParseSetting();
-		$$->push_back(FieldSettingPtr(new FieldSetting(*$1, std::auto_ptr<Setting>($3))));
-		delete $1;
-	  }
-  ;
+		  {
+				context->classStack->top()->getField(*$1)->beginParseSetting(NULL);
+		  }
+		Setting
+		  {
+				$$ = new FieldSettingList;
+				context->classStack->top()->getField(*$1)->endParseSetting();
+				$$->push_back(FieldSettingPtr(new FieldSetting(*$1, std::auto_ptr<Setting>($3))));
+				delete $1;
+		  }
+;
 
 
 DefinedSyntax
   : OBJECT_BRACE DefinedSyntaxTokens '}'
-	  {
+	{
 		$$ = $2;
 		$$->ResetTokenGroup();
 		if (context->InObjectSetContext)
-		  context->classStack->top()->PreParseObject();
-	  }
-  ;
+			context->classStack->top()->PreParseObject();
+	}
+;
 
 DefinedSyntaxTokens
-  : DefinedSyntaxTokens DefinedSyntaxToken
-	{
-		$$ = $1;
-		$$->addToken($2);
-	}
-  | /* empty */
-	{
-		$$ = new DefaultSyntaxBuilder(context->classStack->top()->getWithSyntax());
-	}
-  ;
+  : DefinedSyntaxTokens DefinedSyntaxToken	{	$$ = $1; $$->addToken($2); }
+  | /* empty */			{	$$ = new DefaultSyntaxBuilder(context->classStack->top()->getWithSyntax()); 	}
+;
 
 DefinedSyntaxToken
-  : Literal
-  {
-	$$ = new LiteralToken(*$1); delete $1;
-  }
-  | Setting
-  {
-	$$ = new SettingToken(std::auto_ptr<Setting>($1));
-  }
-  ;
-
+  : Literal				{	$$ = new LiteralToken(*$1); delete $1;  }
+  | Setting				{	$$ = new SettingToken(std::auto_ptr<Setting>($1));  }
+;
 
 Setting
-  : Type
-	{
-		$$ = new TypeSetting(TypePtr($1));
-	}
-  | Value
-    {
-	    if (context->ValueTypeContext.get() == NULL)
-		  std::cerr << StdError(Fatal) << "Parsing Error\n";
-		$$ = new ValueSetting(context->ValueTypeContext,ValuePtr($1));
-	}
-  | ValueSet
-    {
-		$$ = new ValueSetSetting(ValueSetPtr($1));
-	}
-  | Object
-    {
-		$$ = new ObjectSetting(InformationObjectPtr($1),context->classStack->top());
-	}
-  | ObjectSet
-    {
-	    $$ = new ObjectSetSetting(ConstraintPtr($1), context->classStack->top());
-    	context->classStack->pop();
-	}
-  ;
+  : Type				{	$$ = new TypeSetting(TypePtr($1)); }
+  | Value				{
+			ValueBase* vb = $1;
+			TypeBase*  tb = context->ValueTypeContext.get();
+
+		    if (context->ValueTypeContext.get() == NULL)
+				  std::cerr << StdError(Fatal) << "Parsing Error\n";
+			$$ = new ValueSetting(context->ValueTypeContext,ValuePtr($1));
+  }
+  | ValueSet		   {	$$ = new ValueSetSetting(ValueSetPtr($1)); }
+  | Object			   {	$$ = new ObjectSetting(InformationObjectPtr($1),context->classStack->top()); }
+  | ObjectSet		   {    $$ = new ObjectSetSetting(ConstraintPtr($1), context->classStack->top());
+							context->classStack->pop();	
+  }
+;
 
 
 ObjectSet
-  : OBJECTSET_BRACE ObjectSetSpec '}'
-      {
-	$$ = $2;
-	context->classStack->top()->endParseObjectSet();
-	  }
-  ;
+  : OBJECTSET_BRACE ObjectSetSpec '}'  {	$$ = $2;context->classStack->top()->endParseObjectSet();  }
+;
 
 ObjectSetSpec
   : ElementSetSpecs
-  | '.''.''.'
-    {
-	  $$ = new Constraint(std::auto_ptr<ConstraintElementVector>(), true);
-	}
-  ;
+  | ELLIPSIS				{	$$ = new Constraint(std::auto_ptr<ConstraintElementVector>(), true);	}
+;
 
 
 ObjectSetElements
-  : Object
-      {
-	$$ = new SingleObjectConstraintElement(InformationObjectPtr($1));
-      }
-  | DefinedObjectSet
-      {
-	$$ = $1;
-      }
-  | ObjectSetFromObjects
-      {
-	$$ = $1;
-      }
-  | ParameterizedObjectSet
-      {
-	$$ = $1;
-      }
-  ;
+  : Object					{	$$ = new SingleObjectConstraintElement(InformationObjectPtr($1));  }
+  | DefinedObjectSet		{	$$ = $1;  }
+  | ObjectSetFromObjects    {	$$ = $1;  }
+  | ParameterizedObjectSet  {	$$ = $1;  }
+;
 
 /*!!!
 ObjectSetFromObjects
   : ReferencedObjectsDot FieldName
-  ;
+;
 */
 
 ReferencedObjectsDot
-  : ReferencedObjects
-    {
-  context->InformationFromObjectContext = $1->getObjectClass();
-    }
-  '.'
-    {
-  $$ = $1;
-	}
-  ;
+  : ReferencedObjects		{ context->InformationFromObjectContext = $1->getObjectClass();  }
+  '.'						{  $$ = $1; }
+;
 
 ReferencedObjectDot
-  : ReferencedObject
-    {
-  context->InformationFromObjectContext = $1->getObjectClass();
-    }
-  '.'
-    {
-  $$ = $1;
-	}
-  ;
-
-/********/
+  : ReferencedObject	    {  context->InformationFromObjectContext = $1->getObjectClass();  }
+  '.'					    { $$ = $1;	}
+;
 
 ParameterizedAssignment
   : ParameterizedTypeAssignment
@@ -2506,175 +2107,162 @@ ParameterizedAssignment
 /*  | ParameterizedObjectClassAssignment */
   | ParameterizedObjectAssignment
   | ParameterizedObjectSetAssignment
-  ;
+;
 
 ParameterizedTypeAssignment
   : PARAMETERIZEDTYPEREFERENCE ParameterList
       {
-	context->DummyParameters = $2;
+		context->DummyParameters = $2;
       }
     ASSIGNMENT Type
       {
-	context->DummyParameters = NULL;
-	$5->setName(*$1); delete $1;
-	$5->setParameters(*$2); delete $2;
-	context->Module->addType(TypePtr($5));
+		context->DummyParameters = NULL;
+		$5->setName(*$1); delete $1;
+		$5->setParameters(*$2); delete $2;
+		context->Module->addType(TypePtr($5));
       }
-  ;
+;
 
 ParameterizedValueAssignment
   : PARAMETERIZEDVALUEREFERENCE ParameterList Type
       {
-	context->DummyParameters = $2;
+		context->DummyParameters = $2;
       }
     ASSIGNMENT Value
       {
-	context->DummyParameters = NULL;
-	  }
-  ;
+		context->DummyParameters = NULL;
+		  }
+;
 
 ParameterizedValueSetTypeAssignment
   : PARAMETERIZEDTYPEREFERENCE ParameterList Type
       {
-	context->DummyParameters = $2;
+		context->DummyParameters = $2;
       }
     ASSIGNMENT ValueSet
       {
-	context->DummyParameters = NULL;
-	  }
-  ;
+		context->DummyParameters = NULL;
+		  }
+;
 
 /*
 ParameterizedObjectClassAssignment
   : PARAMETERIZEDOBJECTCLASSREFERENCE ParameterList ASSIGNMENT ObjectClass
     { }
-  ;
+;
 */
 
 ParameterizedObjectAssignment
   : PARAMETERIZEDOBJECTREFERENCE ParameterList DefinedObjectClass
       {
-	context->DummyParameters = $2;
-	$3->beginParseObject();
+		context->DummyParameters = $2;
+		$3->beginParseObject();
       }
     ASSIGNMENT Object
       {
-	$3->endParseObject();
-   	context->classStack->pop();
-	context->DummyParameters = NULL;
-	$6->setName(*$1); delete $1;
-    $6->setObjectClass($3);
-	$6->setParameters(std::auto_ptr<ParameterList>($2));
-    context->Module->addInformationObject(InformationObjectPtr($6));
-	  }
-  ;
+		$3->endParseObject();
+		context->classStack->pop();
+		context->DummyParameters = NULL;
+		$6->setName(*$1); delete $1;
+		$6->setObjectClass($3);
+		$6->setParameters(std::auto_ptr<ParameterList>($2));
+		context->Module->addInformationObject(InformationObjectPtr($6));
+	}
+;
 
 ParameterizedObjectSetAssignment
   : PARAMETERIZEDOBJECTSETREFERENCE ParameterList DefinedObjectClass
       {
-	context->DummyParameters = $2;
-    $3->beginParseObjectSet();
+		context->DummyParameters = $2;
+		$3->beginParseObjectSet();
       }
     ASSIGNMENT ObjectSet
       {
-	context->DummyParameters = NULL;
-    context->Module->addInformationObjectSet(InformationObjectSetPtr(
-		new InformationObjectSetDefn(*$1,
-		                            ObjectClassBasePtr($3),
-		                            ConstraintPtr($6),
-		                            ParameterListPtr($2))));
-	delete $1;
-    context->classStack->pop();
-	  }
-  ;
+		context->DummyParameters = NULL;
+		context->Module->addInformationObjectSet(InformationObjectSetPtr(
+				new InformationObjectSetDefn(*$1, ObjectClassBasePtr($3),
+				                            ConstraintPtr($6), ParameterListPtr($2))));
+		delete $1;
+		context->classStack->pop();
+		  }
+;
 
 ParameterList
-  : '{' Parameters '}'
-      {
-	$$ = $2;
-      }
-  ;
+  : '{' Parameters '}'			{	$$ = $2;      }
+;
 
 Parameters
-  : Parameters ',' Parameter
-      {
-	$$ = $1;
-	$$->Append(ParameterPtr($3));
-      }
-  | Parameter
-      {
-	$$ = new ParameterList;
-	$$->Append(ParameterPtr($1));
-      }
-  ;
+  : Parameters ',' Parameter	{	$$ = $1;$$->Append(ParameterPtr($3));   }
+  | Parameter					{	$$ = new ParameterList;	$$->Append(ParameterPtr($1));  }
+;
 
 Parameter
   : Type ':' Reference
       {
-	$$ = new ValueParameter(TypePtr($1),*$3); delete $1;
+		$$ = new ValueParameter(TypePtr($1),*$3); delete $1;
       }
   | DefinedObjectClass ':' Reference
       {
     $$ = new ObjectParameter(DefinedObjectClassPtr($1),*$3); delete $3;
-	  }
+		  }
   | Reference
       {
     $$ = new Parameter(*$1); delete $1;
-	  }
-  ;
+	}
+;
 
 ParameterizedType
   : PARAMETERIZEDTYPEREFERENCE ActualParameterList
       {
-	$$ = new ParameterizedType(*$1, *$2);
-	delete $1; delete $2;
+		$$ = new ParameterizedType(*$1, *$2);
+		delete $1; delete $2;
       }
   | MODULEREFERENCE '.' PARAMETERIZEDTYPEREFERENCE ActualParameterList
       {
     std::string* str = ConcatNames($1, '.', $3);
     $$ = new ParameterizedType(*str,*$4);
     delete str; delete $4;
-	  }
-  ;
+		  }
+;
 
 SimpleDefinedType
   : TYPEREFERENCE
   | ExternalTypeReference
-  ;
+;
 
 ActualParameterList
   : '{' ActualParameters '}'
       {
-	$$ = $2;
+		$$ = $2;
       }
-  ;
+;
 
 ActualParameters
   : ActualParameters ',' ActualParameter
       {
-	$1->push_back(ActualParameterPtr($3));
-	$$ = $1;
+		$1->push_back(ActualParameterPtr($3));
+		$$ = $1;
       }
   | ActualParameter
       {
-	$$ = new ActualParameterList;
-	$$->push_back(ActualParameterPtr($1));
+		$$ = new ActualParameterList;
+		$$->push_back(ActualParameterPtr($1));
       }
-  ;
+;
 
 ActualParameter
   : Type
       {
     $$ = new ActualTypeParameter(TypePtr($1));
-	  }
+		  }
   | Value
       {
     $$ = new ActualValueParameter(ValuePtr($1));
-	  }
+		  }
   | '{' DefinedType '}' /* ValueSet */
       {
     $$ = new ActualValueSetParameter(TypePtr($2) );
-	  }
+		  }
 /*!!!
   | DefinedObjectClass
     { }
@@ -2682,49 +2270,49 @@ ActualParameter
   | ObjectParameter /* Object */
       {
     $$ = new ActualObjectParameter(InformationObjectPtr($1));
-	  }
+		  }
   | '{' ObjectSetParameter '}' /* ObjectSet */
       {
     $$ = new ActualObjectSetParameter(boost::shared_ptr<ObjectSetConstraintElement>($2));
-	  }
-  ;
+		  }
+;
 
 ObjectParameter
   : DefinedObject
   | ParameterizedObject
-  ;
+;
 
 ObjectSetParameter
   : DefinedObjectSet
       {
   $$ = $1;
-	  }
+		  }
   | ParameterizedObjectSet
       {
   $$ = $1;
-	  }
-  ;
+		  }
+;
 /********/
 
 ValueAssignment
   : VALUEREFERENCE Type
       {
     context->ValueTypeContext.reset($2);
-	$2->beginParseValue();
+		$2->beginParseValue();
       }
     ASSIGNMENT Value
       {
-	$2->endParseValue();
-	$5->setValueName(*$1); delete $1;
-	context->Module->addValue(ValuePtr($5));
+		$2->endParseValue();
+		$5->setValueName(*$1); delete $1;
+		context->Module->addValue(ValuePtr($5));
       }
-  ;
+;
 
 
 Value
   : BuiltinValue
   | ReferencedValue
-  ;
+;
 
 
 BuiltinValue
@@ -2738,7 +2326,7 @@ BuiltinValue
 /*| InstanceOfValue   synonym to Value */
   | SignedNumber      /* IntegerValue */
       {
-	$$ = new IntegerValue($1);
+		$$ = new IntegerValue($1);
       }
   | NullValue
 /*!!!
@@ -2751,76 +2339,76 @@ BuiltinValue
 /*!!!!
   | SequenceOfValue
 */
-/*| setValue	      synonym to SequenceValue */
-/*| setOfValue	      synonym to SequenceOfValue */
-/*| TaggedValue	      synonym to Value */
-  ;
+/*| setValue		      synonym to SequenceValue */
+/*| setOfValue		      synonym to SequenceOfValue */
+/*| TaggedValue		      synonym to Value */
+;
 
 
 DefinedValue
   : VALUEREFERENCE
       {
-	$$ = new DefinedValue(*$1); delete $1;
+		$$ = new DefinedValue(*$1); delete $1;
       }
   | ExternalValueReference
       {
-	$$ = new DefinedValue(*$1); delete $1;
+		$$ = new DefinedValue(*$1); delete $1;
       }
 /*
   | ParameterizedValue
 */
-  ;
+;
 
 ExternalValueReference
   : MODULEREFERENCE '.' VALUEREFERENCE
       {
-	*$1 += *$3;
-	delete $3;
+*$1 += *$3;
+		delete $3;
       }
-  ;
+;
 
 ObjectIdentifierValue
-  : '{' { context->InOIDContext = TRUE; }
-		ObjIdComponentList 
-	'}' 
-	{ 
-		context->InOIDContext = FALSE;
-		$$ = new ObjectIdentifierValue(*$3); delete $3;
-	}
+  : OID_BRACE { context->InOIDContext = TRUE; }
+				ObjIdComponentList 
+		'}' 
+		{ 
+				context->InOIDContext = FALSE;
+				$$ = new ObjectIdentifierValue(*$3); delete $3;
+		}
 /*!!!
   | '{' DefinedValue_OID ObjIdComponentList '}'
       {
-	$$ = new ObjectIdentifierValue($2);
+		$$ = new ObjectIdentifierValue($2);
       }
 */
-  ;
+;
 
 
 ObjIdComponentList
   : ObjIdComponent
       {
-	$$ = new StringList;
-	$$->push_back(*$1);
-	delete $1;
+		$$ = new StringList;
+		$$->push_back(*$1);
+		delete $1;
       }
 /*  | ObjIdComponent ObjIdComponentList
       {
-	$2->InsertAt(0, $1);
-	$$ = $2;
+		$2->InsertAt(0, $1);
+		$$ = $2;
       }
 */
-	| ObjIdComponentList ObjIdComponent
+		| ObjIdComponentList ObjIdComponent
       {
-	$1->push_back(*$2);
-	$$ = $1;
-	delete $2;
+		$1->push_back(*$2);
+		$$ = $1;
+		delete $2;
       }
-  ;
+;
   
 ObjIdComponent
   : OID_IDENTIFIER NumberFormOptional
   | OID_INTEGER
-  ;
+;
 NumberFormOptional
   : %empty
   | '(' NumberForm ')'
@@ -2829,61 +2417,61 @@ NumberForm
   : OID_INTEGER
   | ExternalValueReference
   | VALUEREFERENCE
-  ;
+;
 
 
 OctetStringValue
   : BSTRING
       {
-	$$ = new OctetStringValue(*$1); delete $1;
+		$$ = new OctetStringValue(*$1); delete $1;
       }
   | HSTRING
       {
-	$$ = new OctetStringValue(*$1); delete $1;
+		$$ = new OctetStringValue(*$1); delete $1;
       }
-  ;
+;
 
 BitStringValue
   : BS_BSTRING
       {
-	$$ = new BitStringValue(*$1); delete $1;
+		$$ = new BitStringValue(*$1); delete $1;
       }
   | BS_HSTRING
       {
-	$$ = new BitStringValue(*$1); delete $1;
+		$$ = new BitStringValue(*$1); delete $1;
       }
   | '{' BitIdentifierList '}'
       {
-	$$ = new BitStringValue($2);
+		$$ = new BitStringValue($2);
       }
-  ;
+;
 
 
 BitIdentifierList
   : BIT_IDENTIFIER
       {
-	$$ = new StringList;
-	$$->push_back(*$1);
-	delete $1;
+		$$ = new StringList;
+		$$->push_back(*$1);
+		delete $1;
       }
   | BitIdentifierList ',' BIT_IDENTIFIER
       {
-	$1->push_back(*$3);
-	delete $3;
+		$1->push_back(*$3);
+		delete $3;
       }
-  ;
+;
 
 
 BooleanValue
   : TRUE_t
       {
-	$$ = new BooleanValue(true);
+		$$ = new BooleanValue(true);
       }
   | FALSE_t
       {
-	$$ = new BooleanValue(false);
+		$$ = new BooleanValue(false);
       }
-  ;
+;
 
 
 CharacterStringValue
@@ -2891,160 +2479,168 @@ CharacterStringValue
 /*!!!
   | UnrestrictedCharacterStringValue
 */
-  ;
+;
 
 RestrictedCharacterStringValue
   : CSTRING
       {
-	$$ = new CharacterStringValue(*$1); delete $1;
+		$$ = new CharacterStringValue(*$1); delete $1;
       }
   | CharacterStringList
   | Quadruple
   | Tuple
-  ;
+;
 
 CharacterStringList
   : '{' CharSyms '}'
       {
-	$$ = new CharacterStringValue(*$2); delete $2;
+		$$ = new CharacterStringValue(*$2); delete $2;
       }
-  ;
+;
 
 CharSyms
   : CharsDefn
       {
-	$$ = new StringList;
-	$$->push_back(*$1);
-	delete $1;
+		$$ = new StringList;
+		$$->push_back(*$1);
+		delete $1;
       }
   | CharSyms ',' CharsDefn
       {
-	$1->push_back(*$3);
-	delete $3;
+		$1->push_back(*$3);
+		delete $3;
       }
-  ;
+;
 
 CharsDefn
   : CSTRING
   | DefinedValue
       {
-	std::cerr << StdError(Warning) << "DefinedValue in string unsupported" << *$1 << std::endl;
-	$$ = new std::string(((DefinedValue*)($1))->getReference());
+		std::cerr << StdError(Warning) << "DefinedValue in string unsupported" << *$1 << std::endl;
+		$$ = new std::string(((DefinedValue*)($1))->getReference());
       }
-  ;
+;
 
 Quadruple
   :  '{'  INTEGER  ','  INTEGER  ','  INTEGER  ','  INTEGER '}'
       {
-	if ($2 != 0 || $4 != 0 || $6 > 255 || $8 > 255)
-	  std::cerr << StdError(Warning) << "Illegal value in Character Quadruple" << std::endl;
-	$$ = new CharacterValue((unsigned char)$2, (unsigned char)$4, (unsigned char)$6, (unsigned char)$8);
+		if ($2 != 0 || $4 != 0 || $6 > 255 || $8 > 255)
+		  std::cerr << StdError(Warning) << "Illegal value in Character Quadruple" << std::endl;
+		$$ = new CharacterValue((unsigned char)$2, (unsigned char)$4, (unsigned char)$6, (unsigned char)$8);
       }
-  ;
+;
 
 Tuple
   :  '{' INTEGER ',' INTEGER '}'
       {
-	if ($2 > 255 || $4 > 255)
-	  std::cerr << StdError(Warning) << "Illegal value in Character Tuple" << std::endl;
-	$$ = new CharacterValue((unsigned char)$2, (unsigned char)$4);
+		if ($2 > 255 || $4 > 255)
+		  std::cerr << StdError(Warning) << "Illegal value in Character Tuple" << std::endl;
+		$$ = new CharacterValue((unsigned char)$2, (unsigned char)$4);
       }
-  ;
+;
 
 
 ChoiceValue
   : IDENTIFIER ':' Value
       {
-	$$ = new ChoiceValue(context->ValueTypeContext, *$1, ValuePtr($3)); delete $1;
+		$$ = new ChoiceValue(context->ValueTypeContext, *$1, ValuePtr($3)); delete $1;
       }
-  ;
+;
 
 
 NullValue
   : NULL_VALUE
       {
-	$$ = new NullValue;
+		$$ = new NullValue;
       }
-  ;
+;
 
 
 RealValue
   : NumericRealValue
   | SpecialRealValue
-  ;
+;
 
 NumericRealValue
   :  '0'
       {
-	$$ = new RealValue(0);
+		$$ = new RealValue(0);
+      }
+  | REAL
+      {
+		$$ = new RealValue(0);
       }
 /*!!!
   | SequenceValue
 */
-  ;
+;
 
 SpecialRealValue
   : PLUS_INFINITY
       {
-	$$ = new RealValue(0);
+		$$ = new RealValue(0);
       }
   | MINUS_INFINITY
       {
-	$$ = new RealValue(0);
+		$$ = new RealValue(0);
       }
-  ;
+  | NOT_A_NUMBER
+      {
+		$$ = new RealValue(0);
+      }
+;
 
 
 SequenceValue
   : '{' ComponentValueList '}'
       {
-	$$ = new SequenceValue($2);
+		$$ = new SequenceValue($2);
       }
   | '{'  '}'
       {
-	$$ = new SequenceValue;
+		$$ = new SequenceValue;
       }
-  ;
+;
 
 ComponentValueList
   : NamedValue
       {
-	$$ = new ValuesList;
-	$$->push_back(ValuePtr($1));
+		$$ = new ValuesList;
+		$$->push_back(ValuePtr($1));
       }
   | ComponentValueList ',' NamedValue
       {
-	$1->push_back(ValuePtr($3));
+		$1->push_back(ValuePtr($3));
       }
-  ;
+;
 
 NamedValue
   : IDENTIFIER Value
       {
-	$2->setValueName(*$1); delete $1;
-	$$ = $2;
+		$2->setValueName(*$1); delete $1;
+		$$ = $2;
       }
-  ;
+;
 
 
 /*!!!!
 SequenceOfValue
   : '{' ValueList '}'
       {
-	$$ = NULL;
+		$$ = NULL;
       }
   | '{'  '}'
       {
-	$$ = NULL;
+		$$ = NULL;
       }
-  ;
+;
 
 ValueList
   : Value
       { }
   | ValueList ',' Value
       { }
-  ;
+;
 */
 
 
@@ -3052,63 +2648,63 @@ ValueList
 ObjectClassFieldValue
   : OpenTypeFieldVal
   | Value
-  ;
+;
 
 OpenTypeFieldVal
   : Type ':' Value
-  ;
+;
 */
 
 
 ReferencedValue
   : DefinedValue
   | ValueFromObject
-  ;
+;
 
 ValueFromObject
   : ReferencedObjectDot VALUEFIELDREFERENCE
     {
-	  ValueSetting* setting = (ValueSetting*) $1->getSetting(*$2);
-	  $$ = new DefinedValue(setting->getValue());
-	  delete $1;
-	  delete $2;
+		  ValueSetting* setting = (ValueSetting*) $1->getSetting(*$2);
+		  $$ = new DefinedValue(setting->getValue());
+		  delete $1;
+		  delete $2;
       context->InformationFromObjectContext = NULL;
-	}
-  ;
+		}
+;
 
 VALUEFIELDREFERENCE
   : FIXEDTYPEVALUEFIELDREFERENCE
   | VARIABLETYPEVALUEFIELDREFERENCE
-  ;
+;
 
 ValueSetFromObject
  : ReferencedObjectDot VALUESETFIELDREFERENCE
    {
-	  $$ = new ValueSetFromObject(InformationObjectPtr($1), *$2); delete $2;
+		  $$ = new ValueSetFromObject(InformationObjectPtr($1), *$2); delete $2;
       context->InformationFromObjectContext = NULL;
    }
-  ;
+;
 
 VALUESETFIELDREFERENCE
   : FIXEDTYPEVALUESETFIELDREFERENCE
   | VARIABLETYPEVALUESETFIELDREFERENCE
-  ;
+;
 
 ObjectFromObject
   : ReferencedObjectDot OBJECTFIELDREFERENCE
     {
-	  $$ = new ObjectFromObject(InformationObjectPtr($1), *$2); delete $2;
-	  context->InformationFromObjectContext = NULL;
+		  $$ = new ObjectFromObject(InformationObjectPtr($1), *$2); delete $2;
+		  context->InformationFromObjectContext = NULL;
     }
-  ;
+;
 
 ObjectSetFromObject
   : ReferencedObjectDot OBJECTSETFIELDREFERENCE
     {
-	  $$ = new ObjectSetFromObject(InformationObjectPtr($1), *$2); delete $2;
-	  context->InformationFromObjectContext = NULL;
+		  $$ = new ObjectSetFromObject(InformationObjectPtr($1), *$2); delete $2;
+		  context->InformationFromObjectContext = NULL;
     }
-  ;
+;
 
 /*
 ParameterizedValue
@@ -3116,96 +2712,95 @@ ParameterizedValue
     { }
   | MODULEREFERENCE '.' PARAMETERIZEDVALUEREFERENCE ActualParameterList
     { }
-  ;
+;
 */
 
 SimpleDefinedValue
   : VALUEREFERENCE
   | ExternalValueReference
-  ;
-
+;
 
 
 
 ValueSet
   : VALUESET_BRACE ElementSetSpecs '}'
 	{
-  if (context->ValueTypeContext.get() == NULL)
-     std::cerr << StdError(Warning) << "";
-  // $$ = new ValueSetDefn(TypePtr(new DefinedType(context->ValueTypeContext)), ConstraintPtr($2));
-  $$ = new ValueSetDefn(context->ValueTypeContext, ConstraintPtr($2));
-  context->ValueTypeContext->endParseValueSet();
+		if (context->ValueTypeContext.get() == NULL)
+			std::cerr << StdError(Warning) << "";
+	// $$ = new ValueSetDefn(TypePtr(new DefinedType(context->ValueTypeContext)), ConstraintPtr($2));
+		$$ = new ValueSetDefn(context->ValueTypeContext, ConstraintPtr($2));
+		context->ValueTypeContext->endParseValueSet();
 	}
-  ;
+;
 
 
 
 MacroDefinition
   : TYPEREFERENCE MACRO ASSIGNMENT MacroSubstance
       {
-	std::cerr << StdError(Warning) << "MACRO unsupported" << std::endl;
+		std::cerr << StdError(Warning) << "MACRO unsupported" << std::endl;
       }
-  ;
+;
 
 MacroSubstance
   : BEGIN_t
       {
-	InMacroContext = true;
+		InMacroContext = true;
       }
     MacroBody END
       {
-	InMacroContext = false;
+		InMacroContext = false;
       }
   | TYPEREFERENCE
       {}
   | TYPEREFERENCE '.' TYPEREFERENCE
       {}
-  ;
+;
 
 MacroBody
   : TypeProduction ValueProduction /*SupportingProductions*/
-  ;
+;
 
 TypeProduction
   : TYPE_t NOTATION ASSIGNMENT MacroAlternativeList
-  ;
+;
 
 ValueProduction
   : VALUE NOTATION ASSIGNMENT MacroAlternativeList
-  ;
+;
 
 
 /*
 SupportingProductions
   : ProductionList
   | /* empty *//*
-  ;
+;
 
 ProductionList
   : Production
   | ProductionList Production
-  ;
+;
 
 Production
   : TYPEREFERENCE ASSIGNMENT MacroAlternativeList
 
-  ;
+;
 */
 
 MacroAlternativeList
   : MacroAlternative
   | MacroAlternative '|' MacroAlternativeList
-  ;
+;
 
 MacroAlternative
   : SymbolElement
   | SymbolElement MacroAlternative
-  ;
+;
 
 SymbolElement
   : SymbolDefn
   | EmbeddedDefinitions
-  ;
+;
 
 SymbolDefn
   : CSTRING
@@ -3214,31 +2809,31 @@ SymbolDefn
       {}
   | TYPEREFERENCE ASSIGNMENT
       {}
-  ;
+;
 
 EmbeddedDefinitions
   : '<' EmbeddedDefinitionList '>'
-  ;
+;
 
 EmbeddedDefinitionList
   : EmbeddedDefinition
   | EmbeddedDefinitionList EmbeddedDefinition
-  ;
+;
 
 EmbeddedDefinition
   : LocalTypeAssignment
   | LocalValueAssignment
-  ;
+;
 
 LocalTypeAssignment
   : TYPEREFERENCE ASSIGNMENT Type
       {}
-  ;
+;
 
 LocalValueAssignment
   : IDENTIFIER Type ASSIGNMENT Value
       {}
-  ;
+;
 
 
 /********/
@@ -3248,22 +2843,22 @@ LocalValueAssignment
 /*!!! Not actually referenced by any other part of grammar
 AbsoluteReference
   : '@' GlobalModuleReference '.' ItemSpec
-  ;
+;
 
 ItemSpec
   : TYPEREFERENCE
   |  ItemId '.' ComponentId
-  ;
+;
 
 ItemId
   : ItemSpec
-  ;
+;
 
 ComponentId
   : IDENTIFIER
   | INTEGER
   | '*'
-  ;
+;
 */
 
 
@@ -3279,41 +2874,41 @@ Reference
   | PARAMETERIZEDOBJECTREFERENCE
   | PARAMETERIZEDOBJECTSETREFERENCE
   | IDENTIFIER
-  ;
+;
 
 
 NamedNumberList
   : NamedNumber
       {
-	$$ = new NamedNumberList;
-	$$->push_back(NamedNumberPtr($1));
+		$$ = new NamedNumberList;
+		$$->push_back(NamedNumberPtr($1));
       }
   | NamedNumberList ',' NamedNumber
       {
-	$1->push_back(NamedNumberPtr($3));
+		$1->push_back(NamedNumberPtr($3));
       }
-  ;
+;
 
 NamedNumber
   : IDENTIFIER '(' SignedNumber ')'
       {
-	$$ = new NamedNumber($1, (int)$3);
+		$$ = new NamedNumber($1, (int)$3);
       }
   | IDENTIFIER '(' DefinedValue ')'
       {
-	$$ = new NamedNumber($1, ((DefinedValue*)$3)->getReference());
-	delete $3;
+		$$ = new NamedNumber($1, ((DefinedValue*)$3)->getReference());
+		delete $3;
       }
-  ;
+;
 
 
 SignedNumber
   :  INTEGER
   | '-' INTEGER
       {
-	$$ = -$2;
+		$$ = -$2;
       }
-  ;
+;
 
 /*
  * $Log: asn_grammar.y,v $

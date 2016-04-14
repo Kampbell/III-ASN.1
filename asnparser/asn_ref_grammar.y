@@ -160,6 +160,7 @@ extern int iderror(ParserContext* context, const string& path, const char* msg);
 %token UNION            
 %token UNIQUE           
 %token UNIVERSAL        
+%token UTF8String
 %token UniversalString  
 %token VideotexString   
 %token VisibleString    
@@ -462,6 +463,7 @@ CharacterStringType
 
 RestrictedCharacterStringType
   : BMPString
+  | UTF8String
   | GeneralString
   | GraphicString
   | IA5String

@@ -88,7 +88,7 @@ static const char* SYMBOLS[] = {
   "OBJECT", "OCTET", "OF_t", "OPTIONAL_t", "PDV", "PLUS_INFINITY",
   "PRESENT", "PrintableString", "PRIVATE", "REAL", "SEQUENCE", "SET",
   "SIZE_t", "STRING", "SYNTAX", "T61String", "TAGS", "TeletexString",
-  "TRUE_t", "TYPE_t", "UNION", "UNIQUE", "UNIVERSAL", "UniversalString",
+  "TRUE_t", "TYPE_t", "UNION", "UNIQUE", "UNIVERSAL", "UniversalString", "UTF8String",
   "VideotexString", "VisibleString", "GeneralizedTime", "UTCTime", "VALUE",
   "WITH", "ObjectDescriptor_t", "WORD_t", "OID_INTEGER"}; 
 
@@ -193,88 +193,96 @@ exit:
 
 %x multiline_comment comment_line directive remove_directive
 
+digit [0-9]
+integer {digit}+
+real ({digit}+.{digit}+)
+exp ({integer}|{real})[eE]-?{integer}
+
 %%
 
 "::="				{ return ASSIGNMENT; }
 "..."				{ return ELLIPSIS; }
-"ABSENT"			{ return TokenSelect(yylval, !is_WORD(context, yyscanner) ,ABSENT,WORD_t, yyscanner); }              
-"ABSTRACT-SYNTAX"   { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,ABSTRACT_SYNTAX,WORD_t, yyscanner); }  
-"ALL"               { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,ALL,WORD_t, yyscanner); }  
-"ANY"               { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,ANY,WORD_t, yyscanner); }  
-"APPLICATION"       { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,APPLICATION,WORD_t, yyscanner); }  
-"AUTOMATIC"         { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,AUTOMATIC,WORD_t, yyscanner); }  
-"BEGIN"             { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,BEGIN_t,WORD_t, yyscanner); }  
+".."				{ return RANGE; }
+"ABSENT"			{ return TokenSelect(yylval, !is_WORD(context, yyscanner) ,ABSENT, WORD_t, yyscanner); }              
+"ABSTRACT-SYNTAX"   { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,ABSTRACT_SYNTAX, WORD_t, yyscanner); }  
+"ALL"               { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,ALL, WORD_t, yyscanner); }  
+"ANY"               { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,ANY, WORD_t, yyscanner); }  
+"APPLICATION"       { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,APPLICATION, WORD_t, yyscanner); }  
+"AUTOMATIC"         { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,AUTOMATIC, WORD_t, yyscanner); }  
+"BEGIN"             { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,BEGIN_t, WORD_t, yyscanner); }  
 "BIT"               { return BIT; }
-"BMPString"         { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,BMPString,WORD_t, yyscanner); }  
+"BMPString"         { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,BMPString, WORD_t, yyscanner); }  
 "BOOLEAN"           { return BOOLEAN_t; }
-"BY"                { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,BY,WORD_t, yyscanner); }  
+"BY"                { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,BY, WORD_t, yyscanner); }  
 "CHARACTER"         { return CHARACTER; }
 "CHOICE"            { return CHOICE; }
-"CLASS"             { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,CLASS,WORD_t, yyscanner); }  
-"COMPONENT"         { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,COMPONENT,WORD_t, yyscanner); }  
-"COMPONENTS"        { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,COMPONENTS,WORD_t, yyscanner); }  
-"CONSTRAINED"       { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,CONSTRAINED,WORD_t, yyscanner); }  
-"DEFAULT"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,DEFAULT,WORD_t, yyscanner); }  
-"DEFINED"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,DEFINED,WORD_t, yyscanner); }  
-"DEFINITIONS"       { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,DEFINITIONS,WORD_t, yyscanner); }  
+"CLASS"             { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,CLASS, WORD_t, yyscanner); }  
+"COMPONENT"         { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,COMPONENT, WORD_t, yyscanner); }  
+"COMPONENTS"        { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,COMPONENTS, WORD_t, yyscanner); }  
+"CONSTRAINED"       { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,CONSTRAINED, WORD_t, yyscanner); }  
+"DEFAULT"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,DEFAULT, WORD_t, yyscanner); }  
+"DEFINED"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,DEFINED, WORD_t, yyscanner); }  
+"DEFINITIONS"       { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,DEFINITIONS, WORD_t, yyscanner); }  
 "EMBEDDED"          { return EMBEDDED; }
 "END"               { return END; }
 "ENUMERATED"        { return ENUMERATED; }
-"EXCEPT"            { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,EXCEPT,WORD_t, yyscanner); }  
-"EXPLICIT"          { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,EXPLICIT,WORD_t, yyscanner); }  
-"EXPORTS"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,EXPORTS,WORD_t, yyscanner); }  
+"EXCEPT"            { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,EXCEPT, WORD_t, yyscanner); }  
+"EXPLICIT"          { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,EXPLICIT, WORD_t, yyscanner); }  
+"EXPORTS"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,EXPORTS, WORD_t, yyscanner); }  
 "EXTERNAL"          { return EXTERNAL; }
 "FALSE"             { return FALSE_t; }
-"FROM"              { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,FROM,WORD_t, yyscanner); }  
+"FROM"              { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,FROM, WORD_t, yyscanner); }  
 "GeneralString"     { return GeneralString; }
 "GraphicString"     { return GraphicString; }
 "UTCTime"			{ return UTCTime; }
 "GeneralizedTime"   { return GeneralizedTime; }
 "IA5String"         { return IA5String; }
-"TYPE-IDENTIFIER"   { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,TYPE_IDENTIFIER,WORD_t, yyscanner); }  
-"IDENTIFIER"        { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,IDENTIFIER_t,WORD_t, yyscanner); }  
-"IMPLICIT"          { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,IMPLICIT,WORD_t, yyscanner); }  
-"IMPORTS"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,IMPORTS,WORD_t, yyscanner); }  
-"INCLUDES"          { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,INCLUDES,WORD_t, yyscanner); }  
+"TYPE-IDENTIFIER"   { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,TYPE_IDENTIFIER, WORD_t, yyscanner); }  
+"IDENTIFIER"        { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,IDENTIFIER_t, WORD_t, yyscanner); }  
+"IMPLICIT"          { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,IMPLICIT, WORD_t, yyscanner); }  
+"IMPORTS"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,IMPORTS, WORD_t, yyscanner); }  
+"INCLUDES"          { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,INCLUDES, WORD_t, yyscanner); }  
 "INSTANCE"          { return INSTANCE; }
 "INTEGER"           { return INTEGER_t; }
 "INTERSECTION"      { return INTERSECTION; }
 "ISO646String"      { return ISO646String; }
-"MACRO"				{ return TokenSelect(yylval, !is_WORD(context, yyscanner) ,MACRO,WORD_t, yyscanner); }  
-"MAX"               { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,MAX,WORD_t, yyscanner); }  
-"MIN"               { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,MIN,WORD_t, yyscanner); }  
+"MACRO"				{ return TokenSelect(yylval, !is_WORD(context, yyscanner) ,MACRO, WORD_t, yyscanner); }  
+"MAX"               { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,MAX, WORD_t, yyscanner); }  
+"MIN"               { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,MIN, WORD_t, yyscanner); }  
 "MINUS-INFINITY"    { return MINUS_INFINITY; }
-"NOTATION"			{ return TokenSelect(yylval, !is_WORD(context, yyscanner) ,NOTATION,WORD_t, yyscanner); }  
+"NOT-A-NUMBER"		{ return NOT_A_NUMBER; }
+"NOTATION"			{ return TokenSelect(yylval, !is_WORD(context, yyscanner) ,NOTATION, WORD_t, yyscanner); }  
 "NULL"              { return context->NullTokenContext; }
 "NumericString"     { return NumericString; }
 "OBJECT"            { return OBJECT; }
 "OCTET"             { return OCTET; }
-"OF"                { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,OF_t,WORD_t, yyscanner); }  
+"OF"                { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,OF_t, WORD_t, yyscanner); }  
 "OPTIONAL"          { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,OPTIONAL_t, WORD_t, yyscanner); }  
-"PDV"               { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,PDV,WORD_t, yyscanner); }  
+"PDV"               { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,PDV, WORD_t, yyscanner); }  
 "PLUS-INFINITY"     { return PLUS_INFINITY; }
-"PRESENT"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,PRESENT,WORD_t, yyscanner); }  
+"PRESENT"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,PRESENT, WORD_t, yyscanner); }  
 "PrintableString"   { return PrintableString; }
-"PRIVATE"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,PRIVATE,WORD_t, yyscanner); }  
-"REAL"              { return REAL; }
+"PRIVATE"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,PRIVATE, WORD_t, yyscanner); }  
+"REAL"              { return REAL_t; }
 "SEQUENCE"          { return SEQUENCE; }
 "SET"               { return SET; }
-"SIZE"              { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,SIZE_t,WORD_t, yyscanner); }  
-"STRING"            { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,STRING,WORD_t, yyscanner); }  
-"SYNTAX"            { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,SYNTAX,WORD_t, yyscanner); }  
+"SIZE"              { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,SIZE_t, WORD_t, yyscanner); }  
+"STRING"            { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,STRING, WORD_t, yyscanner); }  
+"SYNTAX"            { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,SYNTAX, WORD_t, yyscanner); }  
 "T61String"         { return T61String; }
-"TAGS"              { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,TAGS,WORD_t, yyscanner); }  
+"TAGS"              { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,TAGS, WORD_t, yyscanner); }  
 "TeletexString"     { return TeletexString; }
 "TRUE"              { return TRUE_t; }
-"TYPE"				{ return TokenSelect(yylval, !is_WORD(context, yyscanner) ,TYPE_t,WORD_t, yyscanner); }  
+"TYPE"				{ return TokenSelect(yylval, !is_WORD(context, yyscanner) ,TYPE_t, WORD_t, yyscanner); }  
 "UNION"             { return UNION; }
-"UNIQUE"            { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,UNIQUE,WORD_t, yyscanner); }  
-"UNIVERSAL"         { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,UNIVERSAL,WORD_t, yyscanner); }  
+"UNIQUE"            { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,UNIQUE, WORD_t, yyscanner); }  
+"UNIVERSAL"         { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,UNIVERSAL, WORD_t, yyscanner); }  
 "UniversalString"   { return UniversalString; }
-"VALUE"				{ return TokenSelect(yylval, !is_WORD(context, yyscanner) ,VALUE,WORD_t, yyscanner); }  
+"UTF8String"		{ return TokenSelect(yylval, !is_WORD(context, yyscanner) ,UTF8String, WORD_t, yyscanner); }  
+"VALUE"				{ return TokenSelect(yylval, !is_WORD(context, yyscanner) ,VALUE, WORD_t, yyscanner); }  
 "VideotexString"    { return VideotexString; }
 "VisibleString"     { return VisibleString; }
-"WITH"              { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,WITH,WORD_t, yyscanner); }  
+"WITH"              { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,WITH, WORD_t, yyscanner); }  
                                                               
 
 "/*" {
@@ -345,6 +353,7 @@ exit:
 		context->BraceTokenContext = OBJECT_BRACE;
 		break;
 	case OBJECT_BRACE:
+	case OID_BRACE:
 	case VALUESET_BRACE:
 		context->BraceTokenContext = '{';
 		break;
@@ -409,7 +418,7 @@ exit:
     return CSTRING;
   }
 
-[0-9][0-9]*  {
+{integer}  {
 	if (context->InOIDContext) {
 		yylval->sval = new std::string(yytext);
 		return OID_INTEGER;
@@ -421,6 +430,10 @@ exit:
         yylval->ival = yylval->ival * 10 + *ptr++ - '0';
       return INTEGER;
 	}
+  }
+
+{real}  {
+	return REAL;
   }
 
 ['][01]*[']B {
