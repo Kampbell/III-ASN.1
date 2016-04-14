@@ -1,3 +1,4 @@
+// *INDENT-OFF*
 /*
  * main.h
  *
@@ -179,6 +180,8 @@ class Tag : public Printable {
 		UniversalReal,
 		UniversalEnumeration,
 		UniversalEmbeddedPDV,
+		UniversalUTF8String,
+		UniversalRelativeOID,
 		UniversalSequence = 16,
 		UniversalSet,
 		UniversalNumericString,
@@ -272,10 +275,10 @@ typedef shared_ptr<ConstraintElementBase> ConstraintElementPtr;
 typedef vector<ConstraintElementPtr> ConstraintElementVector;
 
 class Constraint : public Printable {
-  public:
+public:
 	Constraint(bool extend) : extendable(extend) {};
 	Constraint(ConstraintElementPtr& elmt);
-	Constraint(auto_ptr<ConstraintElementVector> std,  bool extend, auto_ptr<ConstraintElementVector> ext = auto_ptr<ConstraintElementVector>());
+	Constraint(auto_ptr<ConstraintElementVector> std, bool extend, auto_ptr<ConstraintElementVector> ext = auto_ptr<ConstraintElementVector>());
 
 	Constraint(const Constraint& other);
 
@@ -315,9 +318,9 @@ class Constraint : public Printable {
 	virtual auto_ptr<Constraint> Clone() const;
 	bool hasPERInvisibleConstraint(const Parameter&) const;
 	void generateObjectSetInstanceCode(const string& prefix, ostream& cxx) const;
-	void generateObjSetAccessCode(ostream& );
+	void generateObjSetAccessCode(ostream&);
 
-  protected:
+protected:
 	ConstraintElementVector standard;
 	bool                  extendable;
 	ConstraintElementVector extensions;
@@ -627,67 +630,32 @@ class TypeBase : public Printable {
 	void beginParseValueSet() const;
 	void endParseValueSet() const;
 
-	const string& getName() const {
-		return name;
-	}
+	const string& getName() const					{ return name;	}
+	const string& getCppName() const				{ return identifier;	}
 	void setName(const string& name);
-	void setAsValueSetType() {
-		isvaluesettype = true;
-	}
-	const string& getIdentifier() const {
-		return identifier;
-	}
+	void setAsValueSetType()						{ isvaluesettype = true;	}
+	const string& getIdentifier() const				{ return identifier;	}
 	void setTag(Tag::Type cls, unsigned num, Tag::Mode mode);
-	void setTag(const Tag& _tag) {
-		tag = _tag;
-	}
-	const Tag& getTag() const {
-		return tag;
-	}
-	const Tag& getDefaultTag() const {
-		return defaultTag;
-	}
-	bool hasNonStandardTag() const {
-		return tag.isDefined()&& tag != defaultTag;
-	}
+	void setTag(const Tag& _tag)					{ tag = _tag;	}
+	const Tag& getTag() const						{ return tag;	}
+	const Tag& getDefaultTag() const				{ return defaultTag;	}
+	bool hasNonStandardTag() const					{ return tag.isDefined()&& tag != defaultTag;	}
 	void setParameters(ParameterList& list);
-	void addConstraint(ConstraintPtr constraint) {
-		constraints.push_back(constraint);
-	}
+	void addConstraint(ConstraintPtr constraint)	{ constraints.push_back(constraint);	}
 	bool hasConstraints() const;
 	void moveConstraints(TypeBase& from);
 	void copyConstraints(const TypeBase& from);
-	virtual bool hasParameters() const {
-		return !parameters.isEmpty();
-	}
-	bool isOptional() const {
-		return isoptional;
-	}
-	void setOptional() {
-		isoptional = true;
-	}
-	bool hasDefaultValue() const {
-		return defaultValue.get()!= 0;
-	}
-	ValuePtr getDefaultValue() const {
-		return defaultValue;
-	}
+	virtual bool hasParameters() const				{ return !parameters.isEmpty();	}
+	bool isOptional() const							{ return isoptional;	}
+	void setOptional()								{ isoptional = true;	}
+	bool hasDefaultValue() const					{ return defaultValue.get()!= 0;	}
+	ValuePtr getDefaultValue() const				{ return defaultValue;	}
 	void setDefaultValue(ValuePtr value);
-	const string& getTemplatePrefix() const {
-		return templatePrefix;
-	}
-	const string& getClassNameString() const {
-		return classNameString;
-	}
-	void setOuterClassName(const string& oname) {
-		outerClassName = oname;
-	}
-	void setTemplatePrefix(const string& tname) {
-		templatePrefix = tname;
-	}
-	bool isValueSetType() const {
-		return isvaluesettype;
-	}
+	const string& getTemplatePrefix() const			{ return templatePrefix;	}
+	const string& getClassNameString() const		{ return classNameString;	}
+	void setOuterClassName(const string& oname)		{ outerClassName = oname;	}
+	void setTemplatePrefix(const string& tname)		{ templatePrefix = tname;	}
+	bool isValueSetType() const {		return isvaluesettype;	}
 
 	virtual void adjustIdentifier(bool);
 	virtual void flattenUsedTypes();
@@ -695,8 +663,7 @@ class TypeBase : public Printable {
 	virtual bool isChoice() const;
 	virtual bool isParameterizedType() const;
 	virtual bool isPrimitiveType() const;
-	virtual bool isSequenceOfType() const {
-		return false;
+	virtual bool isSequenceOfType() const {	return false;
 	}
 	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
 	virtual void generateForwardDecls(ostream& hdr);
@@ -818,6 +785,7 @@ class DefinedType : public TypeBase {
 	virtual string getPrimitiveType(const string& myName) const;
 	virtual void generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
+	virtual bool isPrimitiveType() const;
 
   protected:
 	void ConstructFromType(TypePtr& refType, const string& name);
@@ -1144,6 +1112,19 @@ class StringTypeBase : public TypeBase {
 };
 
 
+class UTF8StringType : public StringTypeBase {
+  public:
+	UTF8StringType();
+	virtual const char * getAncestorClass() const;
+	virtual string getPrimitiveType(const string& ) const {
+		return "const ASN1_STD wstring&";
+	}
+	virtual void generateOperators(ostream& hdr, ostream& cxx, const TypeBase& actualType);
+	virtual void generateConstructors(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
+};
+
+
 class BMPStringType : public StringTypeBase {
   public:
 	BMPStringType();
@@ -1270,6 +1251,15 @@ class ObjectDescriptorType : public TypeBase {
 };
 
 
+class RelativeOIDType : public TypeBase {
+  public:
+	RelativeOIDType();
+	virtual const char * getAncestorClass() const;
+	virtual void beginParseThisTypeValue() const;
+	virtual void endParseThisTypeValue() const;
+	virtual void generateConstructors(ostream& hdr, ostream& cxx, ostream& inl);
+};
+
 class ObjectIdentifierType : public TypeBase {
   public:
 	ObjectIdentifierType();
@@ -1320,7 +1310,7 @@ class ImportedType : public TypeBase {
 
 	void setModuleName(const string& name);
 	virtual const string& getCModuleName() const {
-		return cModuleName;
+		return cppModuleName;
 	}
 	const string& getModuleName() const {
 		return moduleName;
@@ -1331,7 +1321,7 @@ class ImportedType : public TypeBase {
 	bool    parameterised;
 	const TypePtr reference;
 	string moduleName;
-	string cModuleName;
+	string cppModuleName;
   private:
 	ImportedType& operator = (const ImportedType&);
 };
@@ -2028,6 +2018,11 @@ class ObjectClassBase : public Printable {
 	virtual const string& getName() const {
 		return name;
 	}
+	virtual const string& getCppName() const {
+		return cppname;
+	}
+	virtual const string& getReferenceName() const = 0;
+
 	int getFieldToken(const char* fieldname) const;
 	virtual FieldSpec* getField(const string& fieldName) = 0;
 	virtual const FieldSpec* getField(const string& fieldName) const = 0;
@@ -2049,6 +2044,7 @@ class ObjectClassBase : public Printable {
 	virtual void generateCplusplus(ostream& , ostream& , ostream& ) {}
 	virtual const string& getKeyName() const = 0;
   protected:
+	string cppname;
 	string name;
 };
 
@@ -2084,6 +2080,10 @@ class ObjectClassDefn : public ObjectClassBase {
 	const string& getKeyName() const {
 		return keyName;
 	}
+	virtual const string& getReferenceName() const {
+		return name;
+	}
+
 	void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
   protected:
 	auto_ptr<FieldSpecsList> fieldSpecs;
@@ -2099,9 +2099,11 @@ class DefinedObjectClass : public ObjectClassBase {
 	DefinedObjectClass(const string& nam, ObjectClassBase* ref = NULL);
 	~DefinedObjectClass() {}
 
-	const string& getName() const {
+
+	virtual const string& getReferenceName() const {
 		return referenceName;
 	}
+
 	ObjectClassBase* getReference();
 	const ObjectClassBase* getReference() const;
 	FieldSpec* getField(const string& fieldName);
@@ -2894,7 +2896,7 @@ class ModuleDefinition : public Printable {
 		return moduleName;
 	}
 	const string& getCModuleName() const {
-		return cModuleName;
+		return cppModuleName;
 	}
 	const string& getPrefix()     const {
 		return classNamePrefix;
@@ -2961,7 +2963,7 @@ class ModuleDefinition : public Printable {
 	InformationObjectSetList	informationObjectSets;
 	map<string,int>				identifiers;
 	string						shortModuleName;
-	string						cModuleName;
+	string						cppModuleName;
 	string						generatedPath;
 	ModuleList					subModules;
 	vector<string>				removeList;
@@ -3084,3 +3086,4 @@ class ParserContext {
  *            X/Open ASN.1/C++ interface.
  *
  */
+// *INDENT-ON*

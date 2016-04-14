@@ -51,6 +51,7 @@ extern "C" {
 }
 #endif
 
+#include <string>
 #include "main.h"
 #include <boost/mem_fn.hpp>
 #include <boost/ref.hpp>
@@ -67,6 +68,13 @@ extern "C" {
 #include <iomanip>
 #include <cstring>
 #include <assert.h>
+
+
+#ifdef _WIN32
+#define DIR_SEPARATOR '\\'
+#else
+#define DIR_SEPARATOR '/'
+#endif
 
 #define IDDEBUG 1
 #define YYDEBUG 1
@@ -87,18 +95,11 @@ extern "C" {
 # else /* ! defined YYDEBUG */
 #  define IDDEBUG 0
 # endif /* ! defined YYDEBUG */
-#endif  /* ! defined IDDEBUG */
-#if IDDEBUG
-int iddebug;
-#endif
-
-#ifdef _WIN32
-#define DIR_SEPARATOR '\\'
 #else
-#define DIR_SEPARATOR '/'
-#endif
+int iddebug;
+#endif  /* ! defined IDDEBUG */
 
-using std::cout;
+
 using std::clog;
 using std::cerr;
 using std::binary_function;
@@ -128,14 +129,14 @@ extern bool dumpUpperCaseToken;
 int LexEcho = 0;
 extern int isUpper(const char* text);
 //
-//  yyerror
-//  required function for flex
+//  yyerror required function for flex
 //
 #ifdef REENTRANT_PARSER
 ModuleList				Modules;
 UsefulModuleDef *		UsefulModule = NULL;
 
 static	stack<ParserContext*>	contexts;
+static 	vector<string>			files;
 static 	vector<FILE*>			fds;
 static const char nl = '\n';
 
@@ -150,6 +151,11 @@ ParserContext::~ParserContext() {
 	delete classStack;
 }
 int idparse (ParserContext* context, const string& path);
+int  iderror(ParserContext *, const string& path, char const *str) {
+//  extern char * yytext;
+	clog << "First  stage " << StdError(Fatal) << str << " near token \"" << idtext <<"\"" << nl;
+	return 0;
+}
 
 int  yyerror(YYLTYPE* location, yyscan_t scanner, ParserContext * context, char const *str) {
 #if 0
@@ -159,11 +165,6 @@ int  yyerror(YYLTYPE* location, yyscan_t scanner, ParserContext * context, char 
 	clog << "Second stage " << StdError(Fatal) << str << " at " << location->first_line << ":" << location->first_column << endl;
 	context->Module = NULL;
 #endif
-	return 0;
-}
-int  iderror(ParserContext *, const string& path, char const *str) {
-//  extern char * yytext;
-	clog << "First  stage " << StdError(Fatal) << str << " near token \"" << idtext <<"\"" << nl;
 	return 0;
 }
 
@@ -182,9 +183,11 @@ static const char* tokenAsString(int token);
 static const char * const StandardClasses[] = {
 	"ASN1::Null",
 	"ASN1::BOOLEAN",
+	"ASN1::REAL",
 	"ASN1::INTEGER",
 	"ASN1::ENUMERATED",
 	"ASN1::BinaryReal",
+	"ASN1::RELATIVE_OID",
 	"ASN1::OBJECT_IDENGIFIER",
 	"ASN1::BIT_STRING",
 	"ASN1::OCTET_STRING",
@@ -205,16 +208,15 @@ static const char * const StandardClasses[] = {
 };
 
 static const char * CppReserveWords[] = {
-	"and","and_eq", "asm", "auto", "bitand", "bitor", "bool", "break", "case", "catch", "char",
-	"class", "compl", "const", "const_cast",
+	"asm", "auto", "bitand", "bool", "break", "case", "catch", "char",
+	"class", "const", "const_cast",
 	"continue", "default", "delete", "do", "double", "dynamic_cast", "else", "enum", "explicit",
-	"export", "extern", "false", "float", "for", "friend", "goto", "if", "inline", "int", // "id",
-	"long", "mutable", "namespace", "new", "not", "not_eq", "operator", "or", "or_eq",
+	"export", "extern", "false", "float", "for", "friend", "goto", "if", "inline", "int",
+	"long", "mutable", "namespace", "new", "operator", 
 	"private", "protected", "public", "register",
 	"reinterpret_cast", "return", "short", "signed", "sizeof", "static", "static_cast", "struct",
 	"switch", "template", "this", "throw", "true", "try", "typedef", "typeid", "typename",
-	"union", "unsigned", "using", "virtual", "void", "volitile", "wchar_t", "while",
-	"xor", "xor_eq"
+	"union", "unsigned", "using", "virtual", "void", "volatile", "wchar_t", "while"
 };
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
@@ -229,7 +231,8 @@ static string getFileTitle(const string& fullname);
 static string shortenName(const string& name);
 static string makeIdentifierC(const string& identifier);
 static void str_replace(string& str, const char* src, const char* target, string::size_type pos = 0);
-static string getPath(const string& name);
+static string getPath(const char* name = nullptr);
+static void getFilesinDirectory(const std::string& directory);
 
 
 /////////////////////////////////////////////////////////
@@ -237,6 +240,7 @@ static string getPath(const string& name);
 //  Application
 //
 
+static size_t fileCount = 0;
 static int verbose=0;
 static string asndir;
 static string dllMacro;
@@ -262,6 +266,197 @@ class UsefulModuleDef : public ModuleDefinition {
 	UsefulModuleDef();
 	virtual void generateCplusplus(const string& modName, unsigned numFiles, bool verbose) {}
 };
+
+int main(int argc, char** argv) {
+
+	const char* opt = "i:cdeno:s:vm:Cr:";
+
+	int c;
+	bool generateCpp = true;
+	string path;
+
+	iddebug = 0;
+	yydebug = 0;
+
+	while ((c=getopt(argc, argv, opt)) != -1) {
+		switch (c) {
+		case 'c':
+			generateCpp = true;
+			break;
+
+		case 'i':
+			asndir  = optarg;
+			break;
+
+		case 'd':
+//			yydebug = 1;
+//			iddebug = 1;
+			break;
+
+		case 'e':
+			cppExt = ".cpp";
+			break;
+
+		case 'n':
+			noInlineFiles = true;
+			break;
+
+		case 'o':
+			path = optarg;
+			break;
+
+		case 's':
+			classesPerFile = atoi(optarg);
+			break;
+
+		case 'v':
+			++verbose;
+			break;
+
+		case 'm':
+			dllMacro				= makeIdentifierC(optarg);
+			dllMacroDEFINED			= dllMacro + "_DEFINED";
+			dllMacroEXPORTS			= dllMacro + "_EXPORTS";
+			dllMacroDLL				= dllMacro + "_DLL";
+			dllMacroAPI				= dllMacro + "_API";
+			dllMacroSTATIC			= dllMacro + "_STATIC";
+			dllMacroLIB_SUFFIX		= dllMacro + "_LIB_SUFFIX";
+			dllMacroRTS				= dllMacro;
+			dllMacroNO_AUTOMATIC_LIBS = dllMacro + "_NO_AUTOMATIC_LIBS";
+			break;
+
+		case 'C':
+			includeConfigH = false;
+			break;
+
+		case 'r':
+			useReinterpretCast = optarg;
+			break;
+		}
+	}
+
+	fileCount = argc - optind;
+
+	if (asndir.empty() && fileCount < 1 ) {
+		cerr << "usage: ASN1cmp [options] asnfile..." << nl
+			 << "  -v          Verbose output (multiple times for more verbose)" << nl
+			 << "  -i          Local directory of the asn files" << nl
+			 << "  -d          Debug output (copious!)" << nl
+			 << "  -c          generate C++ files" << nl
+			 << "  -e          generated C++ files with .cpp extension" << nl
+			 << "  -n          Use inline definitions rather than .inl files" << nl
+			 << "  -s  n       Split output if it has more than n (default 1000) classes" << nl
+			 << "  -o  dir     Output directory" << nl
+			 << "  -m  name    Macro name for generating DLLs under windows with MergeSym" << nl
+			 << "  -C          If given, the generated .cxx files won't include config.h" << nl
+			 << "  -r  name    Use reinterpret_casts rather than static_casts in the" << nl
+			 << "              generated .inl files, if -Dname is given to the compiler" << nl
+			 << endl;
+		return 1;
+	}
+	if (!asndir.empty() && fileCount == 0) {
+		getFilesinDirectory(getPath());
+	}
+	else {
+		for (int no = optind; no < argc; ++no) {
+			const char* cstring = argv[no];
+			const char* dot = strrchr(cstring, '.');
+			if (!dot) {
+				cerr << "ASN1 compiler: file has not suffix " << fileName << endl;
+				return 1;
+			}
+			const char* suffix = cstring + (dot - cstring) + 1;
+			if (strcmp(suffix, "asn") && strcmp(suffix, "asn1")) {
+				cerr << "ASN1 compiler: invalid suffix" << suffix << endl;
+				return 1;
+			}
+			files.push_back(argv[no]);
+		}
+		fileCount = argc - optind;
+	}
+	clog << "ASN.1 compiler version 2.4" << nl << endl;
+
+
+	fds.resize(fileCount);
+	ParserContext context;
+	contexts.push(&context);
+	UsefulModule = new UsefulModuleDef();
+
+	Modules.push_back(ModuleDefinitionPtr(UsefulModule));
+
+	for (int no = 0 ; no < fileCount; ++no)  {
+		fileName   = files[no];
+		string filePath = getPath(fileName.c_str());
+
+		idin = fds[no] = fopen(filePath.c_str(),"r");
+		if (!idin) {
+			cerr << "ASN1 compiler: cannot open " << filePath << endl;
+			return 1;
+		}
+		clog << "ASN1 compiler: processing of " << filePath << endl;
+
+		lineNumber = 1;
+		fatals     = 0;
+		warnings   = 0;
+
+		if (verbose)
+			clog << "First  Stage Parsing... " << fileName << endl;
+
+		idparse(&context, filePath);
+		rewind(idin); // rewind the file
+	}
+	for(int no = 0; no < Modules.size(); no++) {
+		Modules[no]->dump();
+	}
+
+
+	for (int no = 0; no < fileCount; ++no)  {
+		fileName   = files[no];
+		lineNumber = 1;
+		fatals     = 0;
+		warnings   = 0;
+		if (verbose)
+			clog << "Second Stage Parsing... " << fileName << endl;
+
+		contexts.top()->file = fds[no];
+		yylex_init(&context.lexer);
+		yyset_in(fds[no], context.lexer);
+//		yyrestart(fds[no], context.lexer);
+		yyparse(context.lexer, contexts.top());
+		yylex_destroy(context.lexer);
+		fclose(fds[no]);
+		contexts.top()->file = NULL;
+	}
+
+	for (int no= 0 ; no < Modules.size(); ++no) {
+		Modules[no]->AdjustModuleName(path);
+	}
+
+	for (int no = 0; no < contexts.top()->RemoveList.size(); ++no) {
+		int dotpos = contexts.top()->RemoveList[no].find('.');
+		string modulename = contexts.top()->RemoveList[no].substr(0, dotpos);
+		ModuleDefinition* module = findModule(modulename.c_str());
+		if (module)
+			module->addToRemoveList(contexts.top()->RemoveList[no].substr(dotpos+1, contexts.top()->RemoveList[no].size()-1));
+	}
+
+	for (int no = 0 ; no < Modules.size(); ++no) {
+		Modules[no]->RemoveReferences(verbose !=0 );
+		Modules[no]->AdjustImportedModules();
+	}
+
+	for (int no = 0; no < Modules.size(); ++no) {
+		contexts.top()->Module = Modules[no].get();
+		if (verbose > 1)
+			cerr << "Module " << *contexts.top()->Module << endl;
+
+		if (generateCpp)
+			contexts.top()->Module->generateCplusplus(path,  classesPerFile, verbose!=0);
+	}
+
+	contexts.pop();
+	return 0;
+}
 UsefulModuleDef::UsefulModuleDef() : ModuleDefinition("ASN1", "", Tag::Explicit) {
 	/*
 	ABSTRACT-SYNTAX ::= CLASS {
@@ -286,6 +481,15 @@ UsefulModuleDef::UsefulModuleDef() : ModuleDefinition("ASN1", "", Tag::Explicit)
 
 		fieldSpecs->push_back(idField);
 		type_Identifier->setFieldSpecs(fieldSpecs);
+
+		TokenGroupPtr tokens(new TokenGroup);
+		tokens->addToken(TokenOrGroupSpecPtr(new PrimitiveFieldName("&Type")));
+		tokens->addToken(TokenOrGroupSpecPtr(new Literal("IDENTIFIED")));
+		tokens->addToken(TokenOrGroupSpecPtr(new Literal("BY")));
+		tokens->addToken(TokenOrGroupSpecPtr(new PrimitiveFieldName("&id")));
+
+		type_Identifier->setWithSyntaxSpec(tokens);
+
 		addObjectClass(type_Identifier);
 	}
 
@@ -370,176 +574,6 @@ UsefulModuleDef::UsefulModuleDef() : ModuleDefinition("ASN1", "", Tag::Explicit)
 }
 
 
-int main(int argc, char** argv) {
-
-	const char* opt = "i:cdeno:s:vm:Cr:";
-
-	int c;
-	bool generateCpp = true;
-	string path;
-
-	iddebug = 0;
-	yydebug = 0;
-
-	while ((c=getopt(argc, argv, opt)) != -1) {
-		switch (c) {
-		case 'c':
-			generateCpp = true;
-			break;
-
-		case 'i':
-			asndir  = optarg;
-			break;
-
-		case 'd':
-//			yydebug = 1;
-//			iddebug = 1;
-			break;
-
-		case 'e':
-			cppExt = ".cpp";
-			break;
-
-		case 'n':
-			noInlineFiles = true;
-			break;
-
-		case 'o':
-			path = optarg;
-			break;
-
-		case 's':
-			classesPerFile = atoi(optarg);
-			break;
-
-		case 'v':
-			++verbose;
-			break;
-
-		case 'm':
-			dllMacro				= optarg;
-			dllMacroDEFINED			= dllMacro + "_DEFINED";
-			dllMacroEXPORTS			= dllMacro + "_EXPORTS";
-			dllMacroDLL				= dllMacro + "_DLL";
-			dllMacroAPI				= dllMacro + "_API";
-			dllMacroSTATIC			= dllMacro + "_STATIC";
-			dllMacroLIB_SUFFIX		= dllMacro + "_LIB_SUFFIX";
-			dllMacroRTS				= dllMacro;
-			dllMacroNO_AUTOMATIC_LIBS = dllMacro + "_NO_AUTOMATIC_LIBS";
-			break;
-
-		case 'C':
-			includeConfigH = false;
-			break;
-
-		case 'r':
-			useReinterpretCast = optarg;
-			break;
-		}
-	}
-
-	size_t fileCount = argc-optind;
-
-	cout << "ASN.1 compiler version 2.4" << nl << endl;
-
-	if (fileCount < 1 ) {
-		cerr << "usage: ASN1cmp [options] asnfile..." << nl
-			 << "  -v          Verbose output (multiple times for more verbose)" << nl
-			 << "  -i          Local directory of the asn files" << nl
-			 << "  -d          Debug output (copious!)" << nl
-			 << "  -c          generate C++ files" << nl
-			 << "  -e          generated C++ files with .cpp extension" << nl
-			 << "  -n          Use inline definitions rather than .inl files" << nl
-			 << "  -s  n       Split output if it has more than n (default 1000) classes" << nl
-			 << "  -o  dir     Output directory" << nl
-			 << "  -m  name    Macro name for generating DLLs under windows with MergeSym" << nl
-			 << "  -C          If given, the generated .cxx files won't include config.h" << nl
-			 << "  -r  name    Use reinterpret_casts rather than static_casts in the" << nl
-			 << "              generated .inl files, if -Dname is given to the compiler" << nl
-			 << endl;
-		return 1;
-	}
-
-
-
-	fds.resize(fileCount);
-	ParserContext context;
-	contexts.push(&context);
-	UsefulModule = new UsefulModuleDef();
-
-	Modules.push_back(ModuleDefinitionPtr(UsefulModule));
-
-	for (int no = 0 ; no < fileCount; ++no)  {
-		fileName   = argv[no+optind];
-		string filePath = getPath(fileName);
-		idin = fds[no] = fopen(filePath.c_str(),"r");
-		if (!idin) {
-			cerr << "ASN1 compiler: cannot open \"" << filePath  << '"'<< endl;
-			return 1;
-		}
-
-		lineNumber = 1;
-		fatals     = 0;
-		warnings   = 0;
-
-		if (verbose)
-			cout << "First  Stage Parsing... " << fileName << endl;
-
-		idparse(&context, filePath);
-		rewind(idin); // rewind the file
-	}
-	for(int no = 0; no < Modules.size(); no++) {
-		Modules[no]->dump();
-	}
-
-
-	for (int no = 0; no < fileCount; ++no)  {
-		fileName   = argv[no+optind];
-		lineNumber = 1;
-		fatals     = 0;
-		warnings   = 0;
-		if (verbose)
-			cout << "Second Stage Parsing... " << fileName << endl;
-
-		contexts.top()->file = fds[no];
-		yylex_init(&context.lexer);
-		yyset_in(fds[no], context.lexer);
-//		yyrestart(fds[no], context.lexer);
-		yyparse(context.lexer, contexts.top());
-		yylex_destroy(context.lexer);
-		fclose(fds[no]);
-		contexts.top()->file = NULL;
-	}
-
-	for (int no= 0 ; no < Modules.size(); ++no) {
-		Modules[no]->AdjustModuleName(path);
-	}
-
-	for (int no = 0; no < contexts.top()->RemoveList.size(); ++no) {
-		int dotpos = contexts.top()->RemoveList[no].find('.');
-		string modulename = contexts.top()->RemoveList[no].substr(0, dotpos);
-		ModuleDefinition* module = findModule(modulename.c_str());
-		if (module)
-			module->addToRemoveList(contexts.top()->RemoveList[no].substr(dotpos+1, contexts.top()->RemoveList[no].size()-1));
-	}
-
-	for (int no = 0 ; no < Modules.size(); ++no) {
-		Modules[no]->RemoveReferences(verbose !=0 );
-		Modules[no]->AdjustImportedModules();
-	}
-
-	for (int no = 0; no < Modules.size(); ++no) {
-		contexts.top()->Module = Modules[no].get();
-		if (verbose > 1)
-			cerr << "Module " << *contexts.top()->Module << endl;
-
-		if (generateCpp)
-			contexts.top()->Module->generateCplusplus(path,  classesPerFile, verbose!=0);
-	}
-
-	contexts.pop();
-	return 0;
-}
 
 
 /////////////////////////////////////////
@@ -578,7 +612,7 @@ bool OutputFile::Open(const string& path,  const char * suffix,  const char * ex
 		*this << "//" << nl;
 		*this << "// " << getFileName(filename) << nl;
 		*this << "//" << nl;
-		*this << "// Code automatically generated by " << "foo" << nl;
+		*this << "// Code automatically generated by " << "ASN1 compiler" << nl;
 		*this << "//" << nl;
 		return true;
 	}
@@ -1122,10 +1156,8 @@ ConstraintPtr ElementListConstraintElement::getObjectSetFromObjectSetField(const
 	for (; i != e; ++i) {
 		ConstraintPtr cons = (*i)->getObjectSetFromObjectSetField(field);
 		if (cons.get() != NULL) {
-			elem->AppendElements(cons->getStandardElements().begin(),
-								 cons->getStandardElements().end());
-			elem->AppendElements(cons->getExtensionElements().end(),
-								 cons->getExtensionElements().end());
+			elem->AppendElements(cons->getStandardElements().begin(), cons->getStandardElements().end());
+			elem->AppendElements(cons->getExtensionElements().end(),  cons->getExtensionElements().end());
 		}
 	}
 	if (elem->elements.size()) {
@@ -1138,8 +1170,7 @@ ConstraintPtr ElementListConstraintElement::getObjectSetFromObjectSetField(const
 }
 
 bool ElementListConstraintElement::hasPERInvisibleConstraint(const Parameter& param) const {
-	ConstraintElementVector::const_iterator it = elements.begin(),
-											last = elements.end();
+	ConstraintElementVector::const_iterator it = elements.begin(), last = elements.end();
 
 	for (; it != last; ++it)
 		if ((*it)->hasPERInvisibleConstraint(param))
@@ -1162,8 +1193,7 @@ void ElementListConstraintElement::generateObjSetAccessCode(ostream& cxx) {
 
 const SizeConstraintElement* ElementListConstraintElement::getSizeConstraint() const {
 	const SizeConstraintElement* result=NULL;
-	ConstraintElementVector::const_iterator it = elements.begin(),
-											last = elements.end();
+	ConstraintElementVector::const_iterator it = elements.begin(), last = elements.end();
 
 	for (; it != last; ++it)
 		if ((result = (*it)->getSizeConstraint()) != NULL)
@@ -1173,8 +1203,7 @@ const SizeConstraintElement* ElementListConstraintElement::getSizeConstraint() c
 
 const FromConstraintElement* ElementListConstraintElement::getFromConstraint() const {
 	const FromConstraintElement* result=NULL;
-	ConstraintElementVector::const_iterator it = elements.begin(),
-											last = elements.end();
+	ConstraintElementVector::const_iterator it = elements.begin(), last = elements.end();
 
 	for (; it != last; ++it)
 		if ((result = (*it)->getFromConstraint()) != NULL)
@@ -1689,16 +1718,13 @@ bool TypeBase::isPrimitiveType() const {
 }
 
 
-
 void TypeBase::generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) {
 	if (isPrimitiveType()&& !needGenInfo() ) {
 		hdr << "typedef "<< getTypeName() << ' '<< getIdentifier() << ";" << nl << nl;
 	} else {
-		hdr << tab;
 		beginGenerateCplusplus(hdr, cxx, inl);
 		hdr << getIdentifier() << "(const " << getIdentifier() << "& that) : Inherited(that) {}" << nl;
 		endGenerateCplusplus(hdr, cxx, inl);
-		hdr << bat;
 	}
 }
 
@@ -1899,7 +1925,7 @@ const string& TypeBase::getCModuleName() const {
 
 
 void TypeBase::generateConstructors(ostream& hdr, ostream& , ostream& ) {
-	hdr  << tab << getIdentifier() << "() : Inherited(&theInfo) {}" << nl << bat;
+	hdr  << getIdentifier() << "() : Inherited(&theInfo) {}" << nl;
 }
 
 
@@ -2015,13 +2041,24 @@ void DefinedType::generateOperators(ostream& hdr, ostream& cxx, const TypeBase& 
 		if (!basicTypeName.empty()) {
 //      if (basicTypeName.find("::value_type::") != -1)
 			//      basicTypeName = basicTypeName.substr(basicTypeName.find_last_of(':')+1);
-			hdr << tab << getIdentifier() << "(" << basicTypeName << " v, const void* info =&theInfo)"
-				<< " : Inherited(v, info) {}" << nl << bat;
+			hdr << getIdentifier() << "(" << basicTypeName << " v, const void* info =&theInfo) : Inherited(v, info) {}" << nl;
 		}
 
-		baseType->generateOperators(hdr, cxx, actualType);
+//FIXME
+// In fact, generateOperator generates constructors when inherited type
+// is also inherited. See testsuite/17-tags-OK.asn1
+//	T3 ::= [3] IMPLICIT T2
+//	T1 ::= [1] INTEGER
+//	T2 ::= [2] EXPLICIT T1
+// One should add and use generate constructor instead using generateOperators
+// but do not have a usage of the below line
+//		baseType->generateOperators(hdr, cxx, actualType);
+// which generates the T2 constructor in class T3
+// 	T3(int_type v, const void* info =&theInfo) : Inherited(v, info) {}
+//	T2(int_type v, const void* info =&theInfo) : Inherited(v, info) {}
+//FIXME
 	} else
-		cout << "cannot find type " << referenceName << " to generate operators" << nl;
+		clog << "cannot find type " << referenceName << " to generate operators" << nl;
 }
 
 
@@ -2148,10 +2185,7 @@ TypePtr DefinedType::flattenThisType(TypePtr& self, const TypeBase& parent) {
 					for (i = 0; i < paramList.size(); ++i) {
 						if (paramList[i]->getName() == subtype->getTypeName()) {
 							parameters.rep.push_back(paramList[i]);
-							result.reset(
-								new ParameterizedType(self,
-													  parent,
-													  *parameters.MakeActualParameters()));
+							result.reset(new ParameterizedType(self, parent,  *parameters.MakeActualParameters()));
 							return result;
 						}
 					}
@@ -2164,6 +2198,9 @@ TypePtr DefinedType::flattenThisType(TypePtr& self, const TypeBase& parent) {
 
 	return result;
 }
+bool DefinedType::isPrimitiveType() const {
+	return false;
+}
 
 /////////////////////////////////////////////////////////
 
@@ -2172,9 +2209,7 @@ ParameterizedType::ParameterizedType(const string& name, ActualParameterList& ar
 	arguments.swap(args);
 }
 
-ParameterizedType::ParameterizedType(TypePtr& refType,
-									 const TypeBase& parent,
-									 ActualParameterList& args)
+ParameterizedType::ParameterizedType(TypePtr& refType, const TypeBase& parent, ActualParameterList& args)
 	: DefinedType(refType, parent) {
 	arguments.swap(args);
 }
@@ -2392,7 +2427,6 @@ void IntegerType::generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) {
 }
 
 void IntegerType::generateInfo(const TypeBase* type, ostream& hdr , ostream& cxx) {
-	hdr << tab;
 	hdr << "static const InfoType theInfo;" << nl;
 	if ( !allowedValues.empty() ) {
 		hdr << bat << "private:" << nl << tab
@@ -2411,12 +2445,10 @@ void IntegerType::generateInfo(const TypeBase* type, ostream& hdr , ostream& cxx
 				<< (*itr)->getName() << "\" }";
 		}
 
-		cxx  << nl
-			<< "};\n" << nl;
+		cxx  << nl	<< "};\n" << nl;
 	}
 
-	cxx << type->getTemplatePrefix()
-		<< "const " ;
+	cxx << type->getTemplatePrefix() << "const " ;
 
 	if (type->getTemplatePrefix().length())
 		cxx << "typename ";
@@ -2428,9 +2460,7 @@ void IntegerType::generateInfo(const TypeBase* type, ostream& hdr , ostream& cxx
 
 	type->generateTags(cxx);
 
-	cxx << "," << nl
-		<< "   &" << getAncestorClass() << "::theInfo," << nl
-		<< "    ";
+	cxx << "," << nl << "   &" << getAncestorClass() << "::theInfo," << nl	<< "    ";
 
 	if (type->getConstraints().size()) {
 		string strm;
@@ -2445,7 +2475,6 @@ void IntegerType::generateInfo(const TypeBase* type, ostream& hdr , ostream& cxx
 	}
 
 	cxx << "};\n" << nl;
-	hdr << bat;
 }
 
 
@@ -2463,9 +2492,7 @@ string IntegerType::getTypeName() const {
 }
 
 void IntegerType::generateConstructors(ostream& hdr, ostream& , ostream& ) {
-	hdr << tab;
 	hdr << getIdentifier() << "(int_type v =0, const void* info =&theInfo) : Inherited(v, info) {}" << nl;
-	hdr << bat;
 }
 
 void IntegerType::generateOperators(ostream& hdr, ostream& cxx, const TypeBase& actualType) {
@@ -2499,9 +2526,7 @@ TypePtr IntegerType::flattenThisType(TypePtr& self, const TypeBase& parent) {
 				for (size_t i = 0; i < paramList.size(); ++i) {
 					if (paramList[i]->getName() == subtype->getTypeName()) {
 						parameters.rep.push_back(paramList[i]);
-						result.reset(new ParameterizedType(self,
-														   parent,
-														   *parameters.MakeActualParameters()));
+						result.reset(new ParameterizedType(self,  parent, *parameters.MakeActualParameters()));
 						return result;
 					}
 				}
@@ -3132,22 +3157,19 @@ void SequenceType::generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) {
 			<< "bool do_accept(ASN1::Visitor& visitor);" << nl;
 
 		cxx << getTemplatePrefix()
-			<< "ASN1::AbstractData* "<< getClassNameString() << "::create(const void* info)" << nl
-			<< "{" << nl
+			<< "ASN1::AbstractData* " << getClassNameString() << "::create(const void* info) {" << nl
 			<< "    return new " << getIdentifier() << "(info);" << nl
-			<< "}" << nl
-			 << nl
-			<< getTemplatePrefix()
-			<< "bool "<< getClassNameString() << "::do_accept(ASN1::Visitor& visitor)" << nl
-			<< "{" << nl
-			<< "  if (Inherited::do_accept(visitor))" << nl
-			<< "  {" << nl
+			<< "}" << nl << nl;
+
+		cxx	<< getTemplatePrefix()
+			<< "bool "<< getClassNameString() << "::do_accept(ASN1::Visitor& visitor) {" << nl
+			<< "  if (Inherited::do_accept(visitor)) {" << nl
 			<< "    if (!visitor.get_env())" << nl
 			<< "      return true;" << nl
 			<< decoder.str()
 			<< "  }" << nl
 			<< "  return false;" << nl
-			<< "}\n" << nl;
+			<< "}" << nl << nl;
 	}
 	decoder << ends;
 	hdr << bat;
@@ -3512,13 +3534,10 @@ void SequenceType::generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx
 			if (field.isRemovedType())
 				cxx << "    NULL";
 			else
-				cxx << "   &"
-					<< field.getIdentifier()
-					<< "::value_type::theInfo";
+				cxx << "   &"	<< field.getIdentifier() << "::value_type::theInfo";
 
 		}
-		cxx  << nl
-			<< "};\n" << nl;
+		cxx  << nl << "};\n" << nl;
 
 
 		if (numFields > 0) {
@@ -3973,8 +3992,8 @@ void ChoiceType::generateComponent(TypeBase& field, ostream& hdr, ostream& cxx, 
 			hdr << ";" << nl;
 
 			int pos;
-			if ( (pos = primitiveFieldType.find(componentIdentifier,0)) == 0)
-				primitiveFieldType.insert(pos, getClassNameString() + "::");
+			if ((pos = primitiveFieldType.find(componentIdentifier, 0)) == 0)
+				;;//FIXME  primitiveFieldType.insert(pos, getClassNameString() + "::");
 
 			inl << getTemplatePrefix()
 				<< "inline "   << typenameKeyword << getClassNameString() << "::" << componentIdentifier << "::reference " << getClassNameString() << "::select_" << componentName << " ("<< primitiveFieldType << " v)" << nl
@@ -4424,6 +4443,78 @@ void StringTypeBase::generateInfo(const TypeBase* type,ostream& hdr, ostream& cx
 
 /////////////////////////////////////////////////////////
 
+UTF8StringType::UTF8StringType()
+	: StringTypeBase(Tag::UniversalUTF8String) {
+}
+
+
+const char * UTF8StringType::getAncestorClass() const {
+	return "ASN1::UTF8String";
+}
+
+void UTF8StringType::generateConstructors(ostream& hdr, ostream& , ostream& ) {
+
+	hdr  << getIdentifier() << "() : Inherited(&theInfo) {}" << nl
+		 << getIdentifier() << "(const base_string& str, const void* info =&theInfo) : Inherited(str, info) {}" << nl
+		 << getIdentifier() << "(const wchar_t* str, const void* info =&theInfo) : Inherited(str, info) {}" << nl;
+}
+
+void UTF8StringType::generateOperators(ostream& hdr, ostream& , const TypeBase& actualType) {
+	string atname = actualType.getIdentifier();
+	hdr  << atname << "& operator=(const std::wstring& that)" << nl
+		 << "{ Inherited::operator=(that); return *this; }" << nl
+		 << atname << "& operator=(const wchar_t* that)" << nl
+		 << "{ Inherited::operator=(that); return *this; }" << nl;
+}
+
+void UTF8StringType::generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx) {
+	hdr  << "static const InfoType theInfo;" << nl;
+	cxx << type->getTemplatePrefix()
+		<< "const "<< type->getClassNameString() << "::InfoType " <<  type->getClassNameString() << "::theInfo = {" << nl
+		<< "    ASN1::BMPString::create," << nl
+		<< "    ";
+	generateTags(cxx);
+	cxx << ",\n   &" << getAncestorClass() << "::theInfo," << nl;
+
+	const SizeConstraintElement* sizeConstraint = NULL;
+	size_t i;
+	for (i = 0; i < type->getConstraints().size(); ++i)
+		if ((sizeConstraint = type->getConstraints()[i]->getSizeConstraint()) != NULL)
+			break;
+
+	if (sizeConstraint != NULL) {
+		string str;
+		sizeConstraint->getConstraint(str);
+		cxx << "    " << str.substr(0, str.size()-2) << "," << nl;
+	} else
+		cxx << "    ASN1::Unconstrained, 0, UINT_MAX," << nl;
+
+	const FromConstraintElement* fromConstraint = NULL;
+	for (i = 0; i < type->getConstraints().size(); ++i)
+		if ((fromConstraint = type->getConstraints()[i]->getFromConstraint()) != NULL)
+			break;
+
+	cxx << "    ";
+
+	int range = 0xffff;
+	if (fromConstraint != NULL)
+		range = fromConstraint->getRange(cxx);
+	else
+		cxx <<  0 << ", " << 0xffff ;
+
+	int charSetUnalignedBits = CountBits(range);
+
+	int charSetAlignedBits = 1;
+	while (charSetUnalignedBits > charSetAlignedBits)
+		charSetAlignedBits <<= 1;
+
+	cxx << "," << nl
+		<< "    " << charSetUnalignedBits << ", " << charSetAlignedBits  << nl
+		<< "};\n" << nl;
+}
+
+/////////////////////////////////////////////////////////
+
 BMPStringType::BMPStringType()
 	: StringTypeBase(Tag::UniversalBMPString) {
 }
@@ -4442,7 +4533,7 @@ void BMPStringType::generateConstructors(ostream& hdr, ostream& , ostream& ) {
 
 void BMPStringType::generateOperators(ostream& hdr, ostream& , const TypeBase& actualType) {
 	string atname = actualType.getIdentifier();
-	hdr  << atname << "& operator=(const wstring& that)" << nl
+	hdr  << atname << "& operator=(const std::wstring& that)" << nl
 		 << "{ Inherited::operator=(that); return *this; }" << nl
 		 << atname << "& operator=(const wchar_t* that)" << nl
 		 << "{ Inherited::operator=(that); return *this; }" << nl;
@@ -4493,6 +4584,7 @@ void BMPStringType::generateInfo(const TypeBase* type, ostream& hdr, ostream& cx
 		<< "    " << charSetUnalignedBits << ", " << charSetAlignedBits  << nl
 		<< "};\n" << nl;
 }
+
 /////////////////////////////////////////////////////////
 
 GeneralStringType::GeneralStringType()
@@ -4716,6 +4808,34 @@ const char * ObjectDescriptorType::getAncestorClass() const {
 
 /////////////////////////////////////////////////////////
 
+RelativeOIDType::RelativeOIDType()
+	: TypeBase(Tag::UniversalRelativeOID, contexts.top()->Module) {
+}
+
+
+void RelativeOIDType::beginParseThisTypeValue() const {
+	contexts.top()->InOIDContext = true;
+	contexts.top()->BraceTokenContext = OID_BRACE;
+}
+
+void RelativeOIDType::endParseThisTypeValue() const {
+	contexts.top()->InOIDContext = false;
+	contexts.top()->BraceTokenContext = OID_BRACE;
+}
+
+const char * RelativeOIDType::getAncestorClass() const {
+	return "ASN1::RELATIVE_OID";
+}
+
+void RelativeOIDType::generateConstructors(ostream& hdr, ostream& cxx, ostream& inl) {
+	TypeBase::generateConstructors(hdr, cxx, inl);
+	hdr << "template <class Iterator>" << nl;
+	hdr	<< getIdentifier() << "(Iterator first, Iterator last, const void* info =&theInfo)" << nl
+		   << ": Inherited(first, last, info) {}" << nl;
+}
+
+/////////////////////////////////////////////////////////
+
 ObjectIdentifierType::ObjectIdentifierType()
 	: TypeBase(Tag::UniversalObjectId, contexts.top()->Module) {
 }
@@ -4823,7 +4943,7 @@ void ObjectClassFieldType::addTableConstraint(boost::shared_ptr<TableConstraint>
 }
 
 void ObjectClassFieldType::generateDecoder(ostream& cxx) {
-	if (tableConstraint.get()&& tableConstraint->getAtNotations()&& tableConstraint->getAtNotations()->size() ==1) {
+	if (tableConstraint.get() && tableConstraint->getAtNotations() && tableConstraint->getAtNotations()->size() == 1) {
 
 		if (isOptional()) {
 			cxx  << "if (" << getName() << "_isPresent())" << "{" << nl;
@@ -4833,20 +4953,20 @@ void ObjectClassFieldType::generateDecoder(ostream& cxx) {
 		string keyname = lst[0];
 		if (keyname[0]== '.')
 			keyname = keyname.substr(1);
+
 		string fieldIdentifier = asnObjectClassField.substr(1);
-		cxx  << tableConstraint->getObjectSetIdentifier() << " objSet(*visitor.get_env());" << nl
-			 << "if (objSet.get())" << nl
-			 << "{" << nl
-			 << "  if (objSet->count(get_" << keyname << "()))" << nl
-			 << "  {" << nl
-			 << "    ref_" << getName() << "().grab(objSet->find(get_" <<  keyname
-			<< "())->get_" << fieldIdentifier << "());" << nl
-			 << "    return visitor.revisit(ref_" << getName() << "());" << nl
-			 << "  }" << nl
-			 << "  else" << nl
-			 << "    return objSet.extensible();" << nl
-			 << "}" << nl
-			 << "else" << nl
+		cxx << tableConstraint->getObjectSetIdentifier() << " objSet(*visitor.get_env());" << nl;
+
+		string cppkeyname = makeIdentifierC(keyname);
+		string cpprefname = makeIdentifierC(getName());
+		cxx	 << "if (objSet.get()) {" << nl
+			 << "    if (objSet->count(get_" << cppkeyname << "())) {" << nl
+			 << "        ref_" << cpprefname << "().grab(objSet->find(get_" <<  cppkeyname
+			 << "())->get_" << fieldIdentifier << "());" << nl
+			 << "        return visitor.revisit(ref_" << cpprefname << "());" << nl
+			 << "    } else" << nl
+			 << "        return objSet.extensible();" << nl
+			 << "} else" << nl
 			 << "  return true;" << nl;
 
 		if (isOptional()) {
@@ -4894,7 +5014,7 @@ const char * ImportedType::getAncestorClass() const {
 
 void ImportedType::adjustIdentifier(bool usingNamespace) {
 	if (usingNamespace)
-		identifier = cModuleName + "::" + makeIdentifierC(name);
+		identifier = cppModuleName + "::" + makeIdentifierC(name);
 	else
 		identifier = modulePrefix + '_' + makeIdentifierC(name);
 }
@@ -4906,7 +5026,7 @@ void ImportedType::generateCplusplus(ostream&, ostream&, ostream&) {
 
 void ImportedType::setModuleName(const string& mname) {
 	moduleName = mname;
-	cModuleName = makeIdentifierC(mname);
+	cppModuleName = makeIdentifierC(mname);
 	modulePrefix = contexts.top()->Module->getImportModuleName(mname);
 }
 
@@ -5535,7 +5655,7 @@ string ModuleDefinition::getImportModuleName(const string& mName) {
 
 void ModuleDefinition::AdjustModuleName(const string& sourcePath,bool isSubModule) {
 	shortModuleName = shortenName(moduleName);
-	cModuleName = makeIdentifierC(moduleName);
+	cppModuleName = makeIdentifierC(moduleName);
 	generatedPath = sourcePath + DIR_SEPARATOR;
 	if (!isSubModule)
 		generatedPath += moduleName;
@@ -5611,7 +5731,7 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 		dpath += DIR_SEPARATOR;
 
 	if (verbose)
-		cout << "Processing files " << this->getFileName() << "..." << nl;
+		clog << "Processing files " << this->getFileName() << "..." << nl;
 
 	dpath += getFileName();
 
@@ -5627,7 +5747,7 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 	}
 
 	if (verbose)
-		cout << "Sorting " << types.size() << " types..." << endl;
+		clog << "Sorting " << types.size() << " types..." << endl;
 
 	bool hasTemplates = ReorderTypes();
 
@@ -5637,7 +5757,7 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 
 	// generate the code
 	if (verbose)
-		cout << "Generating code (" << types.size() << " classes) ..." << endl;
+		clog << "Generating code (" << types.size() << " classes) ..." << endl;
 
 
 	// Output the special template closure file, if necessary
@@ -5648,7 +5768,7 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 		if (!templateFile.Open(dpath, "_t", cppExt))
 			return;
 
-		templateFile << "namespace " << cModuleName << "{" << nl;
+		templateFile << "namespace " << cppModuleName << "{" << nl;
 
 		for (i = 0; i < types.size(); i++) {
 			if (types[i]->hasParameters()) {
@@ -5657,10 +5777,10 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 			}
 		}
 
-		templateFile << "} // namespace " << cModuleName <<  nl << nl;
+		templateFile << "} // namespace " << cppModuleName <<  nl << nl;
 
 		if (verbose)
-			cout << "Completed " << templateFile.getFilePath() << endl;
+			clog << "Completed " << templateFile.getFilePath() << endl;
 
 		templateFilename = ::getFileName(dpath) + "_t" + cppExt;//templateFile.getFilePath().getFileName();
 	}
@@ -5673,8 +5793,8 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 
 		IndentStream 	hdr(hdrFile);
 
-		hdr << "#ifndef " << cModuleName << "_H_" << nl
-				<< "#define " << cModuleName << "_H_" << nl	 << nl
+		hdr << "#ifndef " << cppModuleName << "_H_" << nl
+				<< "#define " << cppModuleName << "_H_" << nl	 << nl
 				<< "#include \"asn1.h\"" << nl
 				<< nl;
 
@@ -5692,7 +5812,6 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 			return;
 
 		IndentStream 	cxx(cxxFile);
-
 		stringstream inl;
 
 		string headerName = ::getFileName(dpath) + ".h";
@@ -5703,7 +5822,7 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 					<< "#endif\n" << nl;
 
 		// if this define is generated - do_accept() in cxx file does not find inline function
-//    cxx << "#define " << cModuleName << "_CXX" << nl;
+//    cxx << "#define " << cppModuleName << "_CXX" << nl;
 		cxx << "#include \"" << headerName << "\"" << nl << nl;
 
 		// Include the template closure file.
@@ -5808,28 +5927,43 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 			hdr << endl;
 		}
 
-		hdr << "namespace " << cModuleName << " {" << nl << nl;
+		hdr << "namespace " << cppModuleName << " {" << nl << nl;
 		for_all(imports, boost::bind(&ImportModule::generateUsingDirectives, _1, boost::ref(hdr)));
 
-		cxx << "namespace " << cModuleName << "{" << nl	 << nl;
+		hdr << "//" << nl;
+		hdr << "// Type forward declaration" << nl;
+		hdr << "//" << nl;
+		for (i = 0; i < types.size(); i++)
+			if (!types[i]->isPrimitiveType())
+				hdr << "class " << types[i]->getCppName() << ";" << endl;
+		
+		hdr << "//" << nl;
+		hdr << "// Object Class forward declaration" << nl;
+		hdr << "//" << nl;
+		for (i = 0; i < objectClasses.size(); ++i)
+			hdr << "class " << objectClasses[i]->getCppName() << ";" << endl;
+		hdr << nl;
+
+
+		cxx << "namespace " << cppModuleName << "{" << nl	 << nl;
 
 		for(i = 0; i < values.size(); i++)
 			values[i]->generateConst(hdr, cxx);
 
 		for (i = 0; i < types.size(); i++) {
-			if (i > 0&& i%classesPerFile == 0) {
-				cxx << "} // namespace " << cModuleName <<  nl << nl;
+			if (i > 0 && i%classesPerFile == 0) {
+				cxx << "} // namespace " << cppModuleName <<  nl << nl;
 				cxxFile.Close();
 				classesCount = i/classesPerFile+1;
 
 				if (verbose)
-					cout << "Completed " << cxxFile.getFilePath() << endl;
+					clog << "Completed " << cxxFile.getFilePath() << endl;
 
 				stringstream suffix;
 				suffix << '_' << i/classesPerFile+1 ;
 
 				if (!cxxFile.Open(dpath, suffix.str().c_str(), cppExt)) {
-					cout << "cannot open file " << dpath << "_" << i/classesPerFile+1 << cppExt  << nl;
+					clog << "cannot open file " << dpath << "_" << i/classesPerFile+1 << cppExt  << nl;
 					return;
 				}
 
@@ -5839,7 +5973,7 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 							<< "#endif\n" << nl;
 
 // if this define is generated - do_accept() in cxx file does not find inline function
-//				cxx << "#define " << cModuleName << "_CXX" << nl;
+//				cxx << "#define " << cppModuleName << "_CXX" << nl;
 				cxx << "#include \"" << headerName << "\"" << nl << nl;
 
 				// Include the template closure file.
@@ -5857,10 +5991,10 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 				}
 
 
-				cxx << "namespace " << cModuleName << "{" << nl	 << nl;
+				cxx << "namespace " << cppModuleName << "{" << nl	 << nl;
 			}
 
-			cerr << "Generating " << types[i]->getName() << endl;
+			clog << "Generating " << types[i]->getName() << endl;
 
 			if (types[i]->hasParameters()) {
 				stringstream dummy;
@@ -5873,7 +6007,6 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 		i = classesCount+1;
 
 		// generate Information Classes
-
 		for (i = 0; i < objectClasses.size(); ++i)
 			objectClasses[i]->generateCplusplus(hdr, cxx, inl);
 
@@ -5883,7 +6016,7 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 
 
 		//if (useNamespaces)
-		cxx << "} // namespace " << cModuleName  << nl;
+		cxx << "} // namespace " << cppModuleName  << nl;
 
 		if (!inl.str().empty()) {
 			OutputFile inlFile;
@@ -5891,7 +6024,7 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 				return;
 
 			// if this define is generated - do_accept() in cxx file does not find inline function
-//      inlFile << "#if !defined( " << cModuleName << "_CXX)&& !defined(NO_"
+//      inlFile << "#if !defined( " << cppModuleName << "_CXX)&& !defined(NO_"
 			inlFile << "#if !defined(NO_"
 					<<  toUpper(getFileName()) << "_INLINES)" << nl;
 
@@ -5917,17 +6050,17 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 		inl << ends;
 
 		// Close off the files
-		hdr << "} // namespace " << cModuleName	<<  nl << nl;
+		hdr << "} // namespace " << cppModuleName	<<  nl << nl;
 
-		hdr << "#endif // " << cModuleName << "_H_" << nl;
+		hdr << "#endif // " << cppModuleName << "_H_" << nl;
 
 		if (verbose)
-			cout << "Completed " << cxxFile.getFilePath() << endl;
+			clog << "Completed " << cxxFile.getFilePath() << endl;
 	}
 }
 
 
-void ModuleDefinition::generateClassModule(ostream& hdrFile, ostream& cxxFile, ostream& inl) {
+void ModuleDefinition::generateClassModule(ostream& hdr, ostream& cxxFile, ostream& inl) {
 	size_t i;
 	stringstream tmphdr, tmpcxx;
 	for (i = 0 ; i < informationObjects.size(); ++i)
@@ -5945,7 +6078,7 @@ void ModuleDefinition::generateClassModule(ostream& hdrFile, ostream& cxxFile, o
 	for (i = 0; i < informationObjectSets.size(); ++i) {
 		InformationObjectSet& objSet = *informationObjectSets[i];
 		const string&name = makeIdentifierC(objSet.getName()),
-					 &className = makeIdentifierC(objSet.getObjectClass()->getName());
+					 &className = makeIdentifierC(objSet.getObjectClass()->getReferenceName());
 
 		if (!objSet.hasParameters()) {
 			if (objSet.isExtendable())
@@ -5954,9 +6087,11 @@ void ModuleDefinition::generateClassModule(ostream& hdrFile, ostream& cxxFile, o
 			tmphdr << "const " << className << "& get_" << name << "() const \t{  return m_" << name << "; }" << nl;
 		}
 	}
-
+	hdr << "//6" << nl;
+	hdr << "// Module" << nl;
+	hdr << "//" << nl;
 	if (!tmphdr.str().empty()) {
-		hdrFile << "class " << dllMacroAPI << " Module : public ASN1::Module {" << nl
+		hdr << "class " << dllMacroAPI << " Module : public ASN1::Module {" << nl
 				<< "public:" << nl << tab
 				<< "Module(";
 
@@ -5964,31 +6099,32 @@ void ModuleDefinition::generateClassModule(ostream& hdrFile, ostream& cxxFile, o
 		for (i = 0; i < imports.size(); ++i)
 			if (imports[i]->hasValuesOrObjects()) {
 				if (needComma)
-					hdrFile << ", ";
-				hdrFile << imports[i]->getCModuleName() << "::Module* " ;
+					hdr << ", ";
+				hdr << imports[i]->getCModuleName() << "::Module* " ;
 				needComma = true;
 			}
 
-		hdrFile << ");" << nl;
+		hdr << ");" << nl;
 
-		hdrFile << tmphdr.str();
+		hdr << tmphdr.str();
 		tmphdr << ends;
 
-		hdrFile << bat << "private:" << nl << tab;
+		hdr << bat << "private:" << nl << tab;
 		for (i = 0 ; i < informationObjects.size(); ++i) {
 			InformationObject& obj = *informationObjects[i];
 			string name = makeIdentifierC(obj.getName());
+			string className = makeIdentifierC(obj.getObjectClass()->getReferenceName());
 			if (dynamic_cast<DefaultObjectDefn*>(&obj))
-				hdrFile << name << " m_" << name << ";" << nl;
+				hdr << className << " m_" << name << ";" << nl;
 		}
 
 		for (i = 0; i < informationObjectSets.size(); ++i) {
 			InformationObjectSet& objSet = *informationObjectSets[i];
 			if (!objSet.hasParameters())
-				hdrFile << makeIdentifierC(objSet.getObjectClass()->getName()) << " m_" << makeIdentifierC(objSet.getName()) << ";" << nl;
+				hdr << makeIdentifierC(objSet.getObjectClass()->getName()) << " m_" << makeIdentifierC(objSet.getName()) << ";" << nl;
 		}
 
-		hdrFile << bat << "}; // class Module\n" << nl;
+		hdr << bat << "}; // class Module\n" << nl;
 
 		cxxFile << "#ifdef _MSC_VER" << nl
 				<< "#pragma warning(disable: 4355)" << nl
@@ -6274,7 +6410,7 @@ void ModuleDefinition::RemoveReferences(bool verbose) {
 		const string& ref = removeList[i];
 		TypePtr typeToBeRemoved = findType(ref);
 		if (typeToBeRemoved.get() == NULL) {
-			cout << getName() << "." << ref << " doesn't exist, unable to remove it" << nl;
+			clog << getName() << "." << ref << " doesn't exist, unable to remove it" << nl;
 			continue;
 		}
 
@@ -6291,7 +6427,7 @@ void ModuleDefinition::RemoveReferences(bool verbose) {
 			for (j = 0; j < types.size(); ++j)
 				types[j]->removeThisType(*typeToBeRemoved);
 		} else {
-			cout << "Unable to remove " << getName() << "." << ref  << nl;
+			clog << "Unable to remove " << getName() << "." << ref  << nl;
 		}
 	}
 
@@ -6307,7 +6443,7 @@ void ModuleDefinition::RemoveReferences(bool verbose) {
 
 	if (verbose) {
 		for (i = 0; i < referencesToBeRemoved.size(); ++i)
-			cout << "Remove Type : " << referencesToBeRemoved[i]->getName()  << nl;
+			clog << "Remove Type : " << referencesToBeRemoved[i]->getName()  << nl;
 	}
 
 }
@@ -6327,10 +6463,10 @@ bool  ModuleDefinition::hasType(const string& name) {
 }
 
 void ModuleDefinition::dump() const {
-	cout << getName() << endl;
+	clog << getName() << endl;
 	map<string,int>::const_iterator i;
 	for(i = identifiers.cbegin(); i != identifiers.cend(); ++i) {
-		cout << "\t" << i->first  << "\t\t = " << tokenAsString(i->second) << endl;
+		clog << "\t" << i->first  << "\t\t = " << tokenAsString(i->second) << endl;
 	}
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -6442,14 +6578,10 @@ void TypeFieldSpec::generate_info_type_mem(ostream& hdr) const {
 
 void TypeFieldSpec::generate_value_type(ostream& hdr) const {
 	string fname = getIdentifier();
-	hdr  << "ASN1::AbstractData* get_" << fname << "() const { return second->get_"
-		<< fname << "(); }" << nl;
+	hdr  << "ASN1::AbstractData* get_" << fname << "() const { return second->get_"	<< fname << "(); }" << nl;
 }
 
-void TypeFieldSpec::generateTypeField(const string& templatePrefix,
-									  const string& classNameString,
-									  const TypeBase* keyType,
-									  const string& objClassName,
+void TypeFieldSpec::generateTypeField(const string& templatePrefix,  const string& classNameString,  const TypeBase* keyType, const string& objClassName,
 									  ostream& hdr, ostream& cxx, ostream& ) const {
 	hdr << "    ASN1::AbstractData* get_" << getIdentifier() << "(const "
 		<< keyType->getTypeName() << "& key) const;" << nl;
@@ -6458,12 +6590,11 @@ void TypeFieldSpec::generateTypeField(const string& templatePrefix,
 		<< "ASN1::AbstractData* " << classNameString << "::get_" <<  getIdentifier() << "(const "
 		<< keyType->getTypeName() << "& key) const" << nl
 		<< "{" << nl
-		<< "  if (objSet)" << nl
-		<< "  {" << nl
-		<< "    " << objClassName << "::const_iterator it = objSet->find(key);" << nl
-		<< "  if (it != objSet->end())" << nl
-		<< "      return it->get_" << getIdentifier() << "();" << nl
-		<< "  }" << nl
+		<< "    if (objSet) {" << nl
+		<< "      " << objClassName << "::const_iterator it = objSet->find(key);" << nl
+		<< "    if (it != objSet->end())" << nl
+		<< "        return it->get_" << getIdentifier() << "();" << nl
+		<< "    }" << nl
 		<< "  return NULL;" << nl
 		<< "}\n" << nl;
 }
@@ -6721,9 +6852,7 @@ void VariableTypeValueSetFieldSpec::resolveReference() const {
 
 /////////////////////////////////////////////////////////////////////////////////
 
-ObjectFieldSpec::ObjectFieldSpec(const string& nam,
-								 DefinedObjectClass* oclass,
-								 bool optional)
+ObjectFieldSpec::ObjectFieldSpec(const string& nam,	 DefinedObjectClass* oclass, bool optional)
 	: FieldSpec(nam, optional),objectClass(oclass) {
 }
 
@@ -6864,6 +6993,8 @@ void ObjectSetFieldSpec::generateTypeField(const string& templatePrefix,
 
 void ObjectClassBase::setName(const string& nam) {
 	name = nam;
+	cppname = name;
+	str_replace(cppname, "-", "_");
 }
 
 int ObjectClassBase::getFieldToken(const char* fieldname) const {
@@ -7205,6 +7336,14 @@ DefinedObjectClass::DefinedObjectClass(ObjectClassBase* ref)
 
 DefinedObjectClass::DefinedObjectClass(const string& nam, ObjectClassBase* ref)
 	: referenceName(nam), reference(ref) {
+	if (!ref) {
+		if (nam == "ABSTRACT-SYNTAX") {
+		} else
+		if (nam == "TYPE-IDENTIFIER") {
+			ObjectClassBasePtr typeIdentifier = UsefulModule->findObjectClass(nam);
+			reference = typeIdentifier.get();
+		} 
+	}
 }
 
 ObjectClassBase* DefinedObjectClass::getReference() {
@@ -7925,7 +8064,7 @@ void InformationObjectSetDefn::generateType(ostream& hdr, ostream& cxx, ostream&
 		<< "// " << classNameString  << nl
 		<< "//" << nl << nl;
 
-	string objClassName = makeIdentifierC(getObjectClass()->getName());
+	string objClassName = makeIdentifierC(getObjectClass()->getReferenceName());
 
 	hdr << templatePrefix
 		<< "class " << typeName << " {" << nl
@@ -7947,11 +8086,11 @@ void InformationObjectSetDefn::generateType(ostream& hdr, ostream& cxx, ostream&
 		hdr << "    ~" << typeName << "() { delete objSet; }" << nl;
 
 	if (!isExtendable()) hdr << "const ";
-	hdr << objClassName << "* get() const { return objSet; }" << nl;
+	hdr << "element_type* get() const { return objSet; }" << nl;
 
 	if (!isExtendable())
 		hdr << "const ";
-	hdr << objClassName << "* operator->() const { return objSet; }" << nl;
+	hdr << "element_type* operator->() const { return objSet; }" << nl;
 
 	hdr << "bool extensible() const { return ";
 	if (isExtendable())
@@ -7964,7 +8103,7 @@ void InformationObjectSetDefn::generateType(ostream& hdr, ostream& cxx, ostream&
 	if (!isExtendable())
 		hdr << "const ";
 
-	hdr << objClassName << "* objSet;" << nl;
+	hdr << "element_type* objSet;" << nl;
 	hdr << bat << "};"  << nl << nl;
 }
 
@@ -8849,10 +8988,7 @@ string makeIdentifierC(const string& identifier) {
 	if (!s.empty()) {
 		str_replace(s, "-", "_");
 		static const char** end = CppReserveWords+ARRAY_SIZE(CppReserveWords);
-		if (binary_search(CppReserveWords,
-						  end,
-						  s.c_str(),
-						  str_less()))
+		if (binary_search(CppReserveWords,  end,  s.c_str(),  str_less()))
 			s += '_';
 	}
 	return s;
@@ -8983,6 +9119,8 @@ const char* tokenAsString(int token) {
 		return "OBJECTFIELDREFERENCE";
 	case OBJECTSETFIELDREFERENCE:
 		return "OBJECTSETFIELDREFERENCE";
+	case REAL:
+		return "REAL";
 	case INTEGER:
 		return "INTEGER";
 	case CSTRING:
@@ -9117,8 +9255,6 @@ const char* tokenAsString(int token) {
 		return "PrintableString";
 	case PRIVATE:
 		return "PRIVATE";
-	case REAL:
-		return "REAL";
 	case SEQUENCE:
 		return "SEQUENCE";
 	case SET:
@@ -9170,15 +9306,66 @@ const char* tokenAsString(int token) {
 	return result.c_str();
 }
 
-string getPath(const string& name) {
+string getPath(const char* name) {
 	string path;
 	if (!asndir.empty()) {
 		path += asndir;
 		path += DIR_SEPARATOR;
 	}
-	path += name;
+	if (name)
+		path += name;
 	return path;
 }
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOATOM
+#define NOGDI
+#define NOGDICAPMASKS
+#define NOMETAFILE
+#define NOMINMAX
+#define NOMSG
+#define NOOPENFILE
+#define NORASTEROPS
+#define NOSCROLL
+#define NOSOUND
+#define NOSYSMETRICS
+#define NOTEXTMETRIC
+#define NOWH
+#define NOCOMM
+#define NOKANJI
+#define NOCRYPT
+#define NOMCX
+#include <windows.h>
+static void getFilesinDirectory(const std::string& directory) {
+	HANDLE hFind;
+	WIN32_FIND_DATA data;
+	string asnfiles = directory + DIR_SEPARATOR + "*.asn";
+	hFind = FindFirstFile(asnfiles.c_str(), &data);
+	if (hFind != INVALID_HANDLE_VALUE) {
+		do {
+			const char* dot = strrchr(data.cFileName, '.');
+			if (strcmp(dot + 1, "asn") == 0)
+				files.push_back(data.cFileName);
+		} while (FindNextFile(hFind, &data));
+		FindClose(hFind);
+	}
+	string asn1files = directory + DIR_SEPARATOR + "*.asn1";
+	hFind = FindFirstFile(asn1files.c_str(), &data);
+	if (hFind != INVALID_HANDLE_VALUE) {
+		do {
+			const char* dot = strrchr(data.cFileName, '.');
+			if (strcmp(dot + 1, "asn1") == 0)
+				files.push_back(data.cFileName);
+		} while (FindNextFile(hFind, &data));
+		FindClose(hFind);
+	}
+	fileCount = files.size();
+}
+#else
+#endif
+
+
 /*
  * $Log: main.cxx,v $
  * Revision 1.27  2014/06/22 06:12:06  francisandre
