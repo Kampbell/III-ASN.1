@@ -9338,7 +9338,7 @@ string getPath(const char* name) {
 #define NOCRYPT
 #define NOMCX
 #include <windows.h>
-static void getFilesinDirectory(const std::string& directory) {
+static std::vector<std::string> readDirectory(const std::string &directory, const std::string &extension)
 	HANDLE hFind;
 	WIN32_FIND_DATA data;
 	string asnfiles = directory + DIR_SEPARATOR + "*.asn";
@@ -9364,6 +9364,44 @@ static void getFilesinDirectory(const std::string& directory) {
 	fileCount = files.size();
 }
 #else
+#include <dirent.h>
+#include <vector>
+#include <string>
+using namespace std;
+
+/**
+ *  * Read a directory listing into a vector of strings, filtered by file extension.
+ *   * Throws std::exception on error.
+ *    **/
+vector<string> readDirectory(const string &directory, const string &extension)
+{
+    vector<string> result;
+    string lcExtension( strToLower(extension) );
+	
+    DIR *dir;
+    struct dirent *ent;
+
+    if ((dir = opendir(directory.c_str())) == NULL) {
+        throw std::exception("readDirectory() - Unable to open directory.");
+    }
+
+    while ((ent = readdir(dir)) != NULL)
+    {
+        string entry( ent->d_name );
+        string lcEntry( strToLower(entry) );
+        
+        // Check extension matches (case insensitive)
+        size_t pos = lcEntry.rfind(lcExtension);
+        if (pos!=string::npos && pos==lcEntry.length()-lcExtension.length()) {
+            result.push_back( entry );
+        }
+    }
+
+    if (closedir(dir) != 0) {
+      	throw std::exception("readDirectory() - Unable to close directory.");
+    }
+
+   return result;
 #endif
 
 

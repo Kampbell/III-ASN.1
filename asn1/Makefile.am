@@ -26,7 +26,7 @@ AUTOMAKE_OPTIONS 	= dist-zip
 
 EXTRA_DIST		= ASN1.dsp ASN1.vcproj asn1_dll.dsp asn1_dll.vcproj dllmain.cxx asn1.dtf
 
-AM_CPPFLAGS		= @PIPEFLAG@ @DEBUGFLAG@
+AM_CPPFLAGS		= --std=c++11 @PIPEFLAG@ @DEBUGFLAG@
 
 # specify the header files that should be installed
 include_HEADERS 	= asn1.h AssocVector.h
