@@ -52,6 +52,7 @@ extern "C" {
 #endif
 
 #include <string>
+#include <stdexcept>
 #include "main.h"
 #include <boost/mem_fn.hpp>
 #include <boost/ref.hpp>
@@ -68,8 +69,8 @@ extern "C" {
 #include <iostream>
 #include <iomanip>
 #include <cstring>
+#include <cassert>
 #include <limits.h>
-#include <assert.h>
 
 
 #ifdef _WIN32
@@ -98,10 +99,11 @@ extern "C" {
 #  define IDDEBUG 0
 # endif /* ! defined YYDEBUG */
 #else
-int iddebug;
+extern int iddebug;
 #endif  /* ! defined IDDEBUG */
 
 
+using std::exception;
 using std::clog;
 using std::cerr;
 using std::binary_function;
@@ -9372,32 +9374,29 @@ using namespace std;
 vector<string> readDirectory(const string &directory, const string &extension)
 {
     vector<string> result;
-    string lcExtension( strToLower(extension) );
 	
     DIR *dir;
     struct dirent *ent;
 
     if ((dir = opendir(directory.c_str())) == NULL) {
-        throw std::exception("readDirectory() - Unable to open directory.");
+        throw runtime_error("readDirectory() - Unable to open directory.");
     }
 
     while ((ent = readdir(dir)) != NULL)
     {
         string entry( ent->d_name );
-        string lcEntry( strToLower(entry) );
-        
-        // Check extension matches (case insensitive)
-        size_t pos = lcEntry.rfind(lcExtension);
-        if (pos!=string::npos && pos==lcEntry.length()-lcExtension.length()) {
+        size_t pos = entry.rfind(extension);
+        if (pos!=string::npos && pos==entry.length()-extension.length()) {
             result.push_back( entry );
         }
     }
 
     if (closedir(dir) != 0) {
-      	throw std::exception("readDirectory() - Unable to close directory.");
+      	throw runtime_error("readDirectory() - Unable to close directory.");
     }
 
    return result;
+}
 #endif
 
 
