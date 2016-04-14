@@ -15,8 +15,8 @@
 #include <config.h>
 #endif
 
-#include "cxx/test1.h"
-#include "cxx/myhttp.h"
+#include "test1.h"
+#include "myhttp.h"
 #ifdef ASN1_HAS_IOSTREAM
 #include <iostream>
 #endif
