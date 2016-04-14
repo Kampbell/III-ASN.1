@@ -47,7 +47,7 @@
 #include <sstream>
 
 #include "main.h"
-#include "asn_grammar.hxx"
+#include "asn_grammar.h"
 
 
 

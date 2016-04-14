@@ -35,7 +35,7 @@
 
 #define YY_NEVER_INTERACTIVE 1
 
-#include "asn_ref_grammar.hxx"
+#include "asn_ref_grammar.h"
 
 #define FALSE 0
 #define TRUE  1

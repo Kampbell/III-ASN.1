@@ -24,21 +24,21 @@ AUTOMAKE_OPTIONS = nostdinc dist-zip
 
 EXTRA_DIST	= asnparser.dsp asnparser.vcproj unistd.h getopt.c\
 		  asn_grammar.y asn_lex.l asn_ref_grammar.y asn_ref_lex.l\
-		  main.cxx
+		  main.cxx IndentStream.cpp
 
 bin_PROGRAMS 	= asnparser
 
-noinst_HEADERS 	= main.h
+noinst_HEADERS 	= main.h IndentStream.h
 
-AM_CPPFLAGS 	= -iquote -I. -I$(top_builddir) @PIPEFLAG@ @DEBUGFLAG@
+AM_CPPFLAGS 	= -std=c++11 -iquote -I. -I$(top_builddir) @PIPEFLAG@ @DEBUGFLAG@
   
-asnparser_LDADD = asn_grammar.o asn_ref_grammar.o asn_lex.o asn_ref_lex.o main.o @LIBSTL@
+asnparser_LDADD = asn_grammar.o asn_ref_grammar.o asn_lex.o asn_ref_lex.o main.o IndentStream.o @LIBSTL@
 			
 asnparser_SOURCES = 
 
 CLEANFILES = asn_grammar.h asn_grammar.cxx asn_grammar.output \
              asn_ref_grammar.cxx asn_ref_grammar.h asn_ref_grammar.output\
-	     asn_lex.cxx asn_ref_lex.cxx 
+	     asn_lex.cxx asn_ref_lex.cxx asn_lex.h asn_ref_lex.h 
 
 	        
 asn_grammar.h: asn_grammar.y
@@ -51,26 +51,29 @@ asn_grammar.o: asn_grammar.cxx
 	$(COMPILE) -o asn_grammar.o -c $<
 
 asn_lex.cxx: asn_lex.l
-	flex -t $< > $@
+	flex -o $@ $< 
 	
 asn_lex.o: asn_lex.cxx
 	$(COMPILE) -o asn_lex.o -c $<
 
 asn_ref_grammar.cxx: asn_ref_grammar.y
 	@if [ ! -d ref ] ; then mkdir ref ; fi
-	bison -p id -t -v -d -o asn_ref_grammar $<
+	bison -t -v -d -o asn_ref_grammar $<
 	mv asn_ref_grammar asn_ref_grammar.cxx
 	
 asn_ref_grammar.o: asn_ref_grammar.cxx
 	$(COMPILE) -o asn_ref_grammar.o -c $<	
 
 asn_ref_lex.cxx: asn_ref_lex.l
-	flex -Pid -t $< > $@
+	flex --header-file=asn_ref_lex.h -P id -o $@ $<
  
 asn_ref_lex.o: asn_ref_lex.cxx
 	$(COMPILE) -o asn_ref_lex.o -c $<    
 
 main.o: main.cxx main.h asn_grammar.h
-	$(COMPILE) -o main.o -c $<
+	$(COMPILE) -o $@ -c $<
+				        
+IndentStream.o: IndentStream.cpp IndentStream.h
+	$(COMPILE) -o $@ -c $<
 				        
 asnparser_LDFLAGS = @LDFLAGS@

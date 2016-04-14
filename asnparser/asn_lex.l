@@ -41,7 +41,7 @@
  */
 
 #include "main.h"
-#include "asn_grammar.hxx"
+#include "asn_grammar.h"
 #include <ctype.h>
 
 
@@ -187,7 +187,7 @@ exit:
 %option reentrant 
 %option yylineno
 %option outfile="asn_lex.cxx"
-%option header-file="asn_lex.hxx"
+%option header-file="asn_lex.h"
 %option stack
 %option never-interactive
 

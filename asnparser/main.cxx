@@ -67,6 +67,7 @@ extern "C" {
 #include <iostream>
 #include <iomanip>
 #include <cstring>
+#include <limits.h>
 #include <assert.h>
 
 
@@ -78,9 +79,9 @@ extern "C" {
 
 #define IDDEBUG 1
 #define YYDEBUG 1
-#include "asn_grammar.hxx"
-#include "asn_lex.hxx"
-#include "asn_ref_lex.hxx"
+#include "asn_grammar.h"
+#include "asn_lex.h"
+#include "asn_ref_lex.h"
 
 
 

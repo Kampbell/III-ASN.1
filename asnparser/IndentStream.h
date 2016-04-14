@@ -13,6 +13,10 @@ using std::fill_n;
 using std::ostream;
 using std::ostreambuf_iterator;
 
+std::ostream& tab(std::ostream& stream);
+std::ostream& back(std::ostream& stream);
+std::ostream& bat(std::ostream& stream);
+
 
 class IndentBuffer : public streambuf {
 public:
