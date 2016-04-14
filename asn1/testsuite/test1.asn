@@ -1,0 +1,116 @@
+--
+-- Copyright (c) 2001 Institute for Information Industry, Taiwan, Republic of China 
+-- (http://www.iii.org.tw/iiia/ewelcome.htm)
+--
+-- Permission to copy, use, modify, sell and distribute this software
+-- is granted provided this copyright notice appears in all copies.
+-- This software is provided "as is" without express or implied
+-- warranty, and with no claim as to its suitability for any purpose.
+--
+
+TEST1 DEFINITIONS ::= BEGIN
+
+Choice1 ::= CHOICE {
+    name 	VisibleString,
+    nobody 	NULL
+}
+
+Choice2 ::= [2] CHOICE {
+    name 	VisibleString,
+    nobody 	NULL
+}
+
+Choice3 ::= [2] CHOICE {
+    name	[0]	VisibleString,
+    nobody	[1]	NULL
+}
+
+Choice4 ::= CHOICE {
+   f2	CHOICE {
+	   f3 BOOLEAN,
+	   f4 INTEGER
+   },
+   f1	NULL
+}
+
+S1 ::= SEQUENCE OF INTEGER
+
+S2 ::= SET OF INTEGER
+
+S3 ::= SEQUENCE {
+  age INTEGER,
+  single BOOLEAN
+}
+
+S4 ::= SEQUENCE {
+	name	VisibleString,
+	attrib	Choice4
+}
+
+END
+
+MyHTTP DEFINITIONS AUTOMATIC TAGS ::=
+BEGIN
+GetRequest ::= SEQUENCE {
+  header-only 	BOOLEAN  OPTIONAL,
+  lock		BOOLEAN  OPTIONAL,
+  accept-types	AcceptTypes  OPTIONAL,
+  url		Url,
+  ...
+}
+
+AcceptTypes::= SET {
+  standards BIT STRING {
+    html(0), 
+    plain-text(1),
+    gif(2),
+    jpeg(3)
+  } (SIZE(4)) OPTIONAL,
+  others SEQUENCE OF VisibleString (SIZE(4)) OPTIONAL
+}
+
+Url ::= VisibleString
+
+NumberStr01 ::=	NumericString (SIZE(1..16))
+
+PrintableStr1 ::= PrintableString
+
+VisibleStr1 ::= VisibleString
+
+IA5Str01 ::= IA5String (SIZE (6))
+IA5Str02 ::= IA5String (SIZE (5..20))
+IA5Str03 ::= IA5String (SIZE (0..8))
+IA5Str04 ::= IA5String
+IA5Str05 ::= IA5String (SIZE (0..7, ..., 8))
+
+IA5Str08 ::= IA5String (FROM ("0123456789#*,"))
+IA5Str09 ::= IA5String (FROM ("0123456789#*,ABCD"))
+IA5Str10 ::= IA5String (FROM ("ACGT")^SIZE(3))
+IA5Str11 ::= IA5String (FROM ("TF")) (SIZE(0..16))
+
+GeneralStr1 ::= GeneralString
+
+RejectProblem		 ::=		INTEGER
+{
+			general-unrecognizedPDU (0),
+			general-mistypedPDU (1),
+			general-badlyStructuredPDU (2),
+			invoke-duplicateInvocation (10),
+			invoke-unrecognizedOperation (11),
+			invoke-mistypedArgument (12),
+			invoke-resourceLimitation (13),
+			invoke-releaseInProgress (14),
+			invoke-unrecognizedLinkedId (15),
+			invoke-linkedResponseUnexpected (16),
+			invoke-unexpectedLinkedOperation (17),
+			returnResult-unrecognizedInvocation (20),
+			returnResult-resultResponseUnexpected (21),
+			returnResult-mistypedResult (22),
+			returnError-unrecognizedInvocation (30),
+			returnError-errorResponseUnexpected (31),
+			returnError-unrecognizedError (32),
+			returnError-unexpectedError (33),
+			returnError-mistypedParameter (34)
+}
+
+END
