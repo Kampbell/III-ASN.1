@@ -60,6 +60,7 @@ extern "C" {
 #include <boost/functional.hpp>
 #include <typeinfo>
 #include <algorithm>
+#include <vector>
 #include <numeric>
 #include <set>
 #include <sstream>
@@ -107,6 +108,7 @@ using std::binary_function;
 using std::binary_search;
 using std::endl;
 using std::ends;
+using std::vector;
 using std::ofstream;
 using std::streamsize;
 using std::stringstream;
@@ -233,8 +235,7 @@ static string shortenName(const string& name);
 static string makeIdentifierC(const string& identifier);
 static void str_replace(string& str, const char* src, const char* target, string::size_type pos = 0);
 static string getPath(const char* name = nullptr);
-static void getFilesinDirectory(const std::string& directory);
-
+static vector<string> readDirectory(const string& directory, const string& extension);
 
 /////////////////////////////////////////////////////////
 //
@@ -356,7 +357,11 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	if (!asndir.empty() && fileCount == 0) {
-		getFilesinDirectory(getPath());
+		vector<string> asns  = readDirectory(getPath(), "asn");
+		vector<string> asn1s = readDirectory(getPath(), "asn1");
+		copy( asns.begin(), asns.end(), back_inserter(files));
+		copy( asn1s.begin(), asn1s.end(), back_inserter(files));
+		fileCount = files.size();
 	}
 	else {
 		for (int no = optind; no < argc; ++no) {
@@ -9338,30 +9343,21 @@ string getPath(const char* name) {
 #define NOCRYPT
 #define NOMCX
 #include <windows.h>
-static std::vector<std::string> readDirectory(const std::string &directory, const std::string &extension)
+static vector<string> readDirectory(const string &directory, const string &extension) {
+    vector<string> result;
 	HANDLE hFind;
 	WIN32_FIND_DATA data;
-	string asnfiles = directory + DIR_SEPARATOR + "*.asn";
+	string asnfiles = directory + DIR_SEPARATOR + "*." + extension.c_str();
 	hFind = FindFirstFile(asnfiles.c_str(), &data);
 	if (hFind != INVALID_HANDLE_VALUE) {
 		do {
 			const char* dot = strrchr(data.cFileName, '.');
-			if (strcmp(dot + 1, "asn") == 0)
-				files.push_back(data.cFileName);
+			if (strcmp(dot + 1, extension.c_str()) == 0)
+				result.push_back(data.cFileName);
 		} while (FindNextFile(hFind, &data));
 		FindClose(hFind);
 	}
-	string asn1files = directory + DIR_SEPARATOR + "*.asn1";
-	hFind = FindFirstFile(asn1files.c_str(), &data);
-	if (hFind != INVALID_HANDLE_VALUE) {
-		do {
-			const char* dot = strrchr(data.cFileName, '.');
-			if (strcmp(dot + 1, "asn1") == 0)
-				files.push_back(data.cFileName);
-		} while (FindNextFile(hFind, &data));
-		FindClose(hFind);
-	}
-	fileCount = files.size();
+	return result;
 }
 #else
 #include <dirent.h>
