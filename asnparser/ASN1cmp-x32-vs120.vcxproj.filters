@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{0a1a5cca-7e9e-49ae-b64d-de4d31e65f4d}</UniqueIdentifier>
-      <Extensions>.cxx</Extensions>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{d41c7d0d-403c-4de1-a30a-4975ba6d6645}</UniqueIdentifier>
       <Extensions>.h</Extensions>
@@ -23,12 +19,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="getopt.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="csn\bug_001.cxx">
       <Filter>csn</Filter>
     </ClCompile>
@@ -44,14 +34,11 @@
     <ClCompile Include="asn_ref_lex.cxx">
       <Filter>out</Filter>
     </ClCompile>
-    <ClCompile Include="IndentStream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClCompile Include="main.cxx" />
+    <ClCompile Include="IndentStream.cpp" />
+    <ClCompile Include="getopt.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="main.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="unixstd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -73,6 +60,7 @@
     <ClInclude Include="IndentStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="main.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ASN.1.bnf" />
@@ -97,7 +85,9 @@
     <None Include="asn\Items.asn">
       <Filter>asn</Filter>
     </None>
-    <None Include="asn\Product.asn" />
+    <None Include="asn\Product.asn">
+      <Filter>asn</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Bison Include="asn_grammar.y">
