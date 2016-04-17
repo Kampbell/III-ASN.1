@@ -1,28 +1,31 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="asn1test.cpp" />
-    <ClCompile Include="cxx\myhttp.cxx">
+    <ClCompile Include="MyHTTP.cxx">
       <Filter>csn</Filter>
     </ClCompile>
-    <ClCompile Include="cxx\test1.cxx">
+    <ClCompile Include="TEST1.cxx">
       <Filter>csn</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asn1test.h" />
-    <ClInclude Include="cxx\myhttp.h">
+    <ClInclude Include="MyHTTP.h">
       <Filter>csn</Filter>
     </ClInclude>
-    <ClInclude Include="cxx\test1.h">
+    <ClInclude Include="TEST1.h">
       <Filter>csn</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="cxx\myhttp.inl">
+    <None Include="test1.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="MyHTTP.inl">
       <Filter>csn</Filter>
     </None>
-    <None Include="cxx\test1.inl">
+    <None Include="TEST1.inl">
       <Filter>csn</Filter>
     </None>
   </ItemGroup>
@@ -33,10 +36,5 @@
     <Filter Include="asn">
       <UniqueIdentifier>{5525f835-0719-423b-973b-d353f77e8926}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="test.asn">
-      <Filter>asn</Filter>
-    </CustomBuild>
   </ItemGroup>
 </Project>

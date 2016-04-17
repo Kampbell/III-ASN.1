@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{F012966D-7796-4562-8587-6ADF79466B8F}</ProjectGuid>
+    <ProjectGuid>{7EA4238C-ED43-40FE-81C8-63CABBB6215A}</ProjectGuid>
     <ProjectName>ASN1test</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -43,16 +43,18 @@
     <_ProjectFileVersion>11.0.50727.1</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>.\Debug\</OutDir>
-    <IntDir>.\Debug\</IntDir>
+    <OutDir>$(SolutionDir)bin\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <ExecutablePath>../../lib;$(ExecutablePath)</ExecutablePath>
     <TargetName>$(ProjectName)d</TargetName>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>.\Release\</OutDir>
-    <IntDir>.\Release\</IntDir>
+    <OutDir>$(SolutionDir)bin\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
@@ -82,13 +84,17 @@
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>../../lib/$(TargetFileName)</OutputFile>
+      <OutputFile>../../bin/$(TargetFileName)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>.\Debug/$(TargetName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>../../bin/$(TargetFileName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
+    <CustomBuildStep>
+      <Command>..\..\bin\ASN1cmpd -c -v test1.asn</Command>
+      <Outputs>MyHTTP.cxx;MyHTTP.inl;MyHTTP.h;TEST.cxx;TEST.inl;TEST.h;%(Outputs)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
@@ -118,38 +124,31 @@
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\Release/asn1test.exe</OutputFile>
+      <OutputFile>../../bin/$(TargetFileName)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>../../Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ProgramDatabaseFile>.\Release/asn1test.pdb</ProgramDatabaseFile>
+      <AdditionalLibraryDirectories>..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ProgramDatabaseFile>../../bin/$(TargetFileName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
+    <CustomBuildStep>
+      <Outputs>MyHTTP.cxx;MyHTTP.inl;MyHTTP.h;TEST.cxx;TEST.inl;TEST.h;%(Outputs)</Outputs>
+      <Command>..\..\bin\ASN1cmp -c -v test1.asn</Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="asn1test.cpp" />
-    <ClCompile Include="cxx\myhttp.cxx">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release;..;cxx;../..</AdditionalIncludeDirectories>
-    </ClCompile>
-    <ClCompile Include="cxx\test1.cxx">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release;..;cxx;../..;..\..</AdditionalIncludeDirectories>
-    </ClCompile>
+    <ClCompile Include="MyHTTP.cxx" />
+    <ClCompile Include="TEST1.cxx" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="test.asn">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\lib\ASN1cmpd -c -v -o csn test.asn
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cxx\myhttp.cxx;cxx\myhttp.inl;cxx\myhttp.h;cxx\test1.cxx;cxx\test1.inl;cxx\test1.h;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\Lib\ASN1cmp -c -v -o cxx test.asn
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cxx\myhttp.cxx;cxx\myhttp.inl;cxx\myhttp.h;cxx\test1.cxx;cxx\test1.inl;cxx\test1.h;%(Outputs)</Outputs>
-    </CustomBuild>
-    <None Include="cxx\myhttp.inl" />
-    <None Include="cxx\test1.inl" />
+    <None Include="MyHTTP.inl" />
+    <None Include="test1.asn" />
+    <None Include="TEST1.inl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asn1test.h" />
-    <ClInclude Include="cxx\myhttp.h" />
-    <ClInclude Include="cxx\test1.h" />
+    <ClInclude Include="MyHTTP.h" />
+    <ClInclude Include="TEST1.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\asnparser\ASN1cmp-x32-vs120.vcxproj">
