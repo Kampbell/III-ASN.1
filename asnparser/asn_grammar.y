@@ -63,6 +63,9 @@ static std::string * ConcatNames(std::string * s1, char c, std::string * s2) {
 #define YYDEBUG 1
 #define YYPRINT(a,b,c)
 
+extern int yydebug;
+extern int iddebug;
+
 #ifdef REENTRANT_PARSER
 extern int yylex(YYSTYPE* yylval_param, YYLTYPE* yyloc, yyscan_t scanner, ParserContext* context);
 extern int yyerror(YYLTYPE* yyloc, yyscan_t scanner, ParserContext* context, const char* msg);
@@ -72,10 +75,6 @@ void yyerror(const char* str);
 extern void yyrestart(FILE*);
 extern FILE * yyin;
 extern FILE * idin;
-extern int yydebug;
-extern int iddebug;
-
-
 #endif
 
 %}

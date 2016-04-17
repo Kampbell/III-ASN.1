@@ -99,7 +99,7 @@ extern "C" {
 #  define IDDEBUG 0
 # endif /* ! defined YYDEBUG */
 #else
-extern int iddebug;
+int iddebug;
 #endif  /* ! defined IDDEBUG */
 
 
