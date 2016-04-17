@@ -95,6 +95,10 @@
       <Command>
       </Command>
     </PreBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
@@ -147,10 +151,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="asn_grammar.hxx" />
-    <ClInclude Include="asn_lex.hxx" />
-    <ClInclude Include="asn_ref_grammar.hxx" />
-    <ClInclude Include="asn_ref_lex.hxx" />
+    <ClInclude Include="asn_grammar.h" />
+    <ClInclude Include="asn_lex.h" />
+    <ClInclude Include="asn_ref_grammar.h" />
+    <ClInclude Include="asn_ref_lex.h" />
     <ClInclude Include="csn\bug_001.h" />
     <ClInclude Include="IndentStream.h" />
     <ClInclude Include="main.h" />

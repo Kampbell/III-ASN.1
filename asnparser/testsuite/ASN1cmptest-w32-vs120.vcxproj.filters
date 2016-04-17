@@ -36,10 +36,10 @@
     <ClCompile Include="csn\ModuleTestTagsDistinct2.cxx">
       <Filter>csn</Filter>
     </ClCompile>
-    <ClCompile Include="csn\MyHTTP.cxx">
+    <ClCompile Include="csn\TEST.cxx">
       <Filter>csn</Filter>
     </ClCompile>
-    <ClCompile Include="csn\TEST.cxx">
+    <ClCompile Include="csn\MyHTTP.cxx">
       <Filter>csn</Filter>
     </ClCompile>
   </ItemGroup>
@@ -78,10 +78,10 @@
     <ClInclude Include="csn\ModuleTestTagsDistinct2.h">
       <Filter>csn</Filter>
     </ClInclude>
-    <ClInclude Include="csn\MyHTTP.h">
+    <ClInclude Include="csn\TEST.h">
       <Filter>csn</Filter>
     </ClInclude>
-    <ClInclude Include="csn\TEST.h">
+    <ClInclude Include="csn\MyHTTP.h">
       <Filter>csn</Filter>
     </ClInclude>
   </ItemGroup>
@@ -444,9 +444,6 @@
     <None Include="csn\ModuleTestTagsDistinct2.inl">
       <Filter>csn</Filter>
     </None>
-    <None Include="csn\MyHTTP.inl">
-      <Filter>csn</Filter>
-    </None>
     <None Include="asn\37-indirect-choice-OK.asn1-TODO">
       <Filter>asn</Filter>
     </None>
@@ -457,6 +454,9 @@
       <Filter>asn</Filter>
     </None>
     <None Include="csn\TEST.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\MyHTTP.inl">
       <Filter>csn</Filter>
     </None>
   </ItemGroup>

@@ -42,18 +42,6 @@
     <ClInclude Include="unixstd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="asn_grammar.hxx">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="asn_ref_grammar.hxx">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="asn_lex.hxx">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="asn_ref_lex.hxx">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="csn\bug_001.h">
       <Filter>csn</Filter>
     </ClInclude>
@@ -61,6 +49,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="main.h" />
+    <ClInclude Include="asn_grammar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="asn_lex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="asn_ref_grammar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="asn_ref_lex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ASN.1.bnf" />
