@@ -134,7 +134,8 @@ void ASN1CTest::test17_tags_OK() {
 		T1 i2(10);
 		assert(i1 == 12);
 		assert(i2 == 10);
-		T1 i3(i1 + i2);
+		T1 i3;
+		i3 = i1 + i2;
 		assert(i3 == 22);
 	}
 }
