@@ -1713,6 +1713,9 @@ TypePtr TypeBase::flattenThisType(TypePtr& self, const TypeBase&) {
 
 void TypeBase::generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) {
 	if (isPrimitiveType()&& !needGenInfo() ) {
+		hdr << "//7" << nl;
+		hdr << "// " << getIdentifier() << nl;
+		hdr << "//" << nl;
 		hdr << "typedef "<< getTypeName() << ' '<< getIdentifier() << ";" << nl << nl;
 	} else {
 		beginGenerateCplusplus(hdr, cxx, inl);
@@ -2115,6 +2118,9 @@ void DefinedType::resolveReference() const {
 
 void DefinedType::generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) {
 	if (constraints.empty()&& !hasNonStandardTag()) {
+		hdr << "//8" << nl;
+		hdr << "// " << getIdentifier() << nl;
+		hdr << "//" << nl;
 		hdr << "typedef " << getTypeName() << ' ' << getIdentifier() << ";" << nl;
 	} else {
 		TypeBase::generateCplusplus(hdr, cxx, inl);
@@ -5926,15 +5932,22 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 		hdr << "//" << nl;
 		hdr << "// Type forward declaration" << nl;
 		hdr << "//" << nl;
-		for (i = 0; i < types.size(); i++)
-			if (!types[i]->isPrimitiveType())
-				hdr << "class " << types[i]->getCppName() << ";" << endl;
+		for (i = 0; i < types.size(); i++) {
+			TypePtr type = types[i];
+			if (!type->isPrimitiveType())
+				hdr << "class " << type->getCppName() << ";" << endl;
+		}
 		
 		hdr << "//" << nl;
 		hdr << "// Object Class forward declaration" << nl;
 		hdr << "//" << nl;
-		for (i = 0; i < objectClasses.size(); ++i)
-			hdr << "class " << objectClasses[i]->getCppName() << ";" << endl;
+		for (i = 0; i < objectClasses.size(); ++i) {
+			ObjectClassBasePtr objectClass = objectClasses[i];
+			if (objectClass->getReferenceName() == "TYPE-IDENTIFIER") {
+				hdr << "typedef ASN1::TYPE_IDENTIFIER " << objectClass->getCppName() << ";" << endl;
+			} else 
+				hdr << "class " << objectClass->getCppName() << ";" << endl;
+		}
 		hdr << nl;
 
 
@@ -7334,6 +7347,8 @@ DefinedObjectClass::DefinedObjectClass(const string& nam, ObjectClassBase* ref)
 	: referenceName(nam), reference(ref) {
 	if (!ref) {
 		if (nam == "ABSTRACT-SYNTAX") {
+			ObjectClassBasePtr typeIdentifier = UsefulModule->findObjectClass(nam);
+			reference = typeIdentifier.get();
 		} else
 		if (nam == "TYPE-IDENTIFIER") {
 			ObjectClassBasePtr typeIdentifier = UsefulModule->findObjectClass(nam);

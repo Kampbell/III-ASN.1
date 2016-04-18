@@ -2072,18 +2072,12 @@ class DefaultSyntaxBuilder {
 class ObjectClassBase : public Printable {
   public:
 	ObjectClassBase() {};
-	ObjectClassBase(const string& nam) {
-		setName(nam);
-	}
+	ObjectClassBase(const string& nam) {		setName(nam);	}
 	virtual ~ObjectClassBase() {};
 
 	void setName(const string& nam);
-	virtual const string& getName() const {
-		return name;
-	}
-	virtual const string& getCppName() const {
-		return cppname;
-	}
+	virtual const string& getName() const {		return name;	}
+	virtual const string& getCppName() const {		return cppname;	}
 	virtual const string& getReferenceName() const = 0;
 
 	int getFieldToken(const char* fieldname) const;
@@ -2163,9 +2157,7 @@ class DefinedObjectClass : public ObjectClassBase {
 	~DefinedObjectClass() {}
 
 
-	virtual const string& getReferenceName() const {
-		return referenceName;
-	}
+	virtual const string& getReferenceName() const {		return referenceName;	}
 
 	ObjectClassBase* getReference();
 	const ObjectClassBase* getReference() const;
