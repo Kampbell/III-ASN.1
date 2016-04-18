@@ -57,6 +57,7 @@
     <ExecutablePath>$(SolutionDir)bin;$(ExecutablePath)</ExecutablePath>
     <LibraryPath>$(SolutionDir)lib;$(Poco)\lib;$(LibraryPath)</LibraryPath>
     <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
+    <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <CustomBuildStep>
@@ -142,13 +143,15 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
+      <ForceFileOutput>MultiplyDefinedSymbolOnly</ForceFileOutput>
     </Link>
     <PreBuildEvent>
-      <Command>..\bin\ASN1cmp -c -v -o csn asn/TEST.asn</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
     <CustomBuildStep>
       <Outputs>csn\MyHTTP.cxx;csn\MyHTTP.inl;csn\MyHTTP.h;csn\TEST.cxx;csn\TEST.inl;csn\TEST.h;%(Outputs)</Outputs>
-      <Command>..\..\bin\ASN1cmpd -c -v -o csn asn/TEST.asn</Command>
+      <Command>..\..\bin\ASN1cmp -c -v -o csn asn/TEST.asn</Command>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -298,7 +301,6 @@
     <None Include="csn\ModuleTestTagsDistinct2.inl" />
     <None Include="csn\MyHTTP.inl" />
     <None Include="csn\TEST.inl" />
-    <None Include="x" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ASN1CTest.h" />

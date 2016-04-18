@@ -166,10 +166,6 @@
       <Project>{cc4dce75-9957-4642-a86b-ea14dbcebf54}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\asnparser\ASN1cmp-x32-vs120.vcxproj">
-      <Project>{1eed4b13-2a75-4c49-a198-12f2a46f5944}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

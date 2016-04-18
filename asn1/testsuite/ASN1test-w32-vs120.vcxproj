@@ -150,18 +150,6 @@
     <ClInclude Include="MyHTTP.h" />
     <ClInclude Include="TEST1.h" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\asnparser\ASN1cmp-x32-vs120.vcxproj">
-      <Project>{1eed4b13-2a75-4c49-a198-12f2a46f5944}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <!--
-    <ProjectReference Include="..\ASN1dll-x32-vs120.vcxproj">
-      <Project>{6aa1bc61-0f68-4d2d-bd3e-aec4e2f2db8e}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    -->
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

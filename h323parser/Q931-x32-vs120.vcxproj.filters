@@ -30,17 +30,6 @@
     <ClCompile Include="Q931pdu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cxx\h323_messages.cxx">
-      <Filter>csn</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="H323.def">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="cxx\h323_messages.inl">
-      <Filter>csn</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="perattacher.h">
@@ -52,13 +41,5 @@
     <ClInclude Include="netmon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cxx\h323_messages.h">
-      <Filter>csn</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="h2250v4_new.asn">
-      <Filter>Source Files</Filter>
-    </CustomBuild>
   </ItemGroup>
 </Project>

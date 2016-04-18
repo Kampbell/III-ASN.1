@@ -86,7 +86,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="x" />
     <None Include="asn\00-empty-OK.asn1">
       <Filter>asn</Filter>
     </None>

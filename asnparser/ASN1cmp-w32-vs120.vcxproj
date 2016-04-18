@@ -141,11 +141,7 @@
     <ClCompile Include="asn_lex.cxx" />
     <ClCompile Include="asn_ref_grammar.cxx" />
     <ClCompile Include="asn_ref_lex.cxx" />
-    <ClCompile Include="csn\bug_001.cxx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="getopt.c" />
-    <ClCompile Include="IndentStream.cpp" />
     <ClCompile Include="main.cxx">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
     </ClCompile>
@@ -155,8 +151,6 @@
     <ClInclude Include="asn_lex.h" />
     <ClInclude Include="asn_ref_grammar.h" />
     <ClInclude Include="asn_ref_lex.h" />
-    <ClInclude Include="csn\bug_001.h" />
-    <ClInclude Include="IndentStream.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="unixstd.h" />
   </ItemGroup>
