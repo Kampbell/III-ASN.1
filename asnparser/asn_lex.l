@@ -287,28 +287,28 @@ exp ({integer}|{real})[eE]-?{integer}
 
 "/*" {
     BEGIN(multiline_comment);
-  }
+}
 <multiline_comment>"*/"  {
     BEGIN(INITIAL);
-  }
+}
 <multiline_comment>\n  {
     lineNumber++;
-  }
+}
 <multiline_comment>. {
 }
 
 "--" {
     BEGIN(comment_line);
-  }
+}
 
 <comment_line>"--"  {
     BEGIN(INITIAL);
-  }
+}
 
 <comment_line>\n  {
     lineNumber++;
     BEGIN(INITIAL);
-  }
+}
 
 <comment_line><<EOF>> {
     BEGIN(INITIAL);
