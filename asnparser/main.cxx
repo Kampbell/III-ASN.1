@@ -1711,21 +1711,6 @@ TypePtr TypeBase::flattenThisType(TypePtr& self, const TypeBase&) {
 }
 
 
-bool TypeBase::isChoice() const {
-	return false;
-}
-
-
-bool TypeBase::isParameterizedType() const {
-	return false;
-}
-
-
-bool TypeBase::isPrimitiveType() const {
-	return true;
-}
-
-
 void TypeBase::generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) {
 	if (isPrimitiveType()&& !needGenInfo() ) {
 		hdr << "typedef "<< getTypeName() << ' '<< getIdentifier() << ";" << nl << nl;
@@ -6085,8 +6070,8 @@ void ModuleDefinition::generateClassModule(ostream& hdr, ostream& cxxFile, ostre
 
 	for (i = 0; i < informationObjectSets.size(); ++i) {
 		InformationObjectSet& objSet = *informationObjectSets[i];
-		const string&name = makeIdentifierC(objSet.getName()),
-					 &className = makeIdentifierC(objSet.getObjectClass()->getReferenceName());
+		const string name = makeIdentifierC(objSet.getName());
+		const string className = makeIdentifierC(objSet.getObjectClass()->getReferenceName());
 
 		if (!objSet.hasParameters()) {
 			if (objSet.isExtendable())
@@ -6128,8 +6113,11 @@ void ModuleDefinition::generateClassModule(ostream& hdr, ostream& cxxFile, ostre
 
 		for (i = 0; i < informationObjectSets.size(); ++i) {
 			InformationObjectSet& objSet = *informationObjectSets[i];
-			if (!objSet.hasParameters())
-				hdr << makeIdentifierC(objSet.getObjectClass()->getName()) << " m_" << makeIdentifierC(objSet.getName()) << ";" << nl;
+			if (!objSet.hasParameters()) {
+			const string name = makeIdentifierC(objSet.getName());
+			const string className = makeIdentifierC(objSet.getObjectClass()->getReferenceName());
+				hdr << className << " m_" << name << ";" << nl;
+			}
 		}
 
 		hdr << bat << "}; // class Module\n" << nl;
@@ -9067,6 +9055,30 @@ ModuleDefinition* CreateModule(const char* name) {
 	ModuleDefinitionPtr mdp (new ModuleDefinition(name));
 	Modules.push_back(mdp);
 	return mdp.get();
+}
+
+std::ostream& tab(std::ostream& stream) {
+	IndentStream* pIndentStream = dynamic_cast<IndentStream*>(&stream);
+	if (pIndentStream != nullptr) {
+		pIndentStream->ib.tab();
+	}
+	return stream;
+}
+
+std::ostream& back(std::ostream& stream) {
+	IndentStream* pIndentStream = dynamic_cast<IndentStream*>(&stream);
+	if (pIndentStream != nullptr) {
+		pIndentStream->ib.back();
+	}
+	return stream;
+}
+
+std::ostream& bat(std::ostream& stream) {
+	IndentStream* pIndentStream = dynamic_cast<IndentStream*>(&stream);
+	if (pIndentStream != nullptr) {
+		pIndentStream->ib.bat();
+	}
+	return stream;
 }
 
 

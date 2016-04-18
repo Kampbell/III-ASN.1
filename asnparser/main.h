@@ -72,9 +72,13 @@ using std::map;
 using std::ostream;
 using std::auto_ptr;
 using std::stack;
+using std::clog;
+using std::endl;
+using std::streambuf;
+using std::fill_n;
+using std::ostream;
+using std::ostreambuf_iterator;
 using boost::shared_ptr;
-
-#include "IndentStream.h"
 
 #define REENTRANT_PARSER 1
 
@@ -113,6 +117,64 @@ class StdError {
 //
 //  intermediate structures from parser
 //
+
+std::ostream& tab(std::ostream& stream);
+std::ostream& back(std::ostream& stream);
+std::ostream& bat(std::ostream& stream);
+
+
+class IndentBuffer : public streambuf {
+public:
+	IndentBuffer(streambuf* sbuf) : _sbuf(sbuf), _count(0), _need(true) {}
+
+	int tab() const {
+		return _count;
+	}
+	void tab() {
+		_count += 1;
+	}
+	void back() {
+		if (_count > 0) _count -= 1; else clog << "back while count is 0" << endl;
+	}
+	void bat() {
+		if (_count > 0) _count -= 1; else clog << "bat while count is 0" << endl;
+	}
+
+protected:
+	virtual int_type overflow(int_type c) {
+
+		if (traits_type::eq_int_type(c, traits_type::eof()))
+			return _sbuf->sputc(c);
+
+		if (_need) {
+			fill_n(std::ostreambuf_iterator<char>(_sbuf), _count, '\t');
+			_need = false;
+		}
+
+		if (traits_type::eq_int_type(_sbuf->sputc(c), traits_type::eof()))
+			return traits_type::eof();
+
+		if (traits_type::eq_int_type(c, traits_type::to_char_type('\n')))
+			_need = true;
+
+		return traits_type::not_eof(c);
+	}
+
+	streambuf* _sbuf;
+	int _count;
+	bool _need;
+};
+
+class IndentStream : public std::ostream {
+  public:
+	IndentStream(std::ostream &os) : ib(os.rdbuf()), std::ostream(&ib) {};
+	friend std::ostream& tab(std::ostream& stream);
+	friend std::ostream& back(std::ostream& stream);
+	friend std::ostream& bat(std::ostream& stream);
+
+  private:
+	IndentBuffer ib;
+};
 
 typedef vector<string> StringList;
 
@@ -655,16 +717,17 @@ class TypeBase : public Printable {
 	const string& getClassNameString() const		{ return classNameString;	}
 	void setOuterClassName(const string& oname)		{ outerClassName = oname;	}
 	void setTemplatePrefix(const string& tname)		{ templatePrefix = tname;	}
-	bool isValueSetType() const {		return isvaluesettype;	}
+
+	bool isValueSetType() const						{ return isvaluesettype;	}
+	virtual bool isChoice() const					{ return false; }
+	virtual bool isParameterizedType() const		{ return false; }
+	virtual bool isPrimitiveType() const			{ return true; }
+	virtual bool isSequenceOfType() const			{ return false;	}
 
 	virtual void adjustIdentifier(bool);
 	virtual void flattenUsedTypes();
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
-	virtual bool isChoice() const;
-	virtual bool isParameterizedType() const;
-	virtual bool isPrimitiveType() const;
-	virtual bool isSequenceOfType() const {	return false;
-	}
+
 	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
 	virtual void generateForwardDecls(ostream& hdr);
 	virtual void generateOperators(ostream& hdr, ostream& cxx, const TypeBase& actualType);
@@ -2643,6 +2706,7 @@ class ObjectSetType : public TypeBase {
 	virtual const char * getAncestorClass() const;
 	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
 	virtual bool hasParameters() const;
+	bool isPrimitiveType() const {	return false; }
   private:
 	InformationObjectSetPtr objSet;
 };
