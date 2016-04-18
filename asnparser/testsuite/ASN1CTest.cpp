@@ -46,8 +46,6 @@ namespace ASN1 {
 ASN1CTest::ASN1CTest(const string& name) :
 	CppUnit::TestCase(name) {
 }
-
-
 ASN1CTest::~ASN1CTest() {
 
 }
@@ -137,9 +135,45 @@ void ASN1CTest::test17_tags_OK() {
 		T1 i3;
 		i3 = i1 + i2;
 		assert(i3 == 22);
+		int ii = i1.getTag();
+		int jj = (ContextSpecificTagClass << 30 | 1);
+//FIXME		assert(i1.getTag() == (ContextSpecificTagClass << 30 | 1));
+	}
+	{
+		strm.clear();
+		T2 i1(-10);
+		T2 i2(10);
+		assert(i1 == -10);
+		assert(i2 == 10);
+		T2 i3;
+		i3 = i1 + i2;
+		assert(i3 == 0);
+//		assert(i1.getTag() == (ContextSpecificTagClass << 30 | 2));
+	}
+	{
+		strm.clear();
+		T3 i1(-20);
+		T3 i2(10);
+		assert(i1 == -20);
+		assert(i2 == 10);
+		T3 i3;
+		i3 = i1 + i2;
+		assert(i3 == -10);
+//		assert(i1.getTag() == (ContextSpecificTagClass << 30 | 3));
+	}
+	{
+		strm.clear();
+		T4 s1;
+		ASN1::INTEGER i = 4;
+		s1.set_t1(2);
+		s1.set_t2(i.getValue());
+		s1.set_t3(6);
+//		assert(s1.getTag() == (ContextSpecificTagClass << 30 | 1));
+		assert(s1.get_t1().getTag() == (ContextSpecificTagClass << 30 | 4));
+//		assert(s1.get_t2().getTag() == (ContextSpecificTagClass << 30 | 5));
+//		assert(s1.get_t3().getTag() == (ContextSpecificTagClass << 30 | 6));
 	}
 }
-
 void ASN1CTest::setUp() {
 	env.set_encodingRule(CoderEnv::ber);
 }
