@@ -134,10 +134,16 @@ public:
 		_count += 1;
 	}
 	void back() {
-		if (_count > 0) _count -= 1; else clog << "back while count is 0" << endl;
+		if (_count > 0) 
+			_count -= 1; 
+		else 
+			clog << "back while count is 0" << endl;
 	}
 	void bat() {
-		if (_count > 0) _count -= 1; else clog << "bat while count is 0" << endl;
+		if (_count > 0) 
+			_count -= 1;
+		else 
+			clog << "bat while count is 0" << endl;
 	}
 
 protected:
