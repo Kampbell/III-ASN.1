@@ -156,6 +156,8 @@ hs_err_pid*
 **/csn/
 **/cxx/
 *.def
-/ipch
-/config.h.in
-/stamp-h1
+ipch
+config.h.in
+config/compile
+config/test-driver
+stamp-h1
