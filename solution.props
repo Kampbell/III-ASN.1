@@ -11,8 +11,8 @@
     <OpenSSL >C:\OpenSSL-Win64</OpenSSL>
   </PropertyGroup>
   <PropertyGroup Label="PropertySheets">
-    <IncludePath>$(SolutionDir)/asn1;$(Poco)\inc;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)/$(Configuration);$(Poco)\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)asn1;$(Poco)/inc;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)$(Configuration);$(Poco)/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

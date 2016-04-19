@@ -12,7 +12,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F012966D-7796-4562-8587-6ADF79466B8F}</ProjectGuid>
-    <ProjectName>ASN1test</ProjectName>
+    <ProjectName>testASN1cmp</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -60,7 +60,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <CustomBuildStep>
-      <Command>..\bin\ASN1cmpd -c -v -o csn -i asn</Command>
+      <Command>..\..\bin\ASN1cmpd -c -v -v -o csn -i asn</Command>
       <Outputs>csn\MyHTTP.cxx;csn\MyHTTP.inl;csn\MyHTTP.h;csn\TEST.cxx;csn\TEST.inl;csn\TEST.h;%(Outputs)</Outputs>
     </CustomBuildStep>
     <PropertyGroup>
@@ -148,7 +148,7 @@
     </PreBuildEvent>
     <CustomBuildStep>
       <Outputs>csn\MyHTTP.cxx;csn\MyHTTP.inl;csn\MyHTTP.h;csn\TEST.cxx;csn\TEST.inl;csn\TEST.h;%(Outputs)</Outputs>
-      <Command>..\bin\ASN1cmpd -c -v -o csn asn/TEST.asn</Command>
+      <Command>..\..\bin\ASN1cmpd -c -v -o csn asn/TEST.asn</Command>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -158,6 +158,17 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="ASN1TestSuite.cpp" />
+    <ClCompile Include="csn\ModuleTestEmpty.cxx" />
+    <ClCompile Include="csn\ModuleTestEnum1.cxx" />
+    <ClCompile Include="csn\ModuleTestInt1.cxx" />
+    <ClCompile Include="csn\ModuleTestMiscComplex.cxx" />
+    <ClCompile Include="csn\ModuleTestSequence.cxx" />
+    <ClCompile Include="csn\ModuleTestSetAndUntaggedChoice.cxx" />
+    <ClCompile Include="csn\ModuleTestSetSimple.cxx" />
+    <ClCompile Include="csn\ModuleTestTags.cxx" />
+    <ClCompile Include="csn\ModuleTestTags3.cxx" />
+    <ClCompile Include="csn\ModuleTestTagsDistinct2.cxx" />
+    <ClCompile Include="csn\MyHTTP.cxx" />
     <ClCompile Include="csn\TEST.cxx" />
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="TESTTest.cpp" />
@@ -277,6 +288,16 @@
     <None Include="asn\35-set-choice-OK.asn1" />
     <None Include="asn\37-indirect-choice-OK.asn1" />
     <None Include="asn\TEST.asn" />
+    <None Include="csn\ModuleTestEnum1.inl" />
+    <None Include="csn\ModuleTestInt1.inl" />
+    <None Include="csn\ModuleTestMiscComplex.inl" />
+    <None Include="csn\ModuleTestSequence.inl" />
+    <None Include="csn\ModuleTestSetAndUntaggedChoice.inl" />
+    <None Include="csn\ModuleTestSetSimple.inl" />
+    <None Include="csn\ModuleTestTags.inl" />
+    <None Include="csn\ModuleTestTags3.inl" />
+    <None Include="csn\ModuleTestTagsDistinct2.inl" />
+    <None Include="csn\MyHTTP.inl" />
     <None Include="csn\TEST.inl" />
     <None Include="x" />
   </ItemGroup>
@@ -284,6 +305,17 @@
     <ClInclude Include="ASN1CTest.h" />
     <ClInclude Include="asn1test.h" />
     <ClInclude Include="ASN1TestSuite.h" />
+    <ClInclude Include="csn\ModuleTestEmpty.h" />
+    <ClInclude Include="csn\ModuleTestEnum1.h" />
+    <ClInclude Include="csn\ModuleTestInt1.h" />
+    <ClInclude Include="csn\ModuleTestMiscComplex.h" />
+    <ClInclude Include="csn\ModuleTestSequence.h" />
+    <ClInclude Include="csn\ModuleTestSetAndUntaggedChoice.h" />
+    <ClInclude Include="csn\ModuleTestSetSimple.h" />
+    <ClInclude Include="csn\ModuleTestTags.h" />
+    <ClInclude Include="csn\ModuleTestTags3.h" />
+    <ClInclude Include="csn\ModuleTestTagsDistinct2.h" />
+    <ClInclude Include="csn\MyHTTP.h" />
     <ClInclude Include="csn\TEST.h" />
     <ClInclude Include="TESTTest.h" />
   </ItemGroup>

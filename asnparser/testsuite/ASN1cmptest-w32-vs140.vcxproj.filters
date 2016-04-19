@@ -1,0 +1,467 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="ASN1CTest.cpp" />
+    <ClCompile Include="asn1test.cpp" />
+    <ClCompile Include="ASN1TestSuite.cpp" />
+    <ClCompile Include="csn\TEST.cxx" />
+    <ClCompile Include="Driver.cpp" />
+    <ClCompile Include="TESTTest.cpp" />
+    <ClCompile Include="csn\ModuleTestEmpty.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestEnum1.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestInt1.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestMiscComplex.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestSequence.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestSetAndUntaggedChoice.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestSetSimple.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestTags.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestTags3.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestTagsDistinct2.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\MyHTTP.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ASN1CTest.h" />
+    <ClInclude Include="asn1test.h" />
+    <ClInclude Include="ASN1TestSuite.h" />
+    <ClInclude Include="csn\TEST.h" />
+    <ClInclude Include="TESTTest.h" />
+    <ClInclude Include="csn\ModuleTestEmpty.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestEnum1.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestInt1.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestMiscComplex.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestSequence.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestSetAndUntaggedChoice.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestSetSimple.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestTags.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestTags3.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestTagsDistinct2.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\MyHTTP.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="asn1c\TEST.asn" />
+    <None Include="asn\TEST.asn" />
+    <None Include="csn\TEST.inl" />
+    <None Include="x" />
+    <None Include="asn1c\00-empty-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\01-empty-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn\03-enum-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn\07-int-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\10-int-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\13-resolver-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\14-resolver-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\16-constraint-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn\17-tags-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\18-class-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\19-param-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\20-constr-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\21-tags-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn\22-tags-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\23-bits-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\24-sequence-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\25-misc-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn\29-tags-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn\30-set-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\31-set-of-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\32-sequence-of-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\33-misc-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\34-class-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\35-set-choice-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\37-indirect-choice-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\38-comments-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\39-sequence-of-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\41-int-optional-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\42-real-life-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\43-recursion-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\44-choice-in-sequence-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\46-redefine-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\47-set-ext-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\48-real-life-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\49-real-life-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\50-constraint-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\55-components-of-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\57-components-of-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\58-param-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\59-choice-extended-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\60-any-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\62-any-OK.asn1-TODO">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\64-oid-constr-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\65-multi-tag-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\66-ref-simple-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\67-embedded-choice-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\68-enum-default-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\69-reserved-words-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\70-xer-test-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\72-same-names-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\73-circular-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\74-int-enum-constraints-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\77-str-default-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\79-constrained-by-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\80-chardefs-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\81-type-default-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\82-with-comps-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\83-with-comps-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\84-param-tags-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\85-comments-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\86-atags-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\87-old-syntax-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\88-integer-enum-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\89-bit-string-enum-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\90-cond-int-type-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\91-cond-int-blessSize-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\92-circular-loops-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\93-asn1c-controls-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\94-set-optionals-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\95-choice-per-order-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\96-type-identifier-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\98-attribute-class-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\99-class-sample-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\100-class-ref-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\104-param-1-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\105-param-2-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\106-param-constr-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\107-param-constr-2-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\108-param-constr-3-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\110-param-3-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\112-param-class-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\112-param-class-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\115-bit-string-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\117-real-constraint-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\118-per-constraint-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\119-per-strings-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\121-empty-imports-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\122-pattern-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\123-valueassignment-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\124-multiconstraint-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\125-bitstring-constraint-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\126-per-extensions-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\127-per-long-OK.asn1-FAILED">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\129-enum-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\130-enum-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\131-per-empty-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\132-per-choice-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\133-per-constraints-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn1c\134-per-long-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn\00-empty-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\01-empty-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn1c\03-enum-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn1c\07-int-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn1c\17-tags-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn1c\22-tags-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\24-sequence-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn1c\29-tags-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn1c\30-set-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\32-sequence-of-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\33-misc-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\35-set-choice-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\37-indirect-choice-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="csn\ModuleTestEnum1.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestInt1.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestMiscComplex.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestSequence.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestSetAndUntaggedChoice.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestSetSimple.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestTags.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestTags3.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestTagsDistinct2.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\MyHTTP.inl">
+      <Filter>csn</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="asn">
+      <UniqueIdentifier>{72d09d5e-37fc-4611-bc4c-a51de1b8752a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="asn1c">
+      <UniqueIdentifier>{cb833f19-09bf-437c-9960-3364847ac1b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="csn">
+      <UniqueIdentifier>{835a4d71-3ad1-4302-9149-e6e63f824af6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -12,7 +12,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7EA4238C-ED43-40FE-81C8-63CABBB6215A}</ProjectGuid>
-    <ProjectName>ASN1test</ProjectName>
+    <ProjectName>testASN1</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
