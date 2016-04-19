@@ -1714,7 +1714,7 @@ TypePtr TypeBase::flattenThisType(TypePtr& self, const TypeBase&) {
 void TypeBase::generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) {
 	if (isPrimitiveType()&& !needGenInfo() ) {
 		hdr << "//7" << nl;
-		hdr << "// " << getIdentifier() << nl;
+		hdr << "// " << getName() << nl;
 		hdr << "//" << nl;
 		hdr << "typedef "<< getTypeName() << ' '<< getIdentifier() << ";" << nl << nl;
 	} else {
@@ -1764,11 +1764,11 @@ void TypeBase::beginGenerateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) 
 		classNameString = shortClassNameString;
 
 	hdr << "//1" << nl
-		<< "// " << getClassNameString() << nl
+		<< "// " << getName() << nl
 		<< "//" << nl;
 
 	cxx << "//1" << nl
-		<< "// " << getClassNameString() << nl
+		<< "// " << getName() << nl
 		<< "//" << nl;
 
 	generateForwardDecls(hdr);
@@ -2119,7 +2119,7 @@ void DefinedType::resolveReference() const {
 void DefinedType::generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) {
 	if (constraints.empty()&& !hasNonStandardTag()) {
 		hdr << "//8" << nl;
-		hdr << "// " << getIdentifier() << nl;
+		hdr << "// " << getName() << nl;
 		hdr << "//" << nl;
 		hdr << "typedef " << getTypeName() << ' ' << getIdentifier() << ";" << nl;
 	} else {
@@ -2368,7 +2368,6 @@ const char * IntegerType::getAncestorClass() const {
 }
 
 void IntegerType::generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) {
-	hdr << tab;
 	if (!allowedValues.empty()) {
 		beginGenerateCplusplus(hdr, cxx, inl);
 
@@ -2381,8 +2380,8 @@ void IntegerType::generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) {
 		}
 
 		// generate enumerations and complete the constructor implementation
-		hdr << tab;
 		hdr << "enum NamedNumber {" << nl;
+		hdr << tab;
 
 
 		int prevNum = -1;
@@ -2422,7 +2421,6 @@ void IntegerType::generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) {
 		}
 		*/
 	}
-	hdr << bat;
 }
 
 void IntegerType::generateInfo(const TypeBase* type, ostream& hdr , ostream& cxx) {
@@ -2495,7 +2493,6 @@ void IntegerType::generateConstructors(ostream& hdr, ostream& , ostream& ) {
 }
 
 void IntegerType::generateOperators(ostream& hdr, ostream& cxx, const TypeBase& actualType) {
-	hdr << tab;
 
 	if (!allowedValues.empty()) {
 		hdr << getIdentifier() << "(NamedNumber v, const void* info =&theInfo) : Inherited(v, info) {}" << nl;
@@ -2505,7 +2502,6 @@ void IntegerType::generateOperators(ostream& hdr, ostream& cxx, const TypeBase& 
 
 		hdr << "operator NamedNumber() const { return NamedNumber(getValue()); }\n" << nl;
 	}
-	hdr << bat;
 }
 
 
@@ -2801,8 +2797,6 @@ int BitStringType::getToken() const {
 }
 
 void BitStringType::generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) {
-	hdr << tab;
-
 	if (!allowedBits.empty()) {
 		beginGenerateCplusplus(hdr, cxx, inl);
 
@@ -2832,7 +2826,6 @@ void BitStringType::generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) 
 		endGenerateCplusplus(hdr, cxx, inl);
 	} else
 		TypeBase::generateCplusplus(hdr, cxx, inl);
-	hdr << bat;
 }
 
 void BitStringType::generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx) {
@@ -6029,10 +6022,9 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 			if (!inlFile.Open(dpath, "", ".inl"))
 				return;
 
-			// if this define is generated - do_accept() in cxx file does not find inline function
+// if this define is generated - do_accept() in cxx file does not find inline function
 //      inlFile << "#if !defined( " << cppModuleName << "_CXX)&& !defined(NO_"
-			inlFile << "#if !defined(NO_"
-					<<  toUpper(getFileName()) << "_INLINES)" << nl;
+			inlFile << "#if !defined(NO_" <<  cppModuleName << "_INLINES)" << nl;
 
 			if (!useReinterpretCast.empty()) {
 				// Workaround for compilers (e.g. VAC++5/AiX),
