@@ -29,7 +29,7 @@ EXTRA_DIST		= ASN1.dsp ASN1.vcproj asn1_dll.dsp asn1_dll.vcproj dllmain.cxx asn1
 AM_CPPFLAGS		= @PIPEFLAG@ @DEBUGFLAG@
 
 # specify the header files that should be installed
-include_HEADERS 	= asn1.h AssocVector.h
+include_HEADERS 	= asn1.h AssocVector.h Platform.h Platform_POSIX.h Platform_WIN32.h asn1_useful.h 
 
 #specify the header files used only when building the library
 noinst_HEADERS 		= ios_helper.h

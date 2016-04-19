@@ -3256,6 +3256,13 @@ namespace ASN1 {
     //! \param length reference to decoded length
     //! \return true if decoded correctly
     bool decodeLength(unsigned lower, unsigned upper, unsigned & len);
+    //dts
+    void reset(const char* first, const char* last, CoderEnv* coder = NULL, bool isAligned = true) {
+        beginPosition = first;
+        endPosition = last;
+        bitOffset = 8;
+        alignedFlag = isAligned;
+    }
 
     virtual VISIT_SEQ_RESULT preVisitExtensionRoots(SEQUENCE& value);
     virtual VISIT_SEQ_RESULT visitExtensionRoot(SEQUENCE& value, int index, int optional_id);
