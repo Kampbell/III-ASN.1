@@ -36,6 +36,7 @@ dnl RANLIB LDFLAGS CFLAGS CXXFLAGS CPPFLAGS from that file, otherwise
 dnl use AC_PROG_CXX and AC_PROG_RANLIB to find a suitable setting.
 dnl
 
+AC_PROG_RANLIB
 
 III_CROSS_TOOLS
 
@@ -265,6 +266,27 @@ AC_SUBST(ASNPARSER)
 dnl
 dnl 
 dnl 
+AC_ARG_ENABLE(shared,
+[  --enable-shared     Turn on -fPIC],
+[shared="${enableval}"],[shared=no])
+
+
+if test "x${shared}" = xyes ; then
+CXXFLAGS="${CXXFLAGS} -fPIC"
+else
+CXXFLAGS="${CXXFLAGS}"
+fi
+
+AC_ARG_ENABLE(optimizations,
+[  --enable-optimizations     Turn on optimizations],
+[optimizations="${enableval}"],[optimizations=no])
+
+
+if test "x${optimizations}" = xyes ; then
+CXXFLAGS="${CXXFLAGS} -O2"
+else
+CXXFLAGS="${CXXFLAGS} -O0"
+fi
 
 AC_ARG_ENABLE(debug,
 [  --enable-debug     Turn on debugging],
@@ -272,7 +294,7 @@ AC_ARG_ENABLE(debug,
 
 
 if test "x${debug}" = xyes ; then
-CXXFLAGS="-g"
+CXXFLAGS="${CXXFLAGS} -g -ggdb"
 DEBUGFLAG="-D_DEBUG"
 else
 DEBUGFLAG="-DNDEBUG"

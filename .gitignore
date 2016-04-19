@@ -170,7 +170,8 @@ hs_err_pid*
 **/cxx/
 **/csn/
 *.def
-/autom4te.cache
-/ipch
-/config.h.in
-/stamp-h1
+autom4te.cache
+config.h.in
+config/compile
+config/test-driver
+stamp-h1
