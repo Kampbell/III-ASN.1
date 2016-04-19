@@ -471,7 +471,7 @@ extern FILE * idin;
     unsigned tagNumber;
   } tagv;
 }
-%printer { fprintf (yyoutput, "'%d'", $$); } <ival>
+%printer { fprintf (yyoutput, "'%lld'", $$); } <ival>
 %printer { if ($$ != NULL) fprintf (yyoutput, "'%s'", $$->c_str()); } <sval>
 %printer { if ($$ != NULL) fprintf (yyoutput, "'%s'", $$->getName().c_str()); } <tval> <vval> <objt> <para> <symb> <fspc> <objc> <ocft>
 
