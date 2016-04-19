@@ -1387,6 +1387,7 @@ namespace ASN1 {
     Constrained_OCTET_STRING(Itr first, Itr last) :
         OCTET_STRING(&theInfo)  { assign(first, last); }
 
+    Constrained_OCTET_STRING(const ASN1_STD vector<char>& other, const void* info = &theInfo) : OCTET_STRING(other, info) {}
     Constrained_OCTET_STRING(const ASN1_STD vector<char>& other) : OCTET_STRING(other, &theInfo) {}
 
 //    Constrained_OCTET_STRING(const Constrained_OCTET_STRING & other) ;
@@ -1397,7 +1398,7 @@ namespace ASN1 {
     }
 
     Constrained_OCTET_STRING & operator=(const ASN1_STD string & str) {
-      assign((const char*)(str.begin()), (const char*)(str.end()));
+      assign((str.begin()), (str.end()));
       return *this;
     }
 
@@ -2550,37 +2551,37 @@ namespace ASN1 {
       clear();
       insert(begin(), first, last);
     }
-    iterator                begin() { return iterator(container.begin());   }
-    const_iterator          begin() const { return const_iterator(container.begin());}
-    iterator                end() { return iterator(container.end());}
-    const_iterator          end() const { return const_iterator(container.end());}
+    iterator                begin()			{ return iterator(container.begin());   }
+    const_iterator          begin() const	{ return const_iterator(container.begin());}
+    iterator                end()			{ return iterator(container.end());}
+    const_iterator          end() const		{ return const_iterator(container.end());}
 
-    reverse_iterator        rbegin() { return reverse_iterator(end());}
-    const_reverse_iterator  rbegin() const { return const_reverse_iterator(end());}
-    reverse_iterator        rend()   { return reverse_iterator(begin());}
-    const_reverse_iterator  rend()   const { return const_reverse_iterator(begin());}
+    reverse_iterator        rbegin()		{ return reverse_iterator(container.end());}
+    const_reverse_iterator  rbegin() const	{ return const_reverse_iterator(container.end());}
+    reverse_iterator        rend()			{ return reverse_iterator(container.begin());}
+    const_reverse_iterator  rend()   const	{ return const_reverse_iterator(container.begin());}
 
-    void resize(size_type sz) { Inherited::resize(sz); }
+    void resize(size_type sz)				{ Inherited::resize(sz); }
 
-    void resize(size_type sz, const T& c ) {
-      if (sz < size()) container.resize(sz, c);
+	void resize(size_type sz, reference c ) {
+      if (sz < size()) container.resize(sz, &c);
       else insert(end(), sz-size(), c);
     }
-    reference         operator[] (size_type n) { return *static_cast<T*>(container.operator[](n));}
-    const_reference   operator[] (size_type n)  const{ return *static_cast<const T*>(container.operator[](n));}
-    reference         at(size_type n) { return *static_cast<T*>(container.at(n));}
-    const_reference   at(size_type n) const { return *static_cast<const T*>(container.at(n));}
-    reference         front() { return *static_cast<T*>(container.front());}
-    const_reference   front() const { return *static_cast<const T*>(container.front());}
-    reference         back() { return *static_cast<T*>(container.back());}
-    const_reference   back() const { return *static_cast<const T*>(container.back());}
-    void push_back(const T& x) { container.push_back( x.clone() );}
+	reference         operator[] (size_type n)			{ return *static_cast<T*>(container.operator[](n));}
+    const_reference   operator[] (size_type n)  const	{ return *static_cast<const T*>(container.operator[](n));}
+    reference         at(size_type n)					{ return *static_cast<T*>(container.at(n));}
+    const_reference   at(size_type n) const				{ return *static_cast<const T*>(container.at(n));}
+    reference         front()							{ return *static_cast<T*>(container.front());}
+    const_reference   front() const						{ return *static_cast<const T*>(container.front());}
+    reference         back()							{ return *static_cast<T*>(container.back());}
+    const_reference   back() const						{ return *static_cast<const T*>(container.back());}
+    void push_back(const T& x)							{ container.push_back( x.clone() );}
     /**
      * Takes the ownership of the object pointed by \c x,
      * and insert it to the back of this object.
      */
-    void push_back(pointer x) { container.push_back(x);}
-    void pop_back() { clean(--end()); container.pop_back();}
+    void push_back(pointer x)							{ container.push_back(x);}
+    void pop_back()										{ clean(--end()); container.pop_back();}
 #ifdef has_push_front
     void push_front(const T& x) { container.push_front(x.clone());}
     /**
@@ -2647,14 +2648,17 @@ namespace ASN1 {
     }
     SEQUENCE_OF<T, Constraint>* clone() const { return static_cast<SEQUENCE_OF<T, Constraint>*>(do_clone()); }
 
-    void remove(const_reference x)
-    { remove_if(ASN1_STD bind2nd(ASN1_STD equal_to<T>(),x));  }
+	void remove(const_reference x)
+	{
+		remove_if(ASN1_STD bind2nd(ASN1_STD equal_to<T>(), x));
+	}
 
     template <class Predicate>
     void remove_if(Predicate pred)
     {
-      Container::iterator k = ASN1_STD stable_partition(begin(), end(), ASN1_STD not1(UnaryPredicate<Predicate>(pred)));
-      erase(k, end());
+		Container::iterator k;
+		k = ASN1_STD stable_partition(begin(), end(), ASN1_STD not1(UnaryPredicate<Predicate>(pred)));
+		erase(k, end());
     }
 
     void unique()
@@ -2668,7 +2672,8 @@ namespace ASN1 {
       iterator k, first, last = end();
       k = first = begin();
       while (++first != last)
-        if (!pr(*k, *first))
+//		  if (!pr(*k, *first))
+		  if (!pr(&*k, &*first))
           if (++k != first)
             ASN1_STD swap(*first, *k);
       erase(iterator(++k), end());
@@ -2685,7 +2690,7 @@ namespace ASN1 {
     static const InfoType theInfo;
     static bool equal_type(const ASN1::AbstractData& type)
     {return type.info() == reinterpret_cast<const ASN1::AbstractData::InfoType*>(&theInfo);}
-	const T& get_type() const;// { return *static_cast<type::const_pointer>(fields[0]); }
+//	const T& get_type() const { return *static_cast<type::const_pointer>(fields[0]); }
 
   private:
     void clean(iterator i)  { delete &*i; }
