@@ -1,4 +1,4 @@
 aclocal -I config
-automake
+automake -a -f
 autoconf
 
