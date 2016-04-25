@@ -229,7 +229,7 @@ bool AVNEncoder::do_visit(const AbstractString& value)
 
 bool AVNEncoder::do_visit(const UTF8String& value)
 {
-  ASN1_STD vector<char> tmp;
+  octets tmp;
   tmp.resize(value.size()*2+1, 0);
   int len = wcstombs(&*tmp.begin(), &*value.begin(), value.size());
   if (len != -1)
@@ -254,7 +254,7 @@ bool AVNEncoder::do_visit(const UTF8String& value)
 
 bool AVNEncoder::do_visit(const BMPString& value)
 {
-  ASN1_STD vector<char> tmp;
+  octets tmp;
   tmp.resize(value.size()*2+1, 0);
   int len = wcstombs(&*tmp.begin(), &*value.begin(), value.size());
   if (len != -1)
@@ -505,7 +505,7 @@ bool AVNPrinter::do_visit(const AbstractString& value)
 
 bool AVNPrinter::do_visit(const UTF8String& value)
 {
-  ASN1_STD vector<char> tmp;
+  octets tmp;
   tmp.resize(value.size()*2+1, 0);
   int len = wcstombs(&*tmp.begin(), &*value.begin(), value.size());
   if (len != -1)
@@ -529,7 +529,7 @@ bool AVNPrinter::do_visit(const UTF8String& value)
 
 bool AVNPrinter::do_visit(const BMPString& value)
 {
-  ASN1_STD vector<char> tmp;
+  octets tmp;
   tmp.resize(value.size()*2+1, 0);
   int len = wcstombs(&*tmp.begin(), &*value.begin(), value.size());
   if (len != -1)

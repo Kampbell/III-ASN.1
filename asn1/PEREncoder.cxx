@@ -46,7 +46,7 @@ namespace ASN1 {
 
 unsigned CountBits(UINT_TYPE range);
 
-void PEREncoder::encodeBitMap(const ASN1_STD vector<char>& bitData, unsigned nBits)
+void PEREncoder::encodeBitMap(const octets& bitData, unsigned nBits)
 {
   int idx = 0;
   unsigned bitsLeft = nBits;
@@ -134,7 +134,7 @@ bool PEREncoder::do_visit(const RELATIVE_OID& value)
 {
   // X.691 Section 23
 
-  ASN1_STD vector<char> eObjId;
+  octets eObjId;
   value.encodeCommon(eObjId);
   if (!encodeLength(eObjId.size(), 0, 255))
     return false;
@@ -148,7 +148,7 @@ bool PEREncoder::do_visit(const OBJECT_IDENTIFIER& value)
 {
   // X.691 Section 23
 
-  ASN1_STD vector<char> eObjId;
+  octets eObjId;
   value.encodeCommon(eObjId);
   if (!encodeLength(eObjId.size(), 0, 255))
     return false;

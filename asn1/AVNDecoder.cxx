@@ -299,7 +299,7 @@ struct is_space_or_newline
   bool operator()(char c) { return c == ' ' || c == '\n'; }
 };
 
-bool get_from_string(ASN1_STD string& str0, ASN1_STD vector<char>& value, unsigned int& totalBits, int base)
+bool get_from_string(ASN1_STD string& str0, octets& value, unsigned int& totalBits, int base)
 {
   assert(base == 16 || base == 2);
 
@@ -329,17 +329,17 @@ bool get_from_string(ASN1_STD string& str0, ASN1_STD vector<char>& value, unsign
   return true;
 }
 
-inline bool get_from_bstring(ASN1_STD string& str, ASN1_STD vector<char>& value, unsigned int& totalBits)
+inline bool get_from_bstring(ASN1_STD string& str, octets& value, unsigned int& totalBits)
 {
   return get_from_string(str, value, totalBits, 2);
 }
 
-inline bool get_from_hstring(ASN1_STD string& str, ASN1_STD vector<char>& value, unsigned int& totalBits)
+inline bool get_from_hstring(ASN1_STD string& str, octets& value, unsigned int& totalBits)
 {
   return get_from_string(str, value, totalBits, 16);
 }
 
-bool get_value_from(ASN1_STD istream& strm, ASN1_STD vector<char>& value, unsigned int& totalBits)
+bool get_value_from(ASN1_STD istream& strm, octets& value, unsigned int& totalBits)
 {
   char c;
   if (strm >> c)

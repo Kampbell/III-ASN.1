@@ -566,7 +566,7 @@ bool BERDecoder::do_visit(UTCTime& value) {
 	if(len == 0)
 		return true;
 
-	ASN1_STD vector<char> block(len+1, '\0');
+	octets block(len+1, '\0');
 	if (decodeBlock(&*block.begin(), len) == len) {
 		value.set(&*block.begin());
 		return true;
@@ -582,7 +582,7 @@ bool BERDecoder::do_visit(GeneralizedTime& value) {
 	if(len == 0)
 		return true;
 
-	ASN1_STD vector<char> block(len+1, '\0');
+	octets block(len+1, '\0');
 	if (decodeBlock(&*block.begin(), len) == len) {
 		value.set(&*block.begin());
 		return true;

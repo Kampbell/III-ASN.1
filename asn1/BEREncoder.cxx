@@ -125,13 +125,13 @@ private:
     return true;
   }
   bool do_visit(const RELATIVE_OID& value) {
-    ASN1_STD vector<char> dummy;
+    octets dummy;
     value.encodeCommon(dummy);
     length += dummy.size();
     return true;
   }
   bool do_visit(const OBJECT_IDENTIFIER& value) {
-    ASN1_STD vector<char> dummy;
+    octets dummy;
     value.encodeCommon(dummy);
     length += dummy.size();
     return true;
@@ -270,7 +270,7 @@ bool BEREncoder::do_visit(const ENUMERATED& value)
 bool BEREncoder::do_visit(const RELATIVE_OID& value)
 {
   encodeHeader(value);
-  ASN1_STD vector<char> data;
+  octets data;
   value.encodeCommon(data);
   if(data.size())
     encodeBlock(&data.front(), data.size());
@@ -280,7 +280,7 @@ bool BEREncoder::do_visit(const RELATIVE_OID& value)
 bool BEREncoder::do_visit(const OBJECT_IDENTIFIER& value)
 {
   encodeHeader(value);
-  ASN1_STD vector<char> data;
+  octets data;
   value.encodeCommon(data);
   if(data.size())
     encodeBlock(&data.front(), data.size());

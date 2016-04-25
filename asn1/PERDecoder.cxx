@@ -50,7 +50,7 @@ static unsigned MaximumStringSize = 16*1024;
 
 extern unsigned CountBits(UINT_TYPE range);
 
-bool PERDecoder::decodeBitMap(ASN1_STD vector<char>& bitData, unsigned nBit)
+bool PERDecoder::decodeBitMap(octets& bitData, unsigned nBit)
 {
   unsigned theBits;
   int idx = 0;
@@ -471,7 +471,7 @@ bool PERDecoder::do_visit(UTCTime& value)
   unsigned len;
   if (decodeLength(0, INT_MAX, len))
   {
-    ASN1_STD vector<char> data(len);
+    octets data(len);
     if (decodeBlock(&data[0], len))
     {
       value.set(&data[0]);
@@ -486,7 +486,7 @@ bool PERDecoder::do_visit(GeneralizedTime& value)
   unsigned len;
   if (decodeLength(0, INT_MAX, len))
   {
-    ASN1_STD vector<char> data(len);
+    octets data(len);
     if (decodeBlock(&data[0], len))
     {
       value.set(&data[0]);

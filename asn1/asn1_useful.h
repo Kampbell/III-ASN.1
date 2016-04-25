@@ -90,10 +90,10 @@ public:
     {
         return *static_cast<octet_aligned::pointer>(setSelection(octet_aligned::eid, ASN1::AbstractData::create( &octet_aligned::value_type::theInfo)));
     }
-    octet_aligned::reference select_octet_aligned (const ASN1_STD vector<char>& v) { return select_octet_aligned() = v; }
+    octet_aligned::reference select_octet_aligned (const octets& v) { return select_octet_aligned() = v; }
     bool octet_aligned_isSelected() const { return currentSelection() == octet_aligned::eid; }
 
-    EXTERNAL_encoding(octet_aligned::Id id, const ASN1_STD vector<char>& v)
+    EXTERNAL_encoding(octet_aligned::Id id, const octets& v)
        : Inherited(&theInfo, id, new octet_aligned::value_type(v)) {}
 
     class arbitrary

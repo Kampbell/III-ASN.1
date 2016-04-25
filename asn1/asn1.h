@@ -1,3 +1,4 @@
+// *INDENT-OFF*
 /*
  * asn1.h
  *
@@ -153,6 +154,7 @@
 #include <time.h>
 #include <limits.h>
 #include <cstring>
+#include <initializer_list>
 
 #ifdef ASN_USE_LONG
 
@@ -215,6 +217,10 @@ namespace ASN1 {
 /////////////////////////////////////////////////////////////////////////////
 
 namespace ASN1 {
+
+	// Critical types
+	typedef char octet;
+	typedef std::vector<ASN1::octet>	octets;
 
   class Visitor;
   class ConstVistor;
@@ -962,7 +968,8 @@ namespace ASN1 {
   class ASN1_API ENUMERATED : public AbstractData
   {
   protected:
-    ENUMERATED(const void* info);
+	  ENUMERATED(const void* info);
+	  ENUMERATED(int value, const void* info);
   public:
     ENUMERATED(const ENUMERATED& that);
     ENUMERATED& operator = (const ENUMERATED& that);
@@ -1060,7 +1067,7 @@ namespace ASN1 {
     { value.assign(first, last); }
 
     bool decodeCommon(const char* data, unsigned dataLen);
-    void encodeCommon(ASN1_STD vector<char> & eObjId) const;
+    void encodeCommon(octets & eObjId) const;
 
     // comparison operators
     bool operator == (const RELATIVE_OID& rhs) const { return value == rhs.value; }
@@ -1098,8 +1105,9 @@ namespace ASN1 {
       : AbstractData(info),value(first, last)
       { }
 
-    OBJECT_IDENTIFIER(const OBJECT_IDENTIFIER & other);
+    explicit OBJECT_IDENTIFIER(const OBJECT_IDENTIFIER & other);
     OBJECT_IDENTIFIER(unsigned nelem, .../*list of unsigned*/);
+    OBJECT_IDENTIFIER(const std::initializer_list<int>& list);
     OBJECT_IDENTIFIER & operator=(const OBJECT_IDENTIFIER & other)
     {
       // extensibility and tags are not to be assigned,
@@ -1118,18 +1126,19 @@ namespace ASN1 {
 
     unsigned levels() const { return (unsigned)value.size(); }
     const unsigned operator[](unsigned idx) const { return value[idx]; }
-    void append(unsigned arcValue) { value.push_back(arcValue); }
+	OBJECT_IDENTIFIER& append(unsigned arcValue) { value.push_back(arcValue); return *this; }
     void trim(unsigned levels = 1) { value.erase(value.end()-levels, value.end()); }
 
-    void assign(unsigned nelem, ... /*list of unsigned*/);
-    void assign(unsigned nelem, va_list lst);
+    OBJECT_IDENTIFIER& assign(unsigned nelem, ... /*list of unsigned*/);
+    OBJECT_IDENTIFIER& assign(unsigned nelem, va_list lst);
+    OBJECT_IDENTIFIER& assign(const std::initializer_list<int>& list);
 
     template <class InputIterator>
     void assign(InputIterator first, InputIterator last)
     { value.assign(first, last); }
 
     bool decodeCommon(const char* data, unsigned dataLen);
-    void encodeCommon(ASN1_STD vector<char> & eObjId) const;
+    void encodeCommon(octets & eObjId) const;
 
     // comparison operators
     bool operator == (const OBJECT_IDENTIFIER& rhs) const { return value == rhs.value; }
@@ -1158,13 +1167,9 @@ namespace ASN1 {
   protected:
     BIT_STRING(const void* info);
   public:
-    BIT_STRING() : ConstrainedObject(&theInfo) {}
+	BIT_STRING();
     BIT_STRING(const BIT_STRING & other);
-    BIT_STRING & operator=(const BIT_STRING & other) {
-      bitData = other.bitData;
-      totalBits = other.totalBits;
-      return *this;
-    }
+	BIT_STRING & operator=(const BIT_STRING & other);
 
     bool isValid() const { return size() >= (unsigned)getLowerLimit() && (getConstraintType() != FixedConstraint || size() <= getUpperLimit()); }
     bool isStrictlyValid() const { return size() >= (unsigned)getLowerLimit() && size() <= getUpperLimit(); }
@@ -1195,7 +1200,7 @@ namespace ASN1 {
       totalBits = nBits;
     }
 
-    const ASN1_STD vector<char>& getData() const{
+    const octets& getData() const{
       return bitData;
     }
 
@@ -1251,7 +1256,7 @@ namespace ASN1 {
     virtual bool do_accept(ConstVisitor&) const;
 
     unsigned totalBits;
-    ASN1_STD vector<char> bitData;
+    octets bitData;
   };
 
   struct EmptyConstraint {
@@ -1307,9 +1312,9 @@ namespace ASN1 {
 
   /** Class for ASN Octet String type.
    */
-  class ASN1_API OCTET_STRING : public ConstrainedObject, public ASN1_STD vector<char>
+  class ASN1_API OCTET_STRING : public ConstrainedObject, public octets
   {
-    typedef ASN1_STD vector<char> ContainerType;
+    typedef octets ContainerType;
   protected:
     OCTET_STRING(const void* info) : ConstrainedObject(info) {}
   public:
@@ -1326,7 +1331,7 @@ namespace ASN1 {
     template <class Itr>
     OCTET_STRING(Itr first, Itr last)
        : ConstrainedObject(&theInfo),ContainerType(first, last) {}
-    OCTET_STRING(const ASN1_STD vector<char>& other, const void* info = &theInfo)
+    OCTET_STRING(const octets& other, const void* info = &theInfo)
        : ConstrainedObject(info), ContainerType(other) {}
 
     OCTET_STRING(const OCTET_STRING & other)
@@ -1337,7 +1342,7 @@ namespace ASN1 {
       return *this;
     }
 
-    OCTET_STRING & operator = (const ASN1_STD vector<char>& other) {
+    OCTET_STRING & operator = (const octets& other) {
       assign(other.begin(), other.end());
       return *this;
     }
@@ -1387,12 +1392,12 @@ namespace ASN1 {
     Constrained_OCTET_STRING(Itr first, Itr last) :
         OCTET_STRING(&theInfo)  { assign(first, last); }
 
-    Constrained_OCTET_STRING(const ASN1_STD vector<char>& other, const void* info = &theInfo) : OCTET_STRING(other, info) {}
-    Constrained_OCTET_STRING(const ASN1_STD vector<char>& other) : OCTET_STRING(other, &theInfo) {}
+    Constrained_OCTET_STRING(const octets& other, const void* info = &theInfo) : OCTET_STRING(other, info) {}
+    Constrained_OCTET_STRING(const octets& other) : OCTET_STRING(other, &theInfo) {}
 
 //    Constrained_OCTET_STRING(const Constrained_OCTET_STRING & other) ;
 
-    Constrained_OCTET_STRING & operator = (const ASN1_STD vector<char>& other) {
+    Constrained_OCTET_STRING & operator = (const octets& other) {
       assign(other.begin(), other.end());
       return *this;
     }
@@ -1407,9 +1412,9 @@ namespace ASN1 {
       return *this;
     }
 
-    Constrained_OCTET_STRING * clone() const { return static_cast<Constrained_OCTET_STRING*>(OCTET_STRING::clone());}
-    static AbstractData* create();
-    void swap(Constrained_OCTET_STRING& other) { OCTET_STRING::swap(other); }
+    Constrained_OCTET_STRING * clone() const	{ return static_cast<Constrained_OCTET_STRING*>(OCTET_STRING::clone());}
+    static AbstractData* create()				{ return new Constrained_OCTET_STRING<Constraint>(&theInfo); }
+    void swap(Constrained_OCTET_STRING& other)	{ OCTET_STRING::swap(other); }
 
     static const InfoType theInfo;
     static bool equal_type(const ASN1::AbstractData& type)
@@ -2128,135 +2133,129 @@ namespace ASN1 {
 
   /** Class for ASN Sequence type.
    */
-  class ASN1_API SEQUENCE : public AbstractData
-  {
+  class ASN1_API SEQUENCE : public AbstractData  {
   public:
-    enum {
-      AUTOMATIC_TAG,
-      EXPLICIT_TAG,
-      IMPLICIT_TAG
-    };
+	  enum {
+		  AUTOMATIC_TAG,
+		  EXPLICIT_TAG,
+		  IMPLICIT_TAG
+	  };
 
-    SEQUENCE(const SEQUENCE & other);
-    ~SEQUENCE();
-    SEQUENCE & operator=(const SEQUENCE & other);
-    SEQUENCE * clone() const { return static_cast<SEQUENCE*>(do_clone()); }
-    void swap(SEQUENCE& other);
+	  SEQUENCE(const SEQUENCE & other);
+	  ~SEQUENCE();
+	  SEQUENCE & operator=(const SEQUENCE & other);
+	  SEQUENCE * clone() const { return static_cast<SEQUENCE*>(do_clone()); }
+	  void swap(SEQUENCE& other);
 
-    /**
-     *  Returns the pointer to the component of the SEQUENCE at position \c pos.
-     */
-    AbstractData* getField(unsigned pos) {
-      assert(pos < fields.size());
-      return fields[pos];
-    }
-    const AbstractData* getField(unsigned pos) const {
-      assert(pos < fields.size());
-      return fields[pos];
-    }
+	  /**
+	   *  Returns the pointer to the component of the SEQUENCE at position \c pos.
+	   */
+	  AbstractData* getField(unsigned pos) {
+		  assert(pos < fields.size());
+		  return fields[pos];
+	  }
+	  const AbstractData* getField(unsigned pos) const {
+		  assert(pos < fields.size());
+		  return fields[pos];
+	  }
 
-    unsigned getFieldTag(unsigned pos) const {
-      assert(pos < fields.size());
-      if(info()->tags == 0) // Automatic Tags
-        return unsigned(ContextSpecificTagClass<<30) |  pos;
+	  unsigned getFieldTag(unsigned pos) const {
+		  assert(pos < fields.size());
+		  if (info()->tags == 0) // Automatic Tags
+			  return unsigned(ContextSpecificTagClass << 30) | pos;
 
 #ifndef old_code
-      return (info()->tags != static_cast<const void*>(&defaultTag)) ? info()->tags[pos] : 0;
+		  return (info()->tags != static_cast<const void*>(&defaultTag)) ? info()->tags[pos] : 0;
 #else
-      return static_cast<const AbstractData::InfoType*>(info()->fieldInfos[pos])->tag;
+		  return static_cast<const AbstractData::InfoType*>(info()->fieldInfos[pos])->tag;
 #endif
-    }
+	  }
 
-    bool extendable() const { return info()->extendableFlag; }
-    /**
-     * Makes an OPTIONAL field present.
-     *
-     * @param opt The index to the OPTIONAL field
-     * @param pos The position of the OPTIONAL field
-     */
-    void includeOptionalField(unsigned opt, unsigned pos);
-    /**
-     * Tests the presence of an OPTIONAL field.
-     *
-     * @param opt The index to the OPTIONAL field
-     */
-    bool hasOptionalField(unsigned opt) const;
-    /**
-     * Makes an OPTIONAL field absence.
-     *
-     * @param opt The index to the OPTIONAL field
-     */
-    void removeOptionalField(unsigned opt);
+	  bool extendable() const { return info()->extendableFlag; }
+	  /**
+	   * Makes an OPTIONAL field present.
+	   *
+	   * @param opt The index to the OPTIONAL field
+	   * @param pos The position of the OPTIONAL field
+	   */
+	  void includeOptionalField(unsigned opt, unsigned pos);
+	  /**
+	   * Tests the presence of an OPTIONAL field.
+	   *
+	   * @param opt The index to the OPTIONAL field
+	   */
+	  bool hasOptionalField(unsigned opt) const;
+	  /**
+	   * Makes an OPTIONAL field absence.
+	   *
+	   * @param opt The index to the OPTIONAL field
+	   */
+	  void removeOptionalField(unsigned opt);
 
-    static AbstractData* create(const void*);
+	  static AbstractData* create(const void*);
 
-    class ASN1_API FieldVector : public ASN1_STD vector<AbstractData*>
-    {
-    public:
-      FieldVector(){};
-      ~FieldVector();
-      FieldVector(const FieldVector& other);
-    private:
-      FieldVector& operator = (const FieldVector& other);
-    };
+	  class ASN1_API FieldVector : public ASN1_STD vector<AbstractData*>
+	  {
+	  public:
+		  FieldVector(){};
+		  ~FieldVector();
+		  FieldVector(const FieldVector& other);
+	  private:
+		  FieldVector& operator = (const FieldVector& other);
+	  };
 
   protected:
-    SEQUENCE(const void* info);
+	  SEQUENCE(const void* info);
 
-    enum
-    {
-      mandatory_ = -1
-    };
-    struct ASN1_API BitMap
-    {
-      BitMap() : totalBits(0) {}
-      unsigned size() const { return totalBits;}
-      void resize(unsigned nBits);
-      bool operator [] (unsigned bit) const;
-      void set(unsigned bit);
-      void clear(unsigned bit);
-      void swap(BitMap& other);
-      unsigned totalBits;
-      ASN1_STD vector<char> bitData;
-    };
+	  enum							{ mandatory_ = -1	  };
+	  struct ASN1_API BitMap {
+		  BitMap() : totalBits(0) {}
+		  unsigned size() const { return totalBits; }
+		  void resize(unsigned nBits);
+		  bool operator [] (unsigned bit) const;
+		  void set(unsigned bit);
+		  void clear(unsigned bit);
+		  void swap(BitMap& other);
+		  unsigned totalBits;
+		  octets bitData;
+	  };
 
-    FieldVector fields;
-    BitMap optionMap;
-    BitMap extensionMap;
+	  FieldVector fields;
+	  BitMap optionMap;
+	  BitMap extensionMap;
 
-    static const unsigned defaultTag;
+	  static const unsigned defaultTag;
 
-    struct InfoType
-    {
-      CreateFun create;
-      unsigned tag;
-      const void* parent_info;
-      bool extendableFlag;
-      const void** fieldInfos;
-      int* ids;
-      unsigned numFields;
-      unsigned knownExtensions;
-      unsigned numOptional;
-      const char* nonOptionalExtensions;
-      const unsigned* tags;
-      const char** names;
-    };
+	  struct InfoType {
+		  CreateFun create;
+		  unsigned tag;
+		  const void* parent_info;
+		  bool extendableFlag;
+		  const void** fieldInfos;
+		  int* ids;
+		  unsigned numFields;
+		  unsigned knownExtensions;
+		  unsigned numOptional;
+		  const char* nonOptionalExtensions;
+		  const unsigned* tags;
+		  const char** names;
+	  };
 
   private:
-    friend class Visitor;
-    friend class ConstVisitor;
-    friend class PEREncoder;
-    friend class PERDecoder;
+	  friend class Visitor;
+	  friend class ConstVisitor;
+	  friend class PEREncoder;
+	  friend class PERDecoder;
 
-    virtual INT_TYPE do_compare(const AbstractData& other) const;
-    virtual AbstractData* do_clone() const ;
-    virtual bool do_accept(ConstVisitor&) const;
+	  virtual INT_TYPE do_compare(const AbstractData& other) const;
+	  virtual AbstractData* do_clone() const;
+	  virtual bool do_accept(ConstVisitor&) const;
 
-    const InfoType* info() const { return static_cast<const InfoType*>(info_);}
+	  const InfoType* info() const { return static_cast<const InfoType*>(info_); }
   protected:
-    virtual bool do_accept(Visitor&);
+	  virtual bool do_accept(Visitor&);
   public:
-    const char* getFieldName(int i) const { return info()->names[i]; }
+	  const char* getFieldName(int i) const { return info()->names[i]; }
   };
 
   /** Class for ASN set type.
@@ -2269,458 +2268,446 @@ namespace ASN1 {
     SET(const void* info) : SEQUENCE(info) {  }
   };
 
-  /** Class for ASN SEQUENCE type.
+  /** Base class for ASN SEQUENCE type.
    */
-  class ASN1_API SEQUENCE_OF_Base : public ConstrainedObject
-  {
+  class ASN1_API SEQUENCE_OF_Base : public ConstrainedObject  {
   public:
-    typedef ASN1_STD vector<AbstractData*> Container;
+	  typedef ASN1_STD vector<AbstractData*> Container;
 
   protected:
-    SEQUENCE_OF_Base(const void*);
+	  SEQUENCE_OF_Base(const void*);
   public:
-    ~SEQUENCE_OF_Base() { clear();}
-    SEQUENCE_OF_Base(const SEQUENCE_OF_Base & other);
-    SEQUENCE_OF_Base & operator=(const SEQUENCE_OF_Base & other);
+	  ~SEQUENCE_OF_Base() { clear(); }
+	  SEQUENCE_OF_Base(const SEQUENCE_OF_Base & other);
+	  SEQUENCE_OF_Base & operator=(const SEQUENCE_OF_Base & other);
 
-    typedef Container::iterator iterator;
-    typedef Container::const_iterator const_iterator;
+	  typedef Container::iterator iterator;
+	  typedef Container::const_iterator const_iterator;
 
-    iterator begin()  { return container.begin(); }
-    iterator end()  { return container.end(); }
-    const_iterator begin() const { return container.begin(); }
-    const_iterator end() const { return container.end(); }
-    void resize(Container::size_type size);
-    void push_back(AbstractData* obj) { container.push_back(obj);}
-    void erase(iterator first, iterator last);
-    Container::size_type  size() const { return container.size(); }
-    Container::size_type  max_size() const { return container.max_size(); }
-    Container::size_type  capacity() const { return container.capacity(); }
-    void reserve(Container::size_type n) { container.reserve(n); }
-    bool empty() const { return container.empty(); }
-    void clear();
+	  iterator begin()  { return container.begin(); }
+	  iterator end()  { return container.end(); }
+	  const_iterator begin() const { return container.begin(); }
+	  const_iterator end() const { return container.end(); }
+	  void resize(Container::size_type size);
+	  void push_back(AbstractData* obj) { container.push_back(obj); }
+	  void erase(iterator first, iterator last);
+	  Container::size_type  size() const { return container.size(); }
+	  Container::size_type  max_size() const { return container.max_size(); }
+	  Container::size_type  capacity() const { return container.capacity(); }
+	  void reserve(Container::size_type n) { container.reserve(n); }
+	  bool empty() const { return container.empty(); }
+	  void clear();
 
-    bool isValid() const;
-    bool isStrictlyValid() const;
+	  bool isValid() const;
+	  bool isStrictlyValid() const;
 
-    AbstractData * createElement() const {
-      const AbstractData::InfoType* elementInfo =
-        static_cast<const AbstractData::InfoType*>(static_cast<const InfoType*>(info_)->elementInfo);
-      return elementInfo->create(elementInfo);
-    }
+	  AbstractData * createElement() const {
+		  const AbstractData::InfoType* elementInfo =
+			  static_cast<const AbstractData::InfoType*>(static_cast<const InfoType*>(info_)->elementInfo);
+		  return elementInfo->create(elementInfo);
+	  }
 
-    static AbstractData* create(const void* info);
-    struct InfoType
-    {
-      CreateFun create;
-      unsigned tag;
-      const void* parent_info;
-      unsigned type;
-      INT_TYPE lowerLimit;
-      UINT_TYPE upperLimit;
-      const void* elementInfo;
-    };
+	  static AbstractData* create(const void* info);
+	  struct InfoType
+	  {
+		  CreateFun create;
+		  unsigned tag;
+		  const void* parent_info;
+		  unsigned type;
+		  INT_TYPE lowerLimit;
+		  UINT_TYPE upperLimit;
+		  const void* elementInfo;
+	  };
 
   protected:
-    void insert(iterator position, Container::size_type n, const AbstractData& x);
-    void insert(iterator position, const_iterator first, const_iterator last);
+	  void insert(iterator position, Container::size_type n, const AbstractData& x);
+	  void insert(iterator position, const_iterator first, const_iterator last);
 
-    Container container;
-    virtual AbstractData* do_clone() const;
+	  Container container;
+	  virtual AbstractData* do_clone() const;
 
-    struct create_from_ptr
-    {
-      AbstractData* operator() (const AbstractData* obj) { return obj->clone(); }
-    };
+	  struct create_from_ptr {
+		  AbstractData* operator() (const AbstractData* obj) { return obj->clone(); }
+	  };
 
   private:
-    virtual INT_TYPE do_compare(const AbstractData& other) const;
-    virtual bool do_accept(Visitor&);
-    virtual bool do_accept(ConstVisitor&) const;
+	  virtual INT_TYPE do_compare(const AbstractData& other) const;
+	  virtual bool do_accept(Visitor&);
+	  virtual bool do_accept(ConstVisitor&) const;
 
-    struct create_from0
-    {
-      const AbstractData& object;
-      create_from0(const AbstractData& obj) : object(obj){}
-      AbstractData* operator ()() const { return object.clone(); }
-    };
+	  struct create_from0 {
+		  const AbstractData& object;
+		  create_from0(const AbstractData& obj) : object(obj){}
+		  AbstractData* operator ()() const { return object.clone(); }
+	  };
   };
 
+  /** Base class for ASN SEQUENCE type.
+   */
   template <class T, class Constraint = EmptyConstraint>
-  class SEQUENCE_OF : public SEQUENCE_OF_Base
-  {
-    typedef SEQUENCE_OF_Base Inherited;
+  class SEQUENCE_OF : public SEQUENCE_OF_Base  {
+	  typedef SEQUENCE_OF_Base Inherited;
   protected:
-    typedef Inherited::InfoType InfoType;
+	  typedef Inherited::InfoType InfoType;
   public:
-    typedef T&                          reference;
-    typedef const T&                    const_reference;
-    typedef T                           value_type;
-    typedef value_type*                 pointer;
-    typedef const value_type*           const_pointer;
-    typedef Container::size_type        size_type;
-    typedef Container::difference_type  difference_type;
+	  typedef T&                          reference;
+	  typedef const T&                    const_reference;
+	  typedef T                           value_type;
+	  typedef value_type*                 pointer;
+	  typedef const value_type*           const_pointer;
+	  typedef Container::size_type        size_type;
+	  typedef Container::difference_type  difference_type;
 
 #if defined(HP_aCC_RW)
-    typedef ASN1_STD random_access_iterator<value_type> my_iterator_traits;
-    typedef ASN1_STD random_access_iterator<const value_type> my_const_iterator_traits;
+	  typedef ASN1_STD random_access_iterator<value_type> my_iterator_traits;
+	  typedef ASN1_STD random_access_iterator<const value_type> my_const_iterator_traits;
 #else
-    typedef ASN1_STD iterator<ASN1_STD random_access_iterator_tag, value_type> my_iterator_traits;
-    typedef ASN1_STD iterator<ASN1_STD random_access_iterator_tag, const value_type> my_const_iterator_traits;
+	  typedef ASN1_STD iterator<ASN1_STD random_access_iterator_tag, value_type> my_iterator_traits;
+	  typedef ASN1_STD iterator<ASN1_STD random_access_iterator_tag, const value_type> my_const_iterator_traits;
 #endif
 
   public:
-    class iterator : public my_iterator_traits
-    {
-    public:
-      typedef T           value_type;
-      typedef T&          reference;
-      typedef value_type* pointer;
-      typedef Container::difference_type difference_type;
+	  class iterator : public my_iterator_traits  {
+	  public:
+		  typedef T           value_type;
+		  typedef T&          reference;
+		  typedef value_type* pointer;
+		  typedef Container::difference_type difference_type;
 
-      iterator() {}
-      iterator(Container::iterator i) : itsIter(i) {}
-      Container::iterator base() const { return itsIter; }
+		  iterator() {}
+		  iterator(Container::iterator i) : itsIter(i) {}
+		  Container::iterator base() const { return itsIter; }
 
-      reference operator*() const {return *static_cast<pointer>(*itsIter);}
-      pointer operator->() const {return static_cast<pointer>(*itsIter);}
-      reference operator[](difference_type n) const {return *static_cast<pointer>(*itsIter[n]);}
+		  reference operator*() const { return *static_cast<pointer>(*itsIter); }
+		  pointer operator->() const { return static_cast<pointer>(*itsIter); }
+		  reference operator[](difference_type n) const { return *static_cast<pointer>(*itsIter[n]); }
 
-      iterator& operator++()          {++itsIter; return *this;}
-      iterator& operator--()          {--itsIter; return *this;}
-      iterator operator++(int)        {iterator t(*this); ++itsIter; return t;}
-      iterator operator--(int)        {iterator t(*this); --itsIter; return t;}
-      iterator& operator+=(difference_type n)     {itsIter+=n; return *this;}
-      iterator& operator-=(difference_type n)     {itsIter-=n; return *this;}
-      iterator operator+(difference_type n) const {return iterator(itsIter+n);}
-      iterator operator-(difference_type n) const {return iterator(itsIter-n);}
-//      friend iterator operator + (difference_type n, const iterator& it) { return it+n; }
-      difference_type operator - (const iterator& rhs) const { return base() - rhs.base(); }
+		  iterator& operator++()          { ++itsIter; return *this; }
+		  iterator& operator--()          { --itsIter; return *this; }
+		  iterator operator++(int)        { iterator t(*this); ++itsIter; return t; }
+		  iterator operator--(int)        { iterator t(*this); --itsIter; return t; }
+		  iterator& operator+=(difference_type n)     { itsIter += n; return *this; }
+		  iterator& operator-=(difference_type n)     { itsIter -= n; return *this; }
+		  iterator operator+(difference_type n) const { return iterator(itsIter + n); }
+		  iterator operator-(difference_type n) const { return iterator(itsIter - n); }
+		  //      friend iterator operator + (difference_type n, const iterator& it) { return it+n; }
+		  difference_type operator - (const iterator& rhs) const { return base() - rhs.base(); }
 
-      bool operator==(const iterator& r) const    {return itsIter == r.itsIter;}
-      bool operator!=(const iterator& r) const    {return itsIter != r.itsIter;}
-      bool operator<(const iterator& r) const     {return itsIter < r.itsIter;}
-    private:
-      Container::iterator itsIter;
-    };
+		  bool operator==(const iterator& r) const    { return itsIter == r.itsIter; }
+		  bool operator!=(const iterator& r) const    { return itsIter != r.itsIter; }
+		  bool operator<(const iterator& r) const     { return itsIter < r.itsIter; }
+	  private:
+		  Container::iterator itsIter;
+	  };
 
-    class const_iterator : public my_const_iterator_traits
-    {
-    public:
-      typedef T                  value_type;
-      typedef const T&           reference;
-      typedef const value_type*  pointer;
-      typedef Container::difference_type  difference_type;
+	  class const_iterator : public my_const_iterator_traits {
+	  public:
+		  typedef T                  value_type;
+		  typedef const T&           reference;
+		  typedef const value_type*  pointer;
+		  typedef Container::difference_type  difference_type;
 
-      const_iterator() {}
-      const_iterator(Container::const_iterator i) : itsIter(i) {}
-      const_iterator(Container::iterator i) : itsIter(i) {}
-      const_iterator(typename SEQUENCE_OF<T>::iterator i) : itsIter(i.base()) {}
-//      const_iterator(iterator i) : itsIter(i.base()) {}
-      Container::const_iterator base() const {return itsIter;}
+		  const_iterator() {}
+		  const_iterator(Container::const_iterator i) : itsIter(i) {}
+		  const_iterator(Container::iterator i) : itsIter(i) {}
+		  const_iterator(typename SEQUENCE_OF<T>::iterator i) : itsIter(i.base()) {}
+		  //      const_iterator(iterator i) : itsIter(i.base()) {}
+		  Container::const_iterator base() const { return itsIter; }
 
-      reference operator*() const {return *static_cast<pointer>(*itsIter);}
-      pointer operator->() const {return static_cast<pointer>(*itsIter);}
-      reference operator[](difference_type n) const {return *static_cast<pointer>(*itsIter[n]);}
+		  reference operator*() const { return *static_cast<pointer>(*itsIter); }
+		  pointer operator->() const { return static_cast<pointer>(*itsIter); }
+		  reference operator[](difference_type n) const { return *static_cast<pointer>(*itsIter[n]); }
 
-      const_iterator& operator++()          {++itsIter; return *this;}
-      const_iterator& operator--()          {--itsIter; return *this;}
-      const_iterator  operator++(int)        {const_iterator t(*this); ++itsIter; return t;}
-      const_iterator  operator--(int)        {const_iterator t(*this); --itsIter; return t;}
-      const_iterator& operator+=(difference_type n)     {itsIter+=n; return *this;}
-      const_iterator& operator-=(difference_type n)     {itsIter-=n; return *this;}
-      const_iterator  operator+(difference_type n) const {return const_iterator(itsIter+n);}
-      const_iterator  operator-(difference_type n) const {return const_iterator(itsIter-n);}
+		  const_iterator& operator++()          { ++itsIter; return *this; }
+		  const_iterator& operator--()          { --itsIter; return *this; }
+		  const_iterator  operator++(int)        { const_iterator t(*this); ++itsIter; return t; }
+		  const_iterator  operator--(int)        { const_iterator t(*this); --itsIter; return t; }
+		  const_iterator& operator+=(difference_type n)     { itsIter += n; return *this; }
+		  const_iterator& operator-=(difference_type n)     { itsIter -= n; return *this; }
+		  const_iterator  operator+(difference_type n) const { return const_iterator(itsIter + n); }
+		  const_iterator  operator-(difference_type n) const { return const_iterator(itsIter - n); }
 
-//      friend const_iterator  operator + (difference_type n, const const_iterator& it) { return it+n; }
-      difference_type operator - (const const_iterator& rhs) const { return base() - rhs.base(); }
+		  //      friend const_iterator  operator + (difference_type n, const const_iterator& it) { return it+n; }
+		  difference_type operator - (const const_iterator& rhs) const { return base() - rhs.base(); }
 
-      bool operator==(const const_iterator& r) const    {return itsIter == r.itsIter;}
-      bool operator!=(const const_iterator& r) const    {return itsIter != r.itsIter;}
-      bool operator< (const const_iterator& r) const    {return itsIter < r.itsIter;}
-    private:
-      Container::const_iterator itsIter;
-    };
+		  bool operator==(const const_iterator& r) const    { return itsIter == r.itsIter; }
+		  bool operator!=(const const_iterator& r) const    { return itsIter != r.itsIter; }
+		  bool operator< (const const_iterator& r) const    { return itsIter < r.itsIter; }
+	  private:
+		  Container::const_iterator itsIter;
+	  };
 
-    class reverse_iterator : public my_iterator_traits
-    {
-    typedef typename SEQUENCE_OF<T>::iterator base_iterator;
-    public:
-      typedef T   value_type;
-      typedef T&    reference;
-      typedef value_type* pointer;
-      typedef Container::difference_type  difference_type;
+	  class reverse_iterator : public my_iterator_traits {
+		  typedef typename SEQUENCE_OF<T>::iterator base_iterator;
+	  public:
+		  typedef T   value_type;
+		  typedef T&    reference;
+		  typedef value_type* pointer;
+		  typedef Container::difference_type  difference_type;
 
-      reverse_iterator() {}
-      reverse_iterator(base_iterator i) : itsIter(i) {}
-      iterator base() const {return itsIter;}
+		  reverse_iterator() {}
+		  reverse_iterator(base_iterator i) : itsIter(i) {}
+		  iterator base() const { return itsIter; }
 
-      reference operator*() const { return *(itsIter-1); }
-      pointer operator->() const  { return &(**this); }
-      reference operator[](difference_type n) const {return *((*this)+n);}
+		  reference operator*() const { return *(itsIter - 1); }
+		  pointer operator->() const  { return &(**this); }
+		  reference operator[](difference_type n) const { return *((*this) + n); }
 
-      reverse_iterator& operator++()          {--itsIter; return *this;}
-      reverse_iterator& operator--()          {++itsIter; return *this;}
-      reverse_iterator operator++(int)        {reverse_iterator t(*this); --itsIter; return t;}
-      reverse_iterator operator--(int)        {reverse_iterator t(*this); ++itsIter; return t;}
-      reverse_iterator& operator+=(difference_type n)     {itsIter-=n; return *this;}
-      reverse_iterator& operator-=(difference_type n)     {itsIter+=n; return *this;}
-      reverse_iterator operator+(difference_type n) const {return reverse_iterator(itsIter-n);}
-      reverse_iterator operator-(difference_type n) const {return reverse_iterator(itsIter+n);}
-//      friend reverse_iterator operator + (difference_type n, const reverse_iterator& it) { return it-n; }
-      difference_type operator - (const reverse_iterator& rhs) const { return rhs.base() - base(); }
+		  reverse_iterator& operator++()          { --itsIter; return *this; }
+		  reverse_iterator& operator--()          { ++itsIter; return *this; }
+		  reverse_iterator operator++(int)        { reverse_iterator t(*this); --itsIter; return t; }
+		  reverse_iterator operator--(int)        { reverse_iterator t(*this); ++itsIter; return t; }
+		  reverse_iterator& operator+=(difference_type n)     { itsIter -= n; return *this; }
+		  reverse_iterator& operator-=(difference_type n)     { itsIter += n; return *this; }
+		  reverse_iterator operator+(difference_type n) const { return reverse_iterator(itsIter - n); }
+		  reverse_iterator operator-(difference_type n) const { return reverse_iterator(itsIter + n); }
+		  //      friend reverse_iterator operator + (difference_type n, const reverse_iterator& it) { return it-n; }
+		  difference_type operator - (const reverse_iterator& rhs) const { return rhs.base() - base(); }
 
-      bool operator==(const reverse_iterator& r) const    {return itsIter == r.itsIter;}
-      bool operator!=(const reverse_iterator& r) const    {return itsIter != r.itsIter;}
-      bool operator<(const reverse_iterator& r) const     {return itsIter > r.itsIter;}
-    private:
-      base_iterator itsIter;
-    };
+		  bool operator==(const reverse_iterator& r) const    { return itsIter == r.itsIter; }
+		  bool operator!=(const reverse_iterator& r) const    { return itsIter != r.itsIter; }
+		  bool operator<(const reverse_iterator& r) const     { return itsIter > r.itsIter; }
+	  private:
+		  base_iterator itsIter;
+	  };
 
-    class const_reverse_iterator : public my_const_iterator_traits
-    {
-    public:
-      typedef const T value_type;
-      typedef const T&  reference;
-      typedef const value_type* pointer;
-      typedef Container::difference_type  difference_type;
+	  class const_reverse_iterator : public my_const_iterator_traits {
+	  public:
+		  typedef const T value_type;
+		  typedef const T&  reference;
+		  typedef const value_type* pointer;
+		  typedef Container::difference_type  difference_type;
 
-      const_reverse_iterator() {}
-      const_reverse_iterator(Container::reverse_iterator i) : itsIter(i.base()) {}
-      const_reverse_iterator(Container::const_iterator i) : itsIter(i) {}
-      const_iterator base() const {return itsIter;}
+		  const_reverse_iterator() {}
+		  const_reverse_iterator(Container::reverse_iterator i) : itsIter(i.base()) {}
+		  const_reverse_iterator(Container::const_iterator i) : itsIter(i) {}
+		  const_iterator base() const { return itsIter; }
 
-      reference operator*() const { return *(itsIter-1); }
-      pointer operator->() const  { return &(**this); }
-      reference operator[](difference_type n) const {return *((*this)+n);}
+		  reference operator*() const { return *(itsIter - 1); }
+		  pointer operator->() const  { return &(**this); }
+		  reference operator[](difference_type n) const { return *((*this) + n); }
 
-      const_reverse_iterator& operator++()          {--itsIter; return *this;}
-      const_reverse_iterator& operator--()          {++itsIter; return *this;}
-      const_reverse_iterator operator++(int)        {const_reverse_iterator t(*this); --itsIter; return t;}
-      const_reverse_iterator operator--(int)        {const_reverse_iterator t(*this); ++itsIter; return t;}
-      const_reverse_iterator& operator+=(difference_type n)     {itsIter-n; return *this;}
-      const_reverse_iterator& operator-=(difference_type n)     {itsIter+=n; return *this;}
-      const_reverse_iterator operator+(difference_type n) const {return const_reverse_iterator(itsIter-n);}
-      const_reverse_iterator operator-(difference_type n) const {return const_reverse_iterator(itsIter+n);}
-//      friend const_reverse_iterator operator + (difference_type n, const const_reverse_iterator& it) { return it-n; }
-      difference_type operator - (const const_reverse_iterator& rhs) const { return rhs.base() - base(); }
+		  const_reverse_iterator& operator++()          { --itsIter; return *this; }
+		  const_reverse_iterator& operator--()          { ++itsIter; return *this; }
+		  const_reverse_iterator operator++(int)        { const_reverse_iterator t(*this); --itsIter; return t; }
+		  const_reverse_iterator operator--(int)        { const_reverse_iterator t(*this); ++itsIter; return t; }
+		  const_reverse_iterator& operator+=(difference_type n)     { itsIter - n; return *this; }
+		  const_reverse_iterator& operator-=(difference_type n)     { itsIter += n; return *this; }
+		  const_reverse_iterator operator+(difference_type n) const { return const_reverse_iterator(itsIter - n); }
+		  const_reverse_iterator operator-(difference_type n) const { return const_reverse_iterator(itsIter + n); }
+		  //      friend const_reverse_iterator operator + (difference_type n, const const_reverse_iterator& it) { return it-n; }
+		  difference_type operator - (const const_reverse_iterator& rhs) const { return rhs.base() - base(); }
 
-      bool operator==(const const_reverse_iterator& r) const    {return itsIter == r.itsIter;}
-      bool operator!=(const const_reverse_iterator& r) const    {return itsIter != r.itsIter;}
-      bool operator< (const const_reverse_iterator& r) const    {return itsIter >  r.itsIter;}
-    private:
-      Container::const_iterator itsIter;
-    };
+		  bool operator==(const const_reverse_iterator& r) const    { return itsIter == r.itsIter; }
+		  bool operator!=(const const_reverse_iterator& r) const    { return itsIter != r.itsIter; }
+		  bool operator< (const const_reverse_iterator& r) const    { return itsIter >  r.itsIter; }
+	  private:
+		  Container::const_iterator itsIter;
+	  };
 
-    SEQUENCE_OF(const void* info = &theInfo) : SEQUENCE_OF_Base(info) {}
-    SEQUENCE_OF(size_type n, const_reference val = T())
-      : SEQUENCE_OF_Base(&theInfo)
-    {
-      insert(begin(),n, val);
-    }
+	  SEQUENCE_OF(const void* info = &theInfo) : SEQUENCE_OF_Base(info) {}
+	  SEQUENCE_OF(size_type n, const_reference val = T()) : SEQUENCE_OF_Base(&theInfo) {
+		  insert(begin(), n, val);
+	  }
 
-    template <class InputIterator>
-    SEQUENCE_OF(InputIterator first, InputIterator last)
-      : SEQUENCE_OF_Base(&theInfo)
-    {
-      insert(begin(), first, last);
-    }
+	  template <class InputIterator>
+	  SEQUENCE_OF(InputIterator first, InputIterator last)  : SEQUENCE_OF_Base(&theInfo) {
+		  insert(begin(), first, last);
+	  }
+	  SEQUENCE_OF(const SEQUENCE_OF<T, Constraint>& other) : SEQUENCE_OF_Base(other) {}
+	  SEQUENCE_OF<T, Constraint>& operator = (const SEQUENCE_OF<T, Constraint>& x) {
+		  SEQUENCE_OF<T, Constraint> temp(x.begin(), x.end());
+		  swap(temp);
+		  return *this;
+	  }
+	  void assign(size_type n) {
+		  SEQUENCE_OF<T, Constraint> temp(n);
+		  swap(temp);
+	  }
+	  void assign(size_type n, const T& value) {
+		  SEQUENCE_OF<T, Constraint> temp(n, value);
+		  swap(temp);
+	  }
 
-    SEQUENCE_OF(const SEQUENCE_OF<T, Constraint>& other) : SEQUENCE_OF_Base(other) {}
+	  template <class InputIterator>
+	  void assign(InputIterator first, InputIterator last) {
+		  clear();
+		  insert(begin(), first, last);
+	  }
+	  iterator                begin()						{ return iterator(container.begin()); }
+	  const_iterator          begin() const					{ return const_iterator(container.begin()); }
+	  iterator                end()							{ return iterator(container.end()); }
+	  const_iterator          end() const					{ return const_iterator(container.end()); }
 
-    SEQUENCE_OF<T, Constraint>& operator = (const SEQUENCE_OF<T, Constraint>& x)
-    {
-      SEQUENCE_OF<T, Constraint> temp(x.begin(), x.end());
-      swap(temp);
-      return *this;
-    }
-    void assign(size_type n)
-    {
-      SEQUENCE_OF<T, Constraint> temp(n);
-      swap(temp);
-    }
-    void assign(size_type n, const T& value)
-    {
-      SEQUENCE_OF<T, Constraint> temp(n, value);
-      swap(temp);
-    }
+	  reverse_iterator        rbegin()						{ return reverse_iterator(container.end()); }
+	  const_reverse_iterator  rbegin() const				{ return const_reverse_iterator(container.end()); }
+	  reverse_iterator        rend()						{ return reverse_iterator(container.begin()); }
+	  const_reverse_iterator  rend()   const				{ return const_reverse_iterator(container.begin()); }
 
-    template <class InputIterator>
-    void assign(InputIterator first, InputIterator last)
-    {
-      clear();
-      insert(begin(), first, last);
-    }
-    iterator                begin()			{ return iterator(container.begin());   }
-    const_iterator          begin() const	{ return const_iterator(container.begin());}
-    iterator                end()			{ return iterator(container.end());}
-    const_iterator          end() const		{ return const_iterator(container.end());}
+	  void resize(size_type sz)								{ Inherited::resize(sz); }
 
-    reverse_iterator        rbegin()		{ return reverse_iterator(container.end());}
-    const_reverse_iterator  rbegin() const	{ return const_reverse_iterator(container.end());}
-    reverse_iterator        rend()			{ return reverse_iterator(container.begin());}
-    const_reverse_iterator  rend()   const	{ return const_reverse_iterator(container.begin());}
-
-    void resize(size_type sz)				{ Inherited::resize(sz); }
-
-	void resize(size_type sz, reference c ) {
-      if (sz < size()) container.resize(sz, &c);
-      else insert(end(), sz-size(), c);
-    }
-	reference         operator[] (size_type n)			{ return *static_cast<T*>(container.operator[](n));}
-    const_reference   operator[] (size_type n)  const	{ return *static_cast<const T*>(container.operator[](n));}
-    reference         at(size_type n)					{ return *static_cast<T*>(container.at(n));}
-    const_reference   at(size_type n) const				{ return *static_cast<const T*>(container.at(n));}
-    reference         front()							{ return *static_cast<T*>(container.front());}
-    const_reference   front() const						{ return *static_cast<const T*>(container.front());}
-    reference         back()							{ return *static_cast<T*>(container.back());}
-    const_reference   back() const						{ return *static_cast<const T*>(container.back());}
-    void push_back(const T& x)							{ container.push_back( x.clone() );}
-    /**
-     * Takes the ownership of the object pointed by \c x,
-     * and insert it to the back of this object.
-     */
-    void push_back(pointer x)							{ container.push_back(x);}
-    void pop_back()										{ clean(--end()); container.pop_back();}
+	  void resize(size_type sz, reference c) {
+		  if (sz < size()) container.resize(sz, &c);
+		  else insert(end(), sz - size(), c);
+	  }
+	  reference         operator[] (size_type n)			{ return *static_cast<T*>(container.operator[](n)); }
+	  const_reference   operator[] (size_type n) const		{ return *static_cast<const T*>(container.operator[](n)); }
+	  reference         at(size_type n)						{ return *static_cast<T*>(container.at(n)); }
+	  const_reference   at(size_type n) const				{ return *static_cast<const T*>(container.at(n)); }
+	  reference         front()								{ return *static_cast<T*>(container.front()); }
+	  const_reference   front() const						{ return *static_cast<const T*>(container.front()); }
+	  reference         back()								{ return *static_cast<T*>(container.back()); }
+	  const_reference   back() const						{ return *static_cast<const T*>(container.back()); }
+	  void push_back(const T& x)							{ container.push_back(x.clone()); }
+	  /**
+	   * Takes the ownership of the object pointed by \c x,
+	   * and insert it to the back of this object.
+	   */
+	  void push_back(pointer x)								{ container.push_back(x); }
+	  void pop_back()										{ clean(--end()); container.pop_back(); }
 #ifdef has_push_front
-    void push_front(const T& x) { container.push_front(x.clone());}
-    /**
-     * Takes the ownership of the object pointed by \c x,
-     * and insert it to the front of this object.
-     */
-    void push_front(pointer x) { container.push_front(x);}
-    void pop_front() { clean(begin()); container.pop_front();}
+	  void push_front(const T& x) { container.push_front(x.clone());}
+	  /**
+	   * Takes the ownership of the object pointed by \c x,
+	   * and insert it to the front of this object.
+	   */
+	  void push_front(pointer x) { container.push_front(x);}
+	  void pop_front() { clean(begin()); container.pop_front();}
 #endif
-    iterator  insert(iterator position, const T& x) { return iterator(container.insert(position.base(), x.clone()));}
-    /**
-     * Takes the ownership of the object pointed by \c x,
-     * and insert it before the element pointed by \c position.
-     */
-    iterator    insert(iterator position, pointer x) { return iterator(container.insert(position.base(), x));}
-    void insert(iterator position, size_type n, const T& x) { SEQUENCE_OF_Base::insert(position.base(), n, x);}
-//#if !defined(_MSC_VER)
-//    void insert(iterator position, const_iterator first, const_iterator last)
-//    {
-//      SEQUENCE_OF_Base::insert(position.base(), first.base(), last.base());
-//    }
-//#endif
-    template <class InputIterator>
-    void insert(iterator position, InputIterator first, InputIterator last) {
+	  iterator  insert(iterator position, const T& x)		{ return iterator(container.insert(position.base(), x.clone())); }
+	  /**
+	   * Takes the ownership of the object pointed by \c x,
+	   * and insert it before the element pointed by \c position.
+	   */
+	  iterator    insert(iterator position, pointer x)		{ return iterator(container.insert(position.base(), x)); }
+	  void insert(iterator position, size_type n, const T& x) { SEQUENCE_OF_Base::insert(position.base(), n, x); }
+	  //#if !defined(_MSC_VER)
+	  //    void insert(iterator position, const_iterator first, const_iterator last)
+	  //    {
+	  //      SEQUENCE_OF_Base::insert(position.base(), first.base(), last.base());
+	  //    }
+	  //#endif
+	  template <class InputIterator>
+	  void insert(iterator position, InputIterator first, InputIterator last) {
 
-      // Both VC6.0 SP4 and GNU C 2.95.2 has problem with finding the  operator - (const_iterator, const_iterator)
-      //   used by ASN1_STD distance()
-      ASN1_STD transform(first, last, ASN1_STD inserter(container, position.base()), create_from1());
-//      for (; first != last; ++first) {
-//        container.push_back((*first)->clone());
-//      }
-    }
-    iterator  erase(iterator position) { clean(position); return iterator(container.erase(position.base()));}
-    iterator  erase(iterator first, iterator last) { clean(first, last); return iterator(container.erase(first.base(), last.base()));}
-    void    swap(SEQUENCE_OF<T, Constraint>& x) { container.swap(x.container);}
-    /**
-     * Removes the last element from this object, and returns the ownership of the removed element
-     * to the caller.
-     */
-    pointer release_back() { pointer x = static_cast<pointer>(container.back()); container.pop_back(); return x;}
+		  // Both VC6.0 SP4 and GNU C 2.95.2 has problem with finding the  operator - (const_iterator, const_iterator)
+		  //   used by ASN1_STD distance()
+		  ASN1_STD transform(first, last, ASN1_STD inserter(container, position.base()), create_from1());
+		  //      for (; first != last; ++first) {
+		  //        container.push_back((*first)->clone());
+		  //      }
+	  }
+	  iterator  erase(iterator position) { clean(position); return iterator(container.erase(position.base())); }
+	  iterator  erase(iterator first, iterator last) { clean(first, last); return iterator(container.erase(first.base(), last.base())); }
+	  void    swap(SEQUENCE_OF<T, Constraint>& x) { container.swap(x.container); }
+	  /**
+	   * Removes the last element from this object, and returns the ownership of the removed element
+	   * to the caller.
+	   */
+	  pointer release_back() { pointer x = static_cast<pointer>(container.back()); container.pop_back(); return x; }
 #ifdef has_push_front
-    /**
-     * Removes the first element from this object, and returns the ownership of the removed element
-     * to the caller.
-     */
-    pointer release_front() { pointer x = static_cast<pointer>(container.front()); container.pop_front(); return x;}
+	  /**
+	   * Removes the first element from this object, and returns the ownership of the removed element
+	   * to the caller.
+	   */
+	  pointer release_front() { pointer x = static_cast<pointer>(container.front()); container.pop_front(); return x;}
 #endif
-    /**
-     * Removes the element pointed by \c position from this object, and returns the ownership of the removed element
-     * to the caller.
-     */
-    pointer release(iterator position) {
-      pointer result = static_cast<pointer>(*(position.base()));
-      container.erase(position.base());
-      return result;
-    }
-    /**
-     * Removes the elements in [first, last) from this object; furthermore, the elements been removed would not be
-     * deleted. It is the caller's responsibility to obtain the ownerships of those elements before this operation
-     * is executed.
-     */
-    void release(iterator first, iterator last) {
-      container.erase(first.base(), last.base());
-    }
-    SEQUENCE_OF<T, Constraint>* clone() const { return static_cast<SEQUENCE_OF<T, Constraint>*>(do_clone()); }
+	  /**
+	   * Removes the element pointed by \c position from this object, and returns the ownership of the removed element
+	   * to the caller.
+	   */
+	  pointer release(iterator position) {
+		  pointer result = static_cast<pointer>(*(position.base()));
+		  container.erase(position.base());
+		  return result;
+	  }
+	  /**
+	   * Removes the elements in [first, last) from this object; furthermore, the elements been removed would not be
+	   * deleted. It is the caller's responsibility to obtain the ownerships of those elements before this operation
+	   * is executed.
+	   */
+	  void release(iterator first, iterator last) {
+		  container.erase(first.base(), last.base());
+	  }
+	  SEQUENCE_OF<T, Constraint>* clone() const { return static_cast<SEQUENCE_OF<T, Constraint>*>(do_clone()); }
 
-	void remove(const_reference x)
-	{
-		remove_if(ASN1_STD bind2nd(ASN1_STD equal_to<T>(), x));
-	}
+	  void remove(const_reference x)	{
+		  remove_if(ASN1_STD bind2nd(ASN1_STD equal_to<T>(), x));
+	  }
 
-    template <class Predicate>
-    void remove_if(Predicate pred)
-    {
-		Container::iterator k;
-		k = ASN1_STD stable_partition(begin(), end(), ASN1_STD not1(UnaryPredicate<Predicate>(pred)));
-		erase(k, end());
-    }
+	  template <class Predicate>
+	  void remove_if(Predicate pred) {
+		  Container::iterator k;
+#ifdef BUG_VS2015
+		  k = ASN1_STD stable_partition(begin(), end(), ASN1_STD not1(UnaryPredicate<Predicate>(pred)));
+#endif
+		  erase(k, end());
+	  }
 
-    void unique()
-    { unique_if(ASN1_STD equal_to<T>()); }
+	  void unique() {
+		  unique_if(ASN1_STD equal_to<T>());
+	  }
 
-    template <class BinPred>
-    void unique_if(BinPred pred)
-    {
-      if (size() < 2) return;
-      BinaryPredicate<BinPred> pr(pred);
-      iterator k, first, last = end();
-      k = first = begin();
-      while (++first != last)
-//		  if (!pr(*k, *first))
-		  if (!pr(&*k, &*first))
-          if (++k != first)
-            ASN1_STD swap(*first, *k);
-      erase(iterator(++k), end());
-    }
+	  template <class BinPred>
+	  void unique_if(BinPred pred) {
+		  if (size() < 2) return;
+		  BinaryPredicate<BinPred> pr(pred);
+		  iterator k, first, last = end();
+		  k = first = begin();
+		  while (++first != last)
+//			  if (!pr(*k, *first))
+			  if (!pr(&*k, &*first))
+				  if (++k != first)
+					  ASN1_STD swap(*first, *k);
+		  erase(iterator(++k), end());
+	  }
 
-    void sort() { sort(ASN1_STD less<T>());}
+	  void sort() { sort(ASN1_STD less<T>()); }
 
-    template <class Compare>
-    void sort(Compare comp)
-    { ASN1_STD sort(begin(), end(), ComparePredicate<Compare>(comp)); }
+	  template <class Compare>
+	  void sort(Compare comp) {
+		  ASN1_STD sort(begin(), end(), ComparePredicate<Compare>(comp));
+	  }
 
-    void reverse() { ASN1_STD reverse(container.begin(), container.end());}
+	  void reverse() { ASN1_STD reverse(container.begin(), container.end()); }
 
-    static const InfoType theInfo;
-    static bool equal_type(const ASN1::AbstractData& type)
-    {return type.info() == reinterpret_cast<const ASN1::AbstractData::InfoType*>(&theInfo);}
-//	const T& get_type() const { return *static_cast<type::const_pointer>(fields[0]); }
+	  static const InfoType theInfo;
+	  static bool equal_type(const ASN1::AbstractData& type) {
+		  return type.info() == reinterpret_cast<const ASN1::AbstractData::InfoType*>(&theInfo);
+	  }
+//	  const T& get_type() const { return *static_cast<const T*>(fields[0]); }
 
   private:
-    void clean(iterator i)  { delete &*i; }
-    void clean(iterator first, iterator last)      { while (first != last) clean(first++); }
+	  void clean(iterator i)  { delete &*i; }
+	  void clean(iterator first, iterator last)      { while (first != last) clean(first++); }
 
-    struct create_from1
-    {
-      AbstractData* operator() (const T& obj) const { return new T(obj); }
-    };
+	  struct create_from1 {
+		  AbstractData* operator() (const T& obj) const { return new T(obj); }
+	  };
 
-    template <class OriginalPredicate>
-    struct UnaryPredicate : public ASN1_STD unary_function<AbstractData*, bool> {
-      UnaryPredicate(OriginalPredicate& o) : pred(o){}
-      bool operator() (AbstractData* x) const { return pred(*static_cast<pointer>(x));}
-      OriginalPredicate& pred;
-    };
+	  template <class OriginalPredicate>
+	  struct UnaryPredicate : public ASN1_STD unary_function<AbstractData*, bool> {
+		  UnaryPredicate(OriginalPredicate& o) : pred(o){}
+		  bool operator() (const AbstractData* x) const { return pred(*static_cast<const_pointer>(x)); }
+		  bool operator() (const AbstractData& x) const { return pred(static_cast<const_reference>(x)); }
+		  OriginalPredicate& pred;
+	  };
 
-    template <class OriginalPredicate>
-    struct BinaryPredicate : public ASN1_STD binary_function<AbstractData*, AbstractData*, bool> {
-      BinaryPredicate(OriginalPredicate& o) : pred(o){}
-      bool operator() (AbstractData* x, AbstractData* y) const { return pred(*static_cast<pointer>(x), *static_cast<pointer>(y));}
-      OriginalPredicate& pred;
-    };
+	  template <class OriginalPredicate>
+	  struct BinaryPredicate : public ASN1_STD binary_function<AbstractData*, AbstractData*, bool> {
+		  BinaryPredicate(OriginalPredicate& o) : pred(o){}
+		  bool operator() (const AbstractData* x, const AbstractData* y) const { return pred(*static_cast<const_pointer>(x), *static_cast<const_pointer>(y)); }
+		  bool operator() (const AbstractData& x, const AbstractData& y) const { return pred(static_cast<const_reference>(x), static_cast<const_reference>(y)); }
+		  OriginalPredicate& pred;
+	  };
 
-    template <class OriginalPredicate>
-    struct ComparePredicate : public ASN1_STD binary_function<AbstractData*, AbstractData*, int> {
-      ComparePredicate(OriginalPredicate& o) : pred(o){}
-      int operator() (AbstractData* x, AbstractData* y) const { return pred(*static_cast<pointer>(x), *static_cast<pointer>(y));}
-      OriginalPredicate& pred;
-    };
+	  template <class OriginalPredicate>
+	  struct ComparePredicate : public ASN1_STD binary_function<AbstractData*, AbstractData*, int> {
+		  ComparePredicate(OriginalPredicate& o) : pred(o){}
+		  int operator() (const AbstractData* x, const AbstractData* y) const { return pred(*static_cast<const_pointer>(x), *static_cast<const_pointer>(y)); }
+		  int operator() (const AbstractData& x, const AbstractData& y) const { return pred(static_cast<const_reference>(x), static_cast<const_reference>(y)); }
+		  OriginalPredicate& pred;
+	  };
   };
 
   template <class T, class Constraint>
@@ -2766,6 +2753,9 @@ namespace ASN1 {
     return it+i;
   }
 
+
+  /** class SET OF
+  */
   template <class T, class Constraint = EmptyConstraint>
   class SET_OF : public SEQUENCE_OF<T, Constraint>
   {
@@ -2813,7 +2803,7 @@ namespace ASN1 {
     &T::theInfo
   };
 
-  typedef ASN1_STD vector<char> OpenBuf;
+  typedef octets OpenBuf;
 
   class ASN1_API OpenData : public AbstractData
   {
@@ -3372,7 +3362,7 @@ namespace ASN1 {
     virtual bool preVisitExtensions(const SEQUENCE& value) ;
     virtual bool visitKnownExtension(const SEQUENCE& value, int index);
 
-    void encodeBitMap(const ASN1_STD vector<char>& bitData, unsigned nBits);
+    void encodeBitMap(const octets& bitData, unsigned nBits);
 
     template <typename uns_int>
     void encodeMultiBit(uns_int value, unsigned nBits)
@@ -3642,7 +3632,7 @@ namespace ASN1 {
     }
 
     unsigned decodeBlock(char * bufptr, unsigned nBytes);
-    bool decodeBitMap(ASN1_STD vector<char>& bitData, unsigned nBit);
+    bool decodeBitMap(octets& bitData, unsigned nBit);
 
     const char* beginPosition;
     const char* endPosition;
@@ -3992,3 +3982,4 @@ namespace ASN1 {
 #include "asn1_useful.h"
 
 #endif // _ASN1_H
+// *INDENT-ON*
