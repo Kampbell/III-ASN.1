@@ -472,8 +472,8 @@ extern FILE * idin;
   } tagv;
 }
 %printer { fprintf (yyoutput, "'%lld'", $$); } <ival>
-%printer { if ($$ != NULL) fprintf (yyoutput, "'%s'", $$->c_str()); } <sval>
-%printer { if ($$ != NULL) fprintf (yyoutput, "'%s'", $$->getName().c_str()); } <tval> <vval> <objt> <para> <symb> <fspc> <objc> <ocft>
+%printer { if ($$ != nullptr) fprintf (yyoutput, "'%s'", $$->c_str()); } <sval>
+%printer { if ($$ != nullptr) fprintf (yyoutput, "'%s'", $$->getName().c_str()); } <tval> <vval> <objt> <para> <symb> <fspc> <objc> <ocft>
 
 %%
 
@@ -492,12 +492,12 @@ ModuleDefinition
 	ModuleBody END
 		{
 			//context->Module->ResolveObjectClassReferences();
-			context->Module = NULL;
+			context->Module = nullptr;
 		}
 ;
 DefinitiveIdentifier
   : '{' DefinitiveObjIdComponentList '}'		{	  $$ = $2;		}
-  | /* empty */									{	  $$ = NULL;	}
+  | /* empty */									{	  $$ = nullptr;	}
 ;
 
 DefinitiveObjIdComponentList
@@ -585,7 +585,7 @@ SymbolsFromModule
   : SymbolList FROM GlobalModuleReference
       {
 		if (!context->hasObjectTypeMacro) {
-			context->hasObjectTypeMacro = findWithName(*$1,"OBJECT-TYPE").get() != NULL;
+			context->hasObjectTypeMacro = findWithName(*$1,"OBJECT-TYPE").get() != nullptr;
 			if (context->hasObjectTypeMacro)
 				std::cerr << "Info: including OBJECT-TYPE macro" << std::endl;
 		}
@@ -603,7 +603,7 @@ GlobalModuleReference
 AssignedIdentifier
   : DefinedValue
   | ObjectIdentifierValue
-  | /* empty */   {		$$ = NULL;  }
+  | /* empty */   {		$$ = nullptr;  }
 ;
 
 
@@ -829,12 +829,12 @@ EnumeratedType
 Enumerations
   : Enumeration
       {
-		$$ = new EnumeratedType(*$1, false, NULL);
+		$$ = new EnumeratedType(*$1, false, nullptr);
 		delete $1;
       }
   | Enumeration  ',' ELLIPSIS
       {
-		$$ = new EnumeratedType(*$1, true, NULL);
+		$$ = new EnumeratedType(*$1, true, nullptr);
 		delete $1;
       }
   | Enumeration  ',' ELLIPSIS ',' Enumeration
@@ -868,7 +868,7 @@ ExternalType
 ;
 
 AnyType
-  : ANY							{	$$ = new AnyType(NULL);    }
+  : ANY							{	$$ = new AnyType(nullptr);    }
   | ANY DEFINED BY IDENTIFIER	{	$$ = new AnyType(*$4);	delete $4;  }
 ;
 
@@ -910,7 +910,7 @@ SimpleObjectClassFieldType
 		'.' FieldName
       {
 		$$ = new ObjectClassFieldType(ObjectClassBasePtr($1), *$4); delete $4;
-		context->InformationFromObjectContext = NULL;
+		context->InformationFromObjectContext = nullptr;
       }
 ;
 
@@ -946,12 +946,12 @@ SequenceType
       }
   | SequenceAndBrace  '}'
       {
-		$$ = new SequenceType(NULL, false, NULL);
+		$$ = new SequenceType(nullptr, false, nullptr);
 		context->ParsingConstructedType--;
       }
   | SequenceAndBrace ExtensionAndException '}'
       {
-		$$ = new SequenceType(NULL, true, NULL);
+		$$ = new SequenceType(nullptr, true, nullptr);
 		context->ParsingConstructedType--;
       }
 ;
@@ -967,11 +967,11 @@ SequenceAndBrace
 ComponentTypeLists
   : ComponentTypeList
       {
-		$$ = new SequenceType($1, false, NULL);
+		$$ = new SequenceType($1, false, nullptr);
       }
   | ComponentTypeList ',' ExtensionAndException
       {
-		$$ = new SequenceType($1, true, NULL);
+		$$ = new SequenceType($1, true, nullptr);
       }
   | ComponentTypeList ',' ExtensionAndException ',' ComponentTypeList
       {
@@ -979,7 +979,7 @@ ComponentTypeLists
       }
   | ExtensionAndException ',' ComponentTypeList
       {
-		$$ = new SequenceType(NULL, true, $3);
+		$$ = new SequenceType(nullptr, true, $3);
       }
 ;
 
@@ -1139,7 +1139,7 @@ TypeFromObject
   : ReferencedObjectDot TYPEFIELDREFERENCE
     {
 		  $$ = new TypeFromObject(InformationObjectPtr($1), *$2); delete $2;
-		  context->InformationFromObjectContext = NULL;
+		  context->InformationFromObjectContext = nullptr;
 		}
 ;
 
@@ -1148,12 +1148,12 @@ ValueSetFromObjects
   : ReferencedObjectsDot FIXEDTYPEVALUEFIELDREFERENCE
    {
 		  $$ = new ValueSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
-		  context->InformationFromObjectContext = NULL;
+		  context->InformationFromObjectContext = nullptr;
    }
   | ReferencedObjectsDot FIXEDTYPEVALUESETFIELDREFERENCE
    {
 		  $$ = new ValueSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
-		  context->InformationFromObjectContext = NULL;
+		  context->InformationFromObjectContext = nullptr;
    }
   | ValueSetFromObject
 ;
@@ -1162,12 +1162,12 @@ ObjectSetFromObjects
   : ReferencedObjectsDot OBJECTFIELDREFERENCE
     {
 		  $$ = new ObjectSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
-		  context->InformationFromObjectContext = NULL;
+		  context->InformationFromObjectContext = nullptr;
 		}
   | ReferencedObjectsDot OBJECTSETFIELDREFERENCE
     {
 		  $$ = new ObjectSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
-		  context->InformationFromObjectContext = NULL;
+		  context->InformationFromObjectContext = nullptr;
 		}
   | ObjectSetFromObject
 ;
@@ -1248,7 +1248,7 @@ ExceptionSpec
       }
   | /* empty */
       {
-		$$ = NULL;
+		$$ = nullptr;
       }
 ;
 
@@ -1458,7 +1458,7 @@ SizeConstraint
 InnerTypeConstraints
   : WITH COMPONENT Constraint
       {
-		$$ = new WithComponentConstraintElement(NULL, ConstraintPtr($3), WithComponentConstraintElement::Default);
+		$$ = new WithComponentConstraintElement(nullptr, ConstraintPtr($3), WithComponentConstraintElement::Default);
       }
   | WITH COMPONENTS MultipleTypeConstraints
       {
@@ -1893,12 +1893,12 @@ ObjectSetFieldSpec
 WithSyntaxSpec
   : WITH SYNTAX					{	context->InWithSyntaxContext = true; }
    SyntaxList					{	$$ = $4; context->InWithSyntaxContext = false; }
-  | /* empty */					{	$$ = NULL; }
+  | /* empty */					{	$$ = nullptr; }
 ;
 
 SyntaxList
   : '{' TokenOrGroupSpecs '}'   {	$$ = $2;   }
-  | '{' '}'						{    $$ = NULL;	}
+  | '{' '}'						{    $$ = nullptr;	}
 ;
 
 TokenOrGroupSpecs
@@ -2016,7 +2016,7 @@ FieldSettings
 		  }
   | PrimitiveFieldName
 		  {
-				context->classStack->top()->getField(*$1)->beginParseSetting(NULL);
+				context->classStack->top()->getField(*$1)->beginParseSetting(nullptr);
 		  }
 		Setting
 		  {
@@ -2054,7 +2054,7 @@ Setting
 			ValueBase* vb = $1;
 			TypeBase*  tb = context->ValueTypeContext.get();
 
-		    if (context->ValueTypeContext.get() == NULL)
+		    if (context->ValueTypeContext.get() == nullptr)
 				  std::cerr << StdError(Fatal) << "Parsing Error\n";
 			$$ = new ValueSetting(context->ValueTypeContext,ValuePtr($1));
   }
@@ -2115,7 +2115,7 @@ ParameterizedTypeAssignment
       }
     ASSIGNMENT Type
       {
-		context->DummyParameters = NULL;
+		context->DummyParameters = nullptr;
 		$5->setName(*$1); delete $1;
 		$5->setParameters(*$2); delete $2;
 		context->Module->addType(TypePtr($5));
@@ -2129,7 +2129,7 @@ ParameterizedValueAssignment
       }
     ASSIGNMENT Value
       {
-		context->DummyParameters = NULL;
+		context->DummyParameters = nullptr;
 		  }
 ;
 
@@ -2140,7 +2140,7 @@ ParameterizedValueSetTypeAssignment
       }
     ASSIGNMENT ValueSet
       {
-		context->DummyParameters = NULL;
+		context->DummyParameters = nullptr;
 		  }
 ;
 
@@ -2161,7 +2161,7 @@ ParameterizedObjectAssignment
       {
 		$3->endParseObject();
 		context->classStack->pop();
-		context->DummyParameters = NULL;
+		context->DummyParameters = nullptr;
 		$6->setName(*$1); delete $1;
 		$6->setObjectClass($3);
 		$6->setParameters(std::auto_ptr<ParameterList>($2));
@@ -2177,7 +2177,7 @@ ParameterizedObjectSetAssignment
       }
     ASSIGNMENT ObjectSet
       {
-		context->DummyParameters = NULL;
+		context->DummyParameters = nullptr;
 		context->Module->addInformationObjectSet(InformationObjectSetPtr(
 				new InformationObjectSetDefn(*$1, ObjectClassBasePtr($3),
 				                            ConstraintPtr($6), ParameterListPtr($2))));
@@ -2626,11 +2626,11 @@ NamedValue
 SequenceOfValue
   : '{' ValueList '}'
       {
-		$$ = NULL;
+		$$ = nullptr;
       }
   | '{'  '}'
       {
-		$$ = NULL;
+		$$ = nullptr;
       }
 ;
 
@@ -2667,7 +2667,7 @@ ValueFromObject
 		  $$ = new DefinedValue(setting->getValue());
 		  delete $1;
 		  delete $2;
-      context->InformationFromObjectContext = NULL;
+      context->InformationFromObjectContext = nullptr;
 		}
 ;
 
@@ -2680,7 +2680,7 @@ ValueSetFromObject
  : ReferencedObjectDot VALUESETFIELDREFERENCE
    {
 		  $$ = new ValueSetFromObject(InformationObjectPtr($1), *$2); delete $2;
-      context->InformationFromObjectContext = NULL;
+      context->InformationFromObjectContext = nullptr;
    }
 ;
 
@@ -2693,7 +2693,7 @@ ObjectFromObject
   : ReferencedObjectDot OBJECTFIELDREFERENCE
     {
 		  $$ = new ObjectFromObject(InformationObjectPtr($1), *$2); delete $2;
-		  context->InformationFromObjectContext = NULL;
+		  context->InformationFromObjectContext = nullptr;
     }
 ;
 
@@ -2701,7 +2701,7 @@ ObjectSetFromObject
   : ReferencedObjectDot OBJECTSETFIELDREFERENCE
     {
 		  $$ = new ObjectSetFromObject(InformationObjectPtr($1), *$2); delete $2;
-		  context->InformationFromObjectContext = NULL;
+		  context->InformationFromObjectContext = nullptr;
     }
 ;
 
@@ -2724,7 +2724,7 @@ SimpleDefinedValue
 ValueSet
   : VALUESET_BRACE ElementSetSpecs '}'
 	{
-		if (context->ValueTypeContext.get() == NULL)
+		if (context->ValueTypeContext.get() == nullptr)
 			std::cerr << StdError(Warning) << "";
 	// $$ = new ValueSetDefn(TypePtr(new DefinedType(context->ValueTypeContext)), ConstraintPtr($2));
 		$$ = new ValueSetDefn(context->ValueTypeContext, ConstraintPtr($2));

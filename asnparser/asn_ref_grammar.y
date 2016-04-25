@@ -222,7 +222,7 @@ ModuleDefinition
       }
     ModuleBody END
 	  {
-		context->Module = NULL;
+		context->Module = nullptr;
 	  }
   | TypeReference DEFINITIONS TagDefault ASSIGNMENT BEGIN_t
       {
@@ -232,7 +232,7 @@ ModuleDefinition
       }
     ModuleBody END
 	  {
-		context->Module = NULL;
+		context->Module = nullptr;
 	  }
   ;
 

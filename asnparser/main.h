@@ -954,7 +954,7 @@ class OctetStringType : public TypeBase {
 	virtual const char * getAncestorClass() const;
 	string getTypeName() const;
 	virtual string getPrimitiveType(const string& ) const {
-		return "const ASN1_STD vector<char>&";
+		return "const octets&";
 	}
 	virtual const char* getConstrainedType() const;
 	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
@@ -974,10 +974,7 @@ class NullType : public TypeBase {
 class SequenceType : public TypeBase {
 	void printOn(ostream&) const;
   public:
-	SequenceType(TypesVector* std,
-				 bool extendable,
-				 TypesVector * extensions,
-				 unsigned tagNum = Tag::UniversalSequence);
+	SequenceType(TypesVector* std, bool extendable, TypesVector * extensions, unsigned tagNum = Tag::UniversalSequence);
 	virtual void flattenUsedTypes();
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
 	virtual bool isPrimitiveType() const;
@@ -1020,15 +1017,11 @@ class SequenceOfType : public TypeBase {
 	virtual bool referencesType(const TypeBase& type) const;
 	virtual string getTypeName() const;
 	virtual bool forwardDeclareMe(ostream& hdr);
-	virtual bool isSequenceOfType() const {
-		return true;
-	}
+	virtual bool isSequenceOfType() const		{	return true;}
 	virtual void RemovePERInvisibleConstraint(const ParameterPtr&);
 	virtual bool useType(const TypeBase& type) const;
 	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
-	void setNonTypedef(bool v) {
-		nonTypedef = v;
-	}
+	void setNonTypedef(bool v)					{ nonTypedef = v; }
 	virtual RemoveResult canRemoveType(const TypeBase&);
 	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
   protected:
@@ -1054,9 +1047,7 @@ class SetOfType : public SequenceOfType {
 
 class ChoiceType : public SequenceType {
   public:
-	ChoiceType(TypesVector * std = NULL,
-			   bool extendable = false,
-			   TypesVector * extensions = NULL);
+	ChoiceType(TypesVector * std = nullptr, bool extendable = false, TypesVector * extensions = nullptr);
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	virtual void generateOperators(ostream& fwd, ostream& hdr, ostream& cxx, const TypeBase& actualType);
 	virtual bool isPrimitiveType() const;
@@ -1107,7 +1098,7 @@ class StringTypeBase : public TypeBase {
 	virtual bool needGenInfo() const;
 	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
 	virtual const char* getCanonicalSetString() const {
-		return NULL;
+		return nullptr;
 	};
   protected:
 	const char* canonicalSet = nullptr;
@@ -1533,7 +1524,7 @@ class MaxValue : public ValueBase {
 
 class SequenceValue : public ValueBase {
   public:
-	SequenceValue(ValuesList * list = NULL);
+	SequenceValue(ValuesList * list = nullptr);
 	void printOn(ostream&) const;
   protected:
 	ValuesList values;
@@ -1671,10 +1662,10 @@ class FieldSpec : public Printable {
 
 	// used only for FixedTypeValueField and FixedTypeValueSetField
 	virtual TypeBase* getFieldType() {
-		return NULL;
+		return nullptr;
 	}
 	virtual const TypeBase* getFieldType() const {
-		return NULL;
+		return nullptr;
 	}
 
 	//
@@ -2088,7 +2079,7 @@ class ObjectClassDefn : public ObjectClassBase {
 class DefinedObjectClass : public ObjectClassBase {
   public:
 	DefinedObjectClass(ObjectClassBase* ref);
-	DefinedObjectClass(const string& nam, ObjectClassBase* ref = NULL);
+	DefinedObjectClass(const string& nam, ObjectClassBase* ref = nullptr);
 	~DefinedObjectClass() {}
 
 
@@ -2289,7 +2280,7 @@ class FieldSetting : public Printable {
 
 class InformationObject : public Printable {
   public:
-	InformationObject() : parameters(NULL) {}
+	InformationObject() : parameters(nullptr) {}
 	virtual ~InformationObject();
 	void setName(const string& str) {
 		name = str;
@@ -2316,7 +2307,7 @@ typedef vector<InformationObjectPtr> InformationObjectList;
 
 class DefinedObject : public InformationObject {
   public:
-	DefinedObject(const string& name, const InformationObject* ref=NULL);
+	DefinedObject(const string& name, const InformationObject* ref=nullptr);
 	bool VerifyObjectDefinition();
 	const InformationObject* getReference() const;
 	bool setObjectClass(const ObjectClassBase* ) {
@@ -2468,7 +2459,7 @@ class InformationObjectSetDefn : public InformationObjectSet {
 	ConstraintPtr getObjectSetFromObjectField(const string& field) const;
 	ConstraintPtr getObjectSetFromObjectSetField(const string& field) const;
 	bool hasParameters() const {
-		return parameters.get() != NULL;
+		return parameters.get() != nullptr;
 	}
 	void generateInstanceCode(ostream& cxx) const;
 	void printOn(ostream&) const;
@@ -2995,14 +2986,14 @@ typedef void* yyscan_t;
 
 class ParserContext {
   public:
-	ParserContext(FILE* file = NULL);
+	ParserContext(FILE* file = nullptr);
 	~ParserContext();
 
 	yyscan_t			lexer;
 	FILE*				file;
-	ModuleDefinition *	Module			= NULL;
-	ClassStack *		classStack		= NULL;
-	ParameterList *		DummyParameters = NULL;
+	ModuleDefinition *	Module			= nullptr;
+	ClassStack *		classStack		= nullptr;
+	ParameterList *		DummyParameters = nullptr;
 	TypePtr				ValueTypeContext;
 	vector<string>		RemoveList;
 	int					IdentifierTokenContext;// = IDENTIFIER; chicken/egg problem
@@ -3015,7 +3006,7 @@ class ParserContext {
 	int					InObjectSetContext				= 0;
 	int					InWithSyntaxContext				= FALSE;
 	int					hasObjectTypeMacro				= FALSE;
-	const ObjectClassBase * InformationFromObjectContext	= NULL;
+	const ObjectClassBase * InformationFromObjectContext	= nullptr;
 	int					ParsingConstructedType			= FALSE;
 	int					InTopParser						= TRUE;
 };

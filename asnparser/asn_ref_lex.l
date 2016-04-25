@@ -107,9 +107,9 @@ int parenthesisCount = 0;
 "INTERSECTION"                     { return INTERSECTION; }
 "ISO646String"                     { return ISO646String; }
 "MACRO"								{ return MACRO; }
-"MAX"                              { return MAX; }
-"MIN"                              { return MIN; }
-"MINUS-INFINITY"                   { return MINUS_INFINITY; }
+"MAX"								{ return MAX; }
+"MIN"								{ return MIN; }
+"MINUS-INFINITY"					{ return MINUS_INFINITY; }
 "NOTATION"							{ return NOTATION; }
 "NULL"                             { return NULL_t; }
 "NumericString"                    { return NumericString; }

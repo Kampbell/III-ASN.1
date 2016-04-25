@@ -98,7 +98,7 @@ bool dumpLowerCaseToken = false;
 
 int isUpper(const char* text)
 {
-	for (const char* p = text; *p != NULL; ++p)
+	for (const char* p = text; *p != nullptr; ++p)
 		if (!(isupper(*p) || *p == '-' || *p == '_'))
 			return FALSE;
 	return TRUE;
