@@ -2,12 +2,12 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" Condition="'$(Platform)'=='Win32'">
-    <Poco>$(POCO)</Poco>
+    <Poco>$(POCO-W32)</Poco>
     <OpenSSL >C:\OpenSSL-Win32</OpenSSL>
 	<ASN1RT>$(SolutionDir)</ASN1RT>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" Condition="'$(Platform)'=='x64'">
-    <Poco>$(POCO)</Poco>
+    <Poco>$(POCO-X64)</Poco>
     <OpenSSL >C:\OpenSSL-Win64</OpenSSL>
   </PropertyGroup>
   <PropertyGroup Label="PropertySheets">
