@@ -40,6 +40,9 @@
     <ClCompile Include="csn\MyHTTP.cxx">
       <Filter>csn</Filter>
     </ClCompile>
+    <ClCompile Include="csn\TEST1.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ASN1CTest.h" />
@@ -78,6 +81,15 @@
       <Filter>csn</Filter>
     </ClInclude>
     <ClInclude Include="csn\MyHTTP.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\TEST1.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\TEST1tmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\MyHTTPtmp.h">
       <Filter>csn</Filter>
     </ClInclude>
   </ItemGroup>
@@ -450,6 +462,12 @@
       <Filter>csn</Filter>
     </None>
     <None Include="csn\MyHTTP.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="asn\test1.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="csn\TEST1.inl">
       <Filter>csn</Filter>
     </None>
   </ItemGroup>
