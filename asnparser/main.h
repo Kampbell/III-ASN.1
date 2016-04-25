@@ -76,6 +76,8 @@ using std::clog;
 using std::endl;
 using std::streambuf;
 using std::fill_n;
+using std::iostream;
+using std::istream;
 using std::ostream;
 using std::ostreambuf_iterator;
 using boost::shared_ptr;
@@ -118,69 +120,6 @@ class StdError {
 //  intermediate structures from parser
 //
 
-std::ostream& tab(std::ostream& stream);
-std::ostream& back(std::ostream& stream);
-std::ostream& bat(std::ostream& stream);
-
-
-class IndentBuffer : public streambuf {
-public:
-	IndentBuffer(streambuf* sbuf) : _sbuf(sbuf), _count(0), _need(true) {}
-
-	int tab() const {
-		return _count;
-	}
-	void tab() {
-		_count += 1;
-	}
-	void back() {
-		if (_count > 0) 
-			_count -= 1; 
-		else 
-			clog << "back while count is 0" << endl;
-	}
-	void bat() {
-		if (_count > 0) 
-			_count -= 1;
-		else 
-			clog << "bat while count is 0" << endl;
-	}
-
-protected:
-	virtual int_type overflow(int_type c) {
-
-		if (traits_type::eq_int_type(c, traits_type::eof()))
-			return _sbuf->sputc(c);
-
-		if (_need) {
-			fill_n(std::ostreambuf_iterator<char>(_sbuf), _count, '\t');
-			_need = false;
-		}
-
-		if (traits_type::eq_int_type(_sbuf->sputc(c), traits_type::eof()))
-			return traits_type::eof();
-
-		if (traits_type::eq_int_type(c, traits_type::to_char_type('\n')))
-			_need = true;
-
-		return traits_type::not_eof(c);
-	}
-
-	streambuf* _sbuf;
-	int _count;
-	bool _need;
-};
-
-class IndentStream : public std::ostream {
-  public:
-	IndentStream(std::ostream &os) : ib(os.rdbuf()), std::ostream(&ib) {};
-	friend std::ostream& tab(std::ostream& stream);
-	friend std::ostream& back(std::ostream& stream);
-	friend std::ostream& bat(std::ostream& stream);
-
-  private:
-	IndentBuffer ib;
-};
 
 typedef vector<string> StringList;
 
@@ -192,12 +131,8 @@ class NamedNumber { ////: public PObject
 	friend ostream& operator << (ostream&, const NamedNumber& );
 
 	void setAutoNumber(const NamedNumber& prev);
-	const string& getName() const {
-		return name;
-	}
-	int getNumber() const {
-		return number;
-	}
+	const string& getName() const { return name; }
+	int getNumber() const { return number; }
 
   protected:
 	string name;
@@ -313,7 +248,7 @@ class ConstraintElementBase : public Printable {
 		exclusions = excl;
 	}
 
-	virtual void generateCplusplus(const string& fn, ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual void getConstraint(string& ) const {}
 	virtual bool referencesType(const TypeBase& type) const;
 
@@ -357,7 +292,7 @@ public:
 		return extendable;
 	}
 	void getConstraint(string& str) const;
-	void generateCplusplus(const string& fn, ostream& hdr, ostream& cxx, ostream& inl) const;
+	void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	bool referencesType(const TypeBase& type) const;
 
 	const ConstraintElementVector& getStandardElements() const {
@@ -411,7 +346,7 @@ class ElementListConstraintElement : public ConstraintElementBase {
 	ElementListConstraintElement(auto_ptr<ConstraintElementVector> list);
 	void printOn(ostream&) const;
 
-	virtual void generateCplusplus(const string& fn, ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual void getConstraint(string& str) const;
 	virtual bool referencesType(const TypeBase& type) const;
 	const ConstraintElementVector& getElements() const {
@@ -447,7 +382,7 @@ class SingleValueConstraintElement : public ConstraintElementBase {
 	~SingleValueConstraintElement();
 	void printOn(ostream&) const;
 
-	virtual void generateCplusplus(const string& fn, ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual void getConstraint(string& str) const;
 
 	const ValuePtr& getValue() const {
@@ -471,7 +406,7 @@ class ValueRangeConstraintElement : public ConstraintElementBase {
 	void generateRange(ostream& strm);
 	virtual void getConstraint(string& str) const;
 
-	virtual void generateCplusplus(const string& fn, ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual bool hasPERInvisibleConstraint(const Parameter&) const;
 	virtual bool getCharacterSet(string& characterSet) const;
   protected:
@@ -519,7 +454,7 @@ class SizeConstraintElement : public NestedConstraintConstraintElement {
 	SizeConstraintElement(ConstraintPtr constraint);
 	virtual void getConstraint(string& str) const;
 	void printOn(ostream&) const;
-	virtual void generateCplusplus(const string& fn, ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual const SizeConstraintElement* getSizeConstraint() const;
 };
 
@@ -529,7 +464,7 @@ class FromConstraintElement : public NestedConstraintConstraintElement {
 	FromConstraintElement(ConstraintPtr constraint);
 	virtual void getConstraint(string& str) const;
 	void printOn(ostream&) const;
-	virtual void generateCplusplus(const string& fn, ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual const FromConstraintElement* getFromConstraint() const;
 	string getCharacterSet(const char* canonicalSet, int canonicalSetSize) const;
 	int getRange(ostream& cxx) const;
@@ -540,7 +475,7 @@ class WithComponentConstraintElement : public NestedConstraintConstraintElement 
   public:
 	WithComponentConstraintElement(string name, ConstraintPtr constraint, int presence);
 	void printOn(ostream&) const;
-	virtual void generateCplusplus(const string& fn, ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual bool hasPERInvisibleConstraint(const Parameter&) const {
 		return false;
 	}
@@ -563,7 +498,7 @@ class InnerTypeConstraintElement : public ElementListConstraintElement {
 	InnerTypeConstraintElement(auto_ptr<ConstraintElementVector> list, bool partial);
 
 	void printOn(ostream&) const;
-	virtual void generateCplusplus(const string& fn, ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 
   protected:
 	bool partial;
@@ -578,7 +513,7 @@ class UserDefinedConstraintElement : public ConstraintElementBase {
   public:
 	UserDefinedConstraintElement(ActualParameterListPtr list);
 	void printOn(ostream&) const;
-	virtual void generateCplusplus(const string& fn, ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual bool hasPERInvisibleConstraint(const Parameter&) const {
 		return true;
 	}
@@ -734,9 +669,9 @@ class TypeBase : public Printable {
 	virtual void flattenUsedTypes();
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
 
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
-	virtual void generateForwardDecls(ostream& hdr);
-	virtual void generateOperators(ostream& hdr, ostream& cxx, const TypeBase& actualType);
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateForwardDecls(ostream& fwd, ostream& hdr);
+	virtual void generateOperators(ostream& fwd, ostream& hdr, ostream& cxx, const TypeBase& actualType);
 	virtual const char * getAncestorClass() const = 0;
 	virtual string getTypeName() const;
 	virtual bool canReferenceType() const;
@@ -745,15 +680,15 @@ class TypeBase : public Printable {
 	virtual bool isParameterisedImport() const;
 	virtual bool canBeFwdDeclared(bool isComponent = false) const;
 	virtual bool forwardDeclareMe(ostream& hdr);
-	virtual void generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
+	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
 
 	bool isGenerated() const {
 		return isgenerated;
 	}
-	virtual void beginGenerateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
-	void endGenerateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void beginGenerateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
+	void endGenerateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	void generateTags(ostream& strm) const;
-	void generateCplusplusConstraints(const string& prefix, ostream& hdr, ostream& cxx, ostream& inl) const;
+	void generateCplusplusConstraints(const string& prefix, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 
 	const ConstraintList& getConstraints() const {
 		return constraints;
@@ -770,7 +705,7 @@ class TypeBase : public Printable {
 		return false;
 	}
 
-	virtual void generateConstructors(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	virtual bool needGenInfo() const;
 	TypePtr SeqOfflattenThisType(const TypeBase& parent, TypePtr thisPtr);
 
@@ -835,12 +770,12 @@ class DefinedType : public TypeBase {
 
 	virtual bool isChoice() const;
 	virtual bool isParameterizedType() const;
-	virtual void generateOperators(ostream& hdr, ostream& cxx, const TypeBase& actualType);
+	virtual void generateOperators(ostream& fwd, ostream& hdr, ostream& cxx, const TypeBase& actualType);
 	virtual const char * getAncestorClass() const;
 	virtual string getTypeName() const;
 	virtual bool canReferenceType() const;
 	virtual bool referencesType(const TypeBase& type) const;
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	virtual bool canBeFwdDeclared(bool isComponent = false) const;
 
 	virtual void beginParseThisTypeValue() const;
@@ -852,7 +787,7 @@ class DefinedType : public TypeBase {
 	virtual RemoveResult canRemoveType(const TypeBase&);
 	virtual bool removeThisType(const TypeBase&);
 	virtual string getPrimitiveType(const string& myName) const;
-	virtual void generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
+	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
 	virtual bool isPrimitiveType() const;
 
@@ -892,7 +827,7 @@ class SelectionType : public TypeBase {
 
 	virtual void flattenUsedTypes();
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	virtual const char * getAncestorClass() const;
 	virtual bool canReferenceType() const;
 	virtual bool referencesType(const TypeBase& type) const;
@@ -907,12 +842,12 @@ class SelectionType : public TypeBase {
 class BooleanType : public TypeBase {
   public:
 	BooleanType();
-	virtual void generateOperators(ostream& hdr, ostream& cxx, const TypeBase& actualType);
+	virtual void generateOperators(ostream& fwd, ostream& hdr, ostream& cxx, const TypeBase& actualType);
 	virtual const char * getAncestorClass() const;
 	virtual string getPrimitiveType(const string& ) const {
 		return "bool";
 	}
-	virtual void generateConstructors(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 };
 
 
@@ -921,7 +856,7 @@ class IntegerType : public TypeBase {
 	IntegerType();
 	IntegerType(NamedNumberList&);
 	virtual const char * getAncestorClass() const;
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	string getTypeName() const;
 	virtual string getPrimitiveType(const string& myName) const {
 		if(!myName.empty())
@@ -933,8 +868,8 @@ class IntegerType : public TypeBase {
 	virtual bool canReferenceType() const;
 	virtual bool referencesType(const TypeBase& type) const;
 
-	virtual void generateConstructors(ostream& hdr, ostream& cxx, ostream& inl);
-	virtual void generateOperators(ostream& hdr, ostream& cxx, const TypeBase& actualType);
+	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateOperators(ostream& fwd, ostream& hdr, ostream& cxx, const TypeBase& actualType);
 	virtual bool needGenInfo() const;
 	virtual void generateInfo(const TypeBase* type, ostream& , ostream&);
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
@@ -953,8 +888,8 @@ class EnumeratedType : public TypeBase {
 	EnumeratedType(NamedNumberList& enums, bool extend, NamedNumberList* ext);
 	void printOn(ostream&) const;
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
-	virtual void generateOperators(ostream& hdr, ostream& cxx, const TypeBase& actualType);
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateOperators(ostream& fwd, ostream& hdr, ostream& cxx, const TypeBase& actualType);
 	virtual const char * getAncestorClass() const;
 	virtual string getPrimitiveType(const string& myName) const {
 		if(!myName.empty())
@@ -962,12 +897,12 @@ class EnumeratedType : public TypeBase {
 		else
 			return "NamedNumber";
 	}
-	virtual void generateConstructors(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	virtual bool needGenInfo() const {
 		return true;
 	}
 	bool isPrimitiveType() const;
-	virtual void generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
+	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
 
 	virtual void
 	beginParseThisTypeValue() const,
@@ -988,8 +923,8 @@ class RealType : public TypeBase {
 	virtual string getPrimitiveType(const string& ) const {
 		return "double";
 	}
-	virtual void generateOperators(ostream& hdr, ostream& cxx, const TypeBase& actualType);
-	virtual void generateConstructors(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateOperators(ostream& fwd, ostream& hdr, ostream& cxx, const TypeBase& actualType);
+	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 };
 
 
@@ -1001,8 +936,8 @@ class BitStringType : public TypeBase {
 	string getTypeName() const;
 	//virtual string getPrimitiveType(const string& myName) const { return TypeBase::getPrimitiveType();}
 	virtual bool needGenInfo() const;
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
-	virtual void generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
 
 	virtual int getToken() const;
 	virtual void beginParseThisTypeValue() const;
@@ -1022,8 +957,8 @@ class OctetStringType : public TypeBase {
 		return "const ASN1_STD vector<char>&";
 	}
 	virtual const char* getConstrainedType() const;
-	virtual void generateConstructors(ostream& hdr, ostream& cxx, ostream& inl);
-	virtual void generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
+	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
 };
 
 
@@ -1046,22 +981,22 @@ class SequenceType : public TypeBase {
 	virtual void flattenUsedTypes();
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
 	virtual bool isPrimitiveType() const;
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	virtual const char * getAncestorClass() const;
 	virtual bool canReferenceType() const;
 	virtual bool referencesType(const TypeBase& type) const;
 
-	void generateComponent(TypeBase& field, ostream& hdr, ostream& cxx, ostream& inl, int id);
+	void generateComponent(TypeBase& field, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, int id);
 	virtual bool canBeFwdDeclared(bool isComponent ) const;
 	virtual void RemovePERInvisibleConstraint(const ParameterPtr&);
 	virtual bool useType(const TypeBase& type) const;
 	virtual bool needGenInfo() const {
 		return true;
 	}
-	virtual void generateForwardDecls(ostream& hdr);
+	virtual void generateForwardDecls(ostream& fwd, ostream& hdr);
 	virtual RemoveResult canRemoveType(const TypeBase&);
 	virtual bool removeThisType(const TypeBase&);
-	virtual void generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
+	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
   protected:
 	TypesVector fields;
 	size_t numFields;
@@ -1079,7 +1014,7 @@ class SequenceOfType : public TypeBase {
 	virtual void flattenUsedTypes();
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
 	virtual bool isPrimitiveType() const;
-	virtual void generateForwardDecls(ostream& hdr);
+	virtual void generateForwardDecls(ostream& fwd, ostream& hdr);
 	virtual const char * getAncestorClass() const;
 	virtual bool canReferenceType() const;
 	virtual bool referencesType(const TypeBase& type) const;
@@ -1090,12 +1025,12 @@ class SequenceOfType : public TypeBase {
 	}
 	virtual void RemovePERInvisibleConstraint(const ParameterPtr&);
 	virtual bool useType(const TypeBase& type) const;
-	virtual void generateConstructors(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	void setNonTypedef(bool v) {
 		nonTypedef = v;
 	}
 	virtual RemoveResult canRemoveType(const TypeBase&);
-	virtual void generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
+	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
   protected:
 	TypePtr baseType;
 	bool nonTypedef;
@@ -1122,15 +1057,15 @@ class ChoiceType : public SequenceType {
 	ChoiceType(TypesVector * std = NULL,
 			   bool extendable = false,
 			   TypesVector * extensions = NULL);
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
-	virtual void generateOperators(ostream& hdr, ostream& cxx, const TypeBase& actualType);
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateOperators(ostream& fwd, ostream& hdr, ostream& cxx, const TypeBase& actualType);
 	virtual bool isPrimitiveType() const;
 	virtual bool isChoice() const;
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
 	virtual const char * getAncestorClass() const;
-	void generateComponent(TypeBase& field, ostream& hdr, ostream& cxx, ostream& inl, int id);
+	void generateComponent(TypeBase& field, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, int id);
 	virtual RemoveResult canRemoveType(const TypeBase&);
-	virtual void generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
+	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
   private:
 	vector<TypeBase*> sortedFields;
 };
@@ -1167,17 +1102,17 @@ class StringTypeBase : public TypeBase {
 	virtual string getPrimitiveType(const string& ) const {
 		return "const ASN1_STD string&";
 	}
-	virtual void generateConstructors(ostream& hdr, ostream& cxx, ostream& inl);
-	virtual void generateOperators(ostream& hdr, ostream& cxx, const TypeBase& actualType);
+	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateOperators(ostream& fwd, ostream& hdr, ostream& cxx, const TypeBase& actualType);
 	virtual bool needGenInfo() const;
-	virtual void generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
-	virtual const char* getcanonicalSetString() const {
+	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
+	virtual const char* getCanonicalSetString() const {
 		return NULL;
 	};
   protected:
-	const char* canonicalSet;
-	const char* canonicalSetRep;
-	int canonicalSetSize;
+	const char* canonicalSet = nullptr;
+	const char* canonicalSetRep = nullptr;
+	int canonicalSetSize = 0;
 };
 
 
@@ -1188,9 +1123,9 @@ class UTF8StringType : public StringTypeBase {
 	virtual string getPrimitiveType(const string& ) const {
 		return "const ASN1_STD wstring&";
 	}
-	virtual void generateOperators(ostream& hdr, ostream& cxx, const TypeBase& actualType);
-	virtual void generateConstructors(ostream& hdr, ostream& cxx, ostream& inl);
-	virtual void generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
+	virtual void generateOperators(ostream& fwd, ostream& hdr, ostream& cxx, const TypeBase& actualType);
+	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
 };
 
 
@@ -1201,9 +1136,9 @@ class BMPStringType : public StringTypeBase {
 	virtual string getPrimitiveType(const string& ) const {
 		return "const ASN1_STD wstring&";
 	}
-	virtual void generateOperators(ostream& hdr, ostream& cxx, const TypeBase& actualType);
-	virtual void generateConstructors(ostream& hdr, ostream& cxx, ostream& inl);
-	virtual void generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
+	virtual void generateOperators(ostream& fwd, ostream& hdr, ostream& cxx, const TypeBase& actualType);
+	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
 };
 
 
@@ -1298,7 +1233,7 @@ class GeneralizedTimeType : public TypeBase {
 	virtual string getPrimitiveType() const {
 		return "const char*";
 	}
-	virtual void generateConstructors(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 };
 
 
@@ -1309,7 +1244,7 @@ class UTCTimeType : public TypeBase {
 	virtual string getPrimitiveType() const {
 		return "const char*";
 	}
-	virtual void generateConstructors(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 };
 
 
@@ -1326,7 +1261,7 @@ class RelativeOIDType : public TypeBase {
 	virtual const char * getAncestorClass() const;
 	virtual void beginParseThisTypeValue() const;
 	virtual void endParseThisTypeValue() const;
-	virtual void generateConstructors(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 };
 
 class ObjectIdentifierType : public TypeBase {
@@ -1335,7 +1270,7 @@ class ObjectIdentifierType : public TypeBase {
 	virtual const char * getAncestorClass() const;
 	virtual void beginParseThisTypeValue() const;
 	virtual void endParseThisTypeValue() const;
-	virtual void generateConstructors(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 };
 
 
@@ -1356,7 +1291,7 @@ class ObjectClassFieldType : public TypeBase {
 	virtual string getTypeName() const;
 	void addTableConstraint(shared_ptr<TableConstraint> constraint);
 	void generateDecoder(ostream&);
-	virtual void generateInfo(const TypeBase* type, ostream& hdr, ostream& cxx);
+	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
 	string getConstrainedTypeName() const;
   protected:
 	ObjectClassBasePtr asnObjectClass;
@@ -1371,7 +1306,7 @@ class ImportedType : public TypeBase {
 	ImportedType(const string& name, bool parameterised);
 	virtual const char * getAncestorClass() const;
 	virtual void adjustIdentifier(bool usingNamespace);
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	virtual bool isParameterisedImport() const;
 
 	virtual void beginParseThisTypeValue() const;
@@ -1406,7 +1341,7 @@ class TypeFromObject : public TypeBase {
 	~TypeFromObject();
 	virtual const char * getAncestorClass() const;
 	void printOn(ostream&) const;
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
   protected:
 	InformationObjectPtr refObj;
 	string field;
@@ -1430,8 +1365,8 @@ class ValueBase : public Printable {
 		return valueName;
 	}
 
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) const;
-	virtual void generateConst(ostream& hdr, ostream& cxx) const;
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateConst(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual bool isPERInvisibleConstraint(const Parameter&) const {
 		return false;
 	}
@@ -1453,7 +1388,7 @@ class DefinedValue : public ValueBase {
 	const string& getReference() const {
 		return referenceName;
 	}
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual bool isPERInvisibleConstraint(const Parameter& param) const {
 		return param.getName() == referenceName;
 	}
@@ -1479,7 +1414,7 @@ class BooleanValue : public ValueBase {
   public:
 	BooleanValue(bool newVal);
 	void printOn(ostream&) const;
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
   protected:
 	bool value;
 };
@@ -1489,8 +1424,8 @@ class IntegerValue : public ValueBase {
   public:
 	IntegerValue(boost::int64_t newVal);
 	void printOn(ostream&) const;
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) const;
-	virtual void generateConst(ostream& hdr, ostream& cxx) const;
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateConst(ostream& fwd, ostream& hdr, ostream& cxx) const;
 
 #if (__SIZEOF_LONG__ != 8)
 	operator int64_t() const {
@@ -1548,7 +1483,7 @@ class CharacterValue : public ValueBase {
 	CharacterValue(char t1, char t2);
 	CharacterValue(char q1, char q2, char q3, char q4);
 	void printOn(ostream&) const;
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	unsigned getValue() const {
 		return value;
 	}
@@ -1563,7 +1498,7 @@ class CharacterStringValue : public ValueBase {
 	CharacterStringValue(const string& newVal);
 	CharacterStringValue(StringList& newVal);
 	void printOn(ostream&) const;
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	void getValue(string& v) const;
   protected:
 	string value;
@@ -1574,8 +1509,8 @@ class ObjectIdentifierValue : public ValueBase {
   public:
 	ObjectIdentifierValue(const string& newVal);
 	ObjectIdentifierValue(StringList& newVal);
-	void generateCplusplus(ostream&hdr, ostream& cxx, ostream& inl) const;
-	void generateConst(ostream& hdr, ostream& cxx) const;
+	void generateCplusplus(ostream& fwd, ostream&hdr, ostream& cxx, ostream& inl) const;
+	void generateConst(ostream& fwd, ostream& hdr, ostream& cxx) const;
 	void printOn(ostream&) const;
   protected:
 	StringList value;
@@ -1585,14 +1520,14 @@ class ObjectIdentifierValue : public ValueBase {
 class MinValue : public ValueBase {
   public:
 	void printOn(ostream&) const;
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 };
 
 
 class MaxValue : public ValueBase {
   public:
 	void printOn(ostream&) const;
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 };
 
 
@@ -1609,7 +1544,7 @@ class ChoiceValue : public ValueBase {
 	ChoiceValue(const TypePtr& typ, const string& fieldName, ValuePtr val)
 		: type(typ), fieldname(fieldName), value(val) { }
 	void printOn(ostream&) const;
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
   protected:
 	const TypePtr type;
 	string fieldname;
@@ -1757,7 +1692,7 @@ class FieldSpec : public Printable {
 								   const string& classNameString,
 								   const TypeBase* keyType,
 								   const string& objClassName,
-								   ostream& hdr, ostream& cxx, ostream& inl) const;
+								   ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 
   protected:
 
@@ -1787,7 +1722,7 @@ class TypeFieldSpec : public FieldSpec {
 								   const string& classNameString,
 								   const TypeBase* keyType,
 								   const string& objClassName,
-								   ostream& hdr, ostream& cxx, ostream& inl) const;
+								   ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
   protected:
 	TypePtr type;
 };
@@ -1928,15 +1863,11 @@ class ObjectFieldSpec : public FieldSpec {
 
 class ObjectSetFieldSpec : public FieldSpec {
   public:
-	ObjectSetFieldSpec(const string& nam,
-					   DefinedObjectClassPtr oclass,
-					   bool optional = false);
+	ObjectSetFieldSpec(const string& nam,  DefinedObjectClassPtr oclass,  bool optional = false);
 	~ObjectSetFieldSpec();
 
 	virtual bool hasDefault() const;
-	void setDefault(ConstraintPtr dftObjSet) {
-		objSet = dftObjSet;
-	}
+	void setDefault(ConstraintPtr dftObjSet) { objSet = dftObjSet; }
 	string getField() const;
 
 	virtual void beginParseSetting(FieldSettingList*) const;
@@ -1954,9 +1885,7 @@ class ObjectSetFieldSpec : public FieldSpec {
 								   const string& classNameString,
 								   const TypeBase* keyType,
 								   const string& objClassName,
-								   ostream& hdr,
-								   ostream& cxx,
-								   ostream& inl) const;
+		ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
   protected:
 	DefinedObjectClassPtr objectClass;
 	ConstraintPtr objSet;
@@ -2104,7 +2033,7 @@ class ObjectClassBase : public Printable {
 	virtual void beginParseObjectSet() const = 0;
 	virtual void endParseObjectSet() const = 0;
 	virtual void resolveReference() const = 0;
-	virtual void generateCplusplus(ostream& , ostream& , ostream& ) {}
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) {}
 	virtual const string& getKeyName() const = 0;
   protected:
 	string cppname;
@@ -2147,7 +2076,7 @@ class ObjectClassDefn : public ObjectClassBase {
 		return name;
 	}
 
-	void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
+	void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
   protected:
 	auto_ptr<FieldSpecsList> fieldSpecs;
 	TokenGroupPtr withSyntaxSpec;
@@ -2219,11 +2148,9 @@ class Setting : public Printable {
 	};
 	virtual ~Setting() {};
 	virtual void generateInfo(const string& , ostream&) {}
-	virtual void generateCplusplus(const string&, const string&, ostream& , ostream& , ostream& , unsigned& flag) = 0;
-	virtual void generateInitializationList(ostream& , ostream& , ostream& ) {}
-	virtual bool isExtendable() const {
-		return false;
-	}
+	virtual void generateCplusplus(const string& prefix, const string& name, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag) = 0;
+	virtual void generateInitializationList(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) {}
+	virtual bool isExtendable() const { 	return false;	}
 	virtual void generateInstanceCode(const string& , ostream& ) const {}
 };
 
@@ -2241,7 +2168,7 @@ class TypeSetting : public Setting {
 		return type.get();
 	}
 	void printOn(ostream& strm) const;
-	virtual void generateCplusplus(const string& prefix, const string& name, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
+	virtual void generateCplusplus(const string& prefix, const string& name, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
 	virtual void generateInfo(const string& name,ostream& hdr);
   protected:
 	TypePtr type;
@@ -2266,8 +2193,8 @@ class ValueSetting : public Setting {
 		return type.get();
 	}
 	void printOn(ostream& strm) const;
-	virtual void generateCplusplus(const string& prefix, const string& name, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
-	virtual void generateInitializationList(ostream&, ostream&, ostream&);
+	virtual void generateCplusplus(const string& prefix, const string& name, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
+	virtual void generateInitializationList(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
   protected:
 	TypePtr  type;
 	ValuePtr value;
@@ -2285,7 +2212,7 @@ class ValueSetSetting : public Setting {
 		return valueSet;
 	}
 	void printOn(ostream& strm) const;
-	virtual void generateCplusplus(const string& prefix, const string& name, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
+	virtual void generateCplusplus(const string& prefix, const string& name, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
   protected:
 	ValueSetPtr valueSet;
 };
@@ -2303,7 +2230,7 @@ class ObjectSetting : public Setting {
 		return object.get();
 	}
 	void printOn(ostream& strm) const;
-	virtual void generateCplusplus(const string& prefix, const string& name, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
+	virtual void generateCplusplus(const string& prefix, const string& name, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
   protected:
 	ObjectClassBase* objectClass;
 	InformationObjectPtr object;
@@ -2321,7 +2248,7 @@ class ObjectSetSetting : public Setting {
 		return objectSet;
 	}
 	void printOn(ostream&) const;
-	virtual void generateCplusplus(const string& prefix, const string& name, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
+	virtual void generateCplusplus(const string& prefix, const string& name, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
 	virtual void generateInfo(const string& name,ostream& hdr);
 	virtual bool isExtendable() const {
 		return objectSet->isExtendable();
@@ -2349,8 +2276,8 @@ class FieldSetting : public Printable {
 	void printOn(ostream&) const;
 
 	bool isExtendable() const;
-	void generateCplusplus(const string& prefix, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
-	void generateInitializationList(ostream& hdr, ostream& cxx, ostream& inl);
+	void generateCplusplus(const string& prefix, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
+	void generateInitializationList(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	void generateInfo(ostream& hdr);
 	void generateInstanceCode(const string& prefix, ostream& cxx) const;
   protected:
@@ -2432,7 +2359,7 @@ class DefaultObjectDefn : public InformationObject {
 
 	void printOn(ostream&) const;
 	virtual const Setting* getSetting(const string& fieldname) const;
-	virtual void generateCplusplus(ostream& hdr , ostream& cxx, ostream& inl);
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr , ostream& cxx, ostream& inl);
 	virtual bool isExtendable() const;
 	virtual void generateInstanceCode(ostream& cxx) const;
   protected:
@@ -2517,7 +2444,7 @@ class InformationObjectSet : public Printable {
 	virtual ConstraintPtr getObjectSetFromObjectSetField(const string& field) const = 0;
 	virtual bool hasParameters() const = 0;
 	virtual void generateInstanceCode(ostream& cxx) const = 0;
-	virtual void generateType(ostream& hdr, ostream& cxx, ostream& inl) const = 0;
+	virtual void generateType(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const = 0;
 };
 
 class InformationObjectSetDefn : public InformationObjectSet {
@@ -2545,7 +2472,7 @@ class InformationObjectSetDefn : public InformationObjectSet {
 	}
 	void generateInstanceCode(ostream& cxx) const;
 	void printOn(ostream&) const;
-	virtual void generateType(ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateType(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	bool generateTypeConstructor(ostream& cxx) const;
   protected:
 	string name;
@@ -2586,7 +2513,7 @@ class ImportedObjectSet :  public InformationObjectSet {
 		return reference->hasParameters();
 	}
 	void generateInstanceCode(ostream& ) const {}
-	virtual void generateType(ostream& , ostream&, ostream&) const {}
+	virtual void generateType(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {}
 	void printOn(ostream&) const {}
   private:
 	const InformationObjectSet* reference;
@@ -2702,7 +2629,7 @@ class ObjectSetType : public TypeBase {
   public:
 	ObjectSetType(InformationObjectSetPtr objSet);
 	virtual const char * getAncestorClass() const;
-	virtual void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	virtual bool hasParameters() const;
 	bool isPrimitiveType() const {	return false; }
   private:
@@ -2880,7 +2807,7 @@ class ImportModule : public Printable {
 
 	void printOn(ostream&) const;
 
-	void generateCplusplus(ostream& hdr, ostream& cxx, ostream& inl);
+	void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	void generateUsingDirectives(ostream& strm) const;
 	void Adjust();
 
@@ -2990,7 +2917,7 @@ class ModuleDefinition : public Printable {
 
 	bool isExported(const string& name) const;
 
-	void generateClassModule(ostream& hdr, ostream& cxx, ostream& inl);
+	void generateClassModule(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	void CreateObjectSetTypes();
 
 	void addToRemoveList(const string& reference);
@@ -3032,14 +2959,14 @@ class ModuleDefinition : public Printable {
 };
 
 template <class T>
-shared_ptr<T> findWithName(const vector<shared_ptr<T> >& cont, const string& name) {
-	typedef vector<shared_ptr<T> > Cont;
+boost::shared_ptr<T> findWithName(const vector<boost::shared_ptr<T> >& cont, const string& name) {
+	typedef vector<boost::shared_ptr<T> > Cont;
 
 	typename Cont::const_iterator itr = cont.begin(), last = cont.end();
 	for (; itr != last; ++itr)
 		if ((*itr)->getName() == name)
 			return *itr;
-	return shared_ptr<T>();
+	return boost::shared_ptr<T>();
 
 }
 typedef stack<ObjectClassBase*> ClassStack;
