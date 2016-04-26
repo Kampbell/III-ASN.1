@@ -66,8 +66,6 @@ typedef std::vector<std::string> StringList;
 #if 0
 %define api.pure	full
 #endif
-extern int idlex(ParserContext* context);
-extern int iderror(ParserContext* context, const string& path, const char* msg);
 
 %}
 
@@ -204,7 +202,10 @@ extern int iderror(ParserContext* context, const string& path, const char* msg);
   } tagv;
 }
 
-
+%code provides{
+extern int idlex(ParserContext* context);
+extern int iderror(ParserContext* context, const string& path, const char* msg);
+}
 %%
 
 ModuleDefinitionList
