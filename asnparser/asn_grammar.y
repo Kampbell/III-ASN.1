@@ -1,5 +1,4 @@
 %expect 14
-
 %{
 /*
  * asn_grammar.y
@@ -45,14 +44,9 @@
 #undef realloc
 #undef free
 #include <sstream>
-
 #include "main.h"
-#include "asn_grammar.h"
-
-
 
 static int UnnamedFieldCount = 1;
-
 
 static std::string * ConcatNames(std::string * s1, char c, std::string * s2) {
   *s1 += c;*s1 += *s2;delete s2;return s1;
@@ -65,17 +59,6 @@ static std::string * ConcatNames(std::string * s1, char c, std::string * s2) {
 
 extern int yydebug;
 extern int iddebug;
-
-#ifdef REENTRANT_PARSER
-extern int yylex(YYSTYPE* yylval_param, YYLTYPE* yyloc, yyscan_t scanner, ParserContext* context);
-extern int yyerror(YYLTYPE* yyloc, yyscan_t scanner, ParserContext* context, const char* msg);
-#else 
-extern int yyparse();
-void yyerror(const char* str);
-extern void yyrestart(FILE*);
-extern FILE * yyin;
-extern FILE * idin;
-#endif
 
 %}
 %define api.pure		full
@@ -254,15 +237,16 @@ extern FILE * idin;
 %type <sval> GlobalModuleReference
 %type <sval> Reference
 %type <sval> ExternalTypeReference ExternalValueReference
-%type <sval> ObjIdComponent
-%type <sval> NumberForm
+%type <oic>  ObjIdComponent
+%type <nf>		NumberForm
+%type <nf>		NumberFormOptional
 %type <sval> SimpleDefinedType
 %type <sval> CharsDefn
 %type <sval> SimpleDefinedValue
 %type <sval> FieldName PrimitiveFieldName
 %type <sval> ExternalObjectClassReference
 %type <sval> UsefulObjectClassReference
-%type <sval> OID_INTEGER
+%type <ival> OID_INTEGER
 
 %type <sval> PARAMETERIZEDTYPEREFERENCE
 %type <sval> PARAMETERIZEDOBJECTCLASSREFERENCE
@@ -272,7 +256,7 @@ extern FILE * idin;
 
 %type <slst> DefinitiveIdentifier
 %type <slst> DefinitiveObjIdComponentList
-%type <slst> ObjIdComponentList
+%type <oiclst> ObjIdComponentList
 %type <slst> BitIdentifierList
 %type <slst> CharSyms
 
@@ -431,6 +415,9 @@ extern FILE * idin;
   boost::int64_t					ival;
   std::string*						sval;
   StringList* 						slst;
+  NumberForm*	 					nf;
+  ObjIdComponent* 					oic;
+  ObjIdComponentList* 				oiclst;
   TypeBase* 						tval;
   TypePtr* 							tptr;
   TypesVector*						tlst;
@@ -471,9 +458,23 @@ extern FILE * idin;
     unsigned tagNumber;
   } tagv;
 }
+
 %printer { fprintf (yyoutput, "'%lld'", $$); } <ival>
 %printer { if ($$ != nullptr) fprintf (yyoutput, "'%s'", $$->c_str()); } <sval>
 %printer { if ($$ != nullptr) fprintf (yyoutput, "'%s'", $$->getName().c_str()); } <tval> <vval> <objt> <para> <symb> <fspc> <objc> <ocft>
+
+%code provides {
+#ifdef REENTRANT_PARSER
+extern int yylex(YYSTYPE* yylval_param, YYLTYPE* yyloc, yyscan_t scanner, ParserContext* context);
+extern int yyerror(YYLTYPE* yyloc, yyscan_t scanner, ParserContext* context, const char* msg);
+#else 
+extern int yyparse();
+void yyerror(const char* str);
+extern void yyrestart(FILE*);
+extern FILE * yyin;
+extern FILE * idin;
+#endif
+}
 
 %%
 
@@ -2386,7 +2387,7 @@ ObjectIdentifierValue
 ObjIdComponentList
   : ObjIdComponent
       {
-		$$ = new StringList;
+		$$ = new ObjIdComponentList;
 		$$->push_back(*$1);
 		delete $1;
       }
@@ -2405,17 +2406,17 @@ ObjIdComponentList
 ;
   
 ObjIdComponent
-  : OID_IDENTIFIER NumberFormOptional
-  | OID_INTEGER
+  : OID_IDENTIFIER NumberFormOptional	{ if ($2) $$ = new ObjIdComponent(*$1, *$2); else $$ = new ObjIdComponent(*$1);}
+  | OID_INTEGER							{ $$ = new ObjIdComponent($1); }
 ;
 NumberFormOptional
-  : %empty
-  | '(' NumberForm ')'
+  : %empty								{  $$ = nullptr; }
+  | '(' NumberForm ')'					{  $$ = $2; }
 ;
 NumberForm
-  : OID_INTEGER
-  | ExternalValueReference
-  | VALUEREFERENCE
+	: OID_INTEGER						{ $$ = new NumberForm($1);  }
+	| ExternalValueReference
+	| VALUEREFERENCE
 ;
 
 
