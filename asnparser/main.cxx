@@ -70,6 +70,7 @@ extern "C" {
 #include <iomanip>
 #include <cstring>
 #include <cassert>
+#include <iterator>
 #include <limits.h>
 
 
@@ -121,7 +122,7 @@ extern int isUpper(const char* text);
 //
 #ifdef REENTRANT_PARSER
 ModuleList				Modules;
-UsefulModuleDef *		UsefulModule = NULL;
+UsefulModuleDef *		UsefulModule = nullptr;
 
 static	stack<ParserContext*>	contexts;
 static 	vector<string>			files;
@@ -151,7 +152,7 @@ int  yyerror(YYLTYPE* location, yyscan_t scanner, ParserContext * context, char 
 	clog << "Second stage " << StdError(Fatal) << str << " near token \"" << yytext <<"\"" << nl;
 #else
 	clog << "Second stage " << StdError(Fatal) << str << " at " << location->first_line << ":" << location->first_column << endl;
-	context->Module = NULL;
+	context->Module = nullptr;
 #endif
 	return 0;
 }
@@ -168,6 +169,11 @@ void iderror(const char * str) {
 }
 #endif
 static const char* tokenAsString(int token);
+static const char* ArcNames[] = {
+	"ITU-T",
+	"ISO",
+	"joint-iso-itu-t"
+};
 static const char * const StandardClasses[] = {
 	"ASN1::Null",
 	"ASN1::BOOLEAN",
@@ -217,7 +223,7 @@ static string getFileName(const string& fullname);
 static string getFileDirectory(const string& fullname);
 static string getFileTitle(const string& fullname);
 static string shortenName(const string& name);
-static string makeIdentifierC(const string& identifier);
+static string makeCppName(const string& identifier);
 static void str_replace(string& str, const char* src, const char* target, string::size_type pos = 0);
 static string getPath(const char* name = nullptr);
 static vector<string> readDirectory(const string& directory, const string& extension);
@@ -267,7 +273,7 @@ int main(int argc, char** argv) {
 	string path;
 
 	iddebug = 0;
-	yydebug = 0;
+	yydebug = 1;
 
 	while ((c=getopt(argc, argv, opt)) != -1) {
 		switch (c) {
@@ -306,7 +312,7 @@ int main(int argc, char** argv) {
 
 		case 'm':
 			dllMacroRTS				= optarg;
-			dllMacro				= makeIdentifierC(optarg);
+			dllMacro				= makeCppName(optarg);
 			dllMacroDEFINED			= dllMacro + "_DEFINED";
 			dllMacroEXPORTS			= dllMacro + "_EXPORTS";
 			dllMacroDLL				= dllMacro + "_DLL";
@@ -419,7 +425,7 @@ int main(int argc, char** argv) {
 		yyparse(context.lexer, contexts.top());
 		yylex_destroy(context.lexer);
 		fclose(fds[no]);
-		contexts.top()->file = NULL;
+		contexts.top()->file = nullptr;
 	}
 
 	for (int no= 0 ; no < Modules.size(); ++no) {
@@ -838,11 +844,11 @@ Constraint::Constraint(ConstraintElementPtr& elmt) {
 
 
 Constraint::Constraint(auto_ptr<ConstraintElementVector> a_std, bool extend, auto_ptr<ConstraintElementVector> ext) {
-	if (a_std.get() != NULL) {
+	if (a_std.get() != nullptr) {
 		standard.swap(*a_std);
 	}
 	extendable = extend;
-	if (ext.get() != NULL) {
+	if (ext.get() != nullptr) {
 		extensions.swap(*ext);
 	}
 }
@@ -1050,22 +1056,22 @@ void Constraint::generateObjSetAccessCode(ostream& cxx) {
 }
 
 const SizeConstraintElement* Constraint::getSizeConstraint() const {
-	const SizeConstraintElement* result= NULL;
+	const SizeConstraintElement* result= nullptr;
 	ConstraintElementVector::const_iterator it = standard.begin(),	last = standard.end();
 
 	for (; it != last; ++it)
-		if ((result = (*it)->getSizeConstraint()) != NULL)
+		if ((result = (*it)->getSizeConstraint()) != nullptr)
 			break;
 	return result;
 }
 
 const FromConstraintElement* Constraint::getFromConstraint() const {
-	const FromConstraintElement* result=NULL;
+	const FromConstraintElement* result=nullptr;
 	ConstraintElementVector::const_iterator it = standard.begin(),
 											last = standard.end();
 
 	for (; it != last; ++it)
-		if ((result = (*it)->getFromConstraint()) != NULL)
+		if ((result = (*it)->getFromConstraint()) != nullptr)
 			break;
 	return result;
 }
@@ -1080,12 +1086,12 @@ void Constraint::getCharacterSet(string& characterSet) const {
 }
 
 const SubTypeConstraintElement* Constraint::getSubTypeConstraint() const {
-	const SubTypeConstraintElement* result=NULL;
+	const SubTypeConstraintElement* result=nullptr;
 	ConstraintElementVector::const_iterator it = standard.begin(),
 											last = standard.end();
 
 	for (; it != last; ++it)
-		if ((result = (*it)->getSubTypeConstraint()) != NULL)
+		if ((result = (*it)->getSubTypeConstraint()) != nullptr)
 			break;
 	return result;
 }
@@ -1133,11 +1139,11 @@ ConstraintPtr ConstraintElementBase::getObjectSetFromObjectSetField(const string
 }
 
 const SizeConstraintElement* ConstraintElementBase::getSizeConstraint() const {
-	return NULL;
+	return nullptr;
 }
 
 const FromConstraintElement* ConstraintElementBase::getFromConstraint() const {
-	return NULL;
+	return nullptr;
 }
 
 bool ConstraintElementBase::getCharacterSet(string& ) const {
@@ -1145,7 +1151,7 @@ bool ConstraintElementBase::getCharacterSet(string& ) const {
 }
 
 const SubTypeConstraintElement* ConstraintElementBase::getSubTypeConstraint() const {
-	return NULL;
+	return nullptr;
 }
 
 
@@ -1220,7 +1226,7 @@ ConstraintPtr ElementListConstraintElement::getObjectSetFromObjectField(const st
 	ConstraintElementVector::const_iterator i = elements.begin(), e = elements.end();
 	for (; i != e; ++i) {
 		ConstraintPtr cons = (*i)->getObjectSetFromObjectField(field);
-		if (cons.get() != NULL) {
+		if (cons.get() != nullptr) {
 			elem->AppendElements(cons->getStandardElements().begin(),
 								 cons->getStandardElements().end());
 			elem->AppendElements(cons->getExtensionElements().end(),
@@ -1242,7 +1248,7 @@ ConstraintPtr ElementListConstraintElement::getObjectSetFromObjectSetField(const
 	ConstraintElementVector::const_iterator i = elements.begin(), e = elements.end();
 	for (; i != e; ++i) {
 		ConstraintPtr cons = (*i)->getObjectSetFromObjectSetField(field);
-		if (cons.get() != NULL) {
+		if (cons.get() != nullptr) {
 			elem->AppendElements(cons->getStandardElements().begin(), cons->getStandardElements().end());
 			elem->AppendElements(cons->getExtensionElements().end(),  cons->getExtensionElements().end());
 		}
@@ -1279,21 +1285,21 @@ void ElementListConstraintElement::generateObjSetAccessCode(ostream& cxx) {
 }
 
 const SizeConstraintElement* ElementListConstraintElement::getSizeConstraint() const {
-	const SizeConstraintElement* result=NULL;
+	const SizeConstraintElement* result=nullptr;
 	ConstraintElementVector::const_iterator it = elements.begin(), last = elements.end();
 
 	for (; it != last; ++it)
-		if ((result = (*it)->getSizeConstraint()) != NULL)
+		if ((result = (*it)->getSizeConstraint()) != nullptr)
 			break;
 	return result;
 }
 
 const FromConstraintElement* ElementListConstraintElement::getFromConstraint() const {
-	const FromConstraintElement* result=NULL;
+	const FromConstraintElement* result=nullptr;
 	ConstraintElementVector::const_iterator it = elements.begin(), last = elements.end();
 
 	for (; it != last; ++it)
-		if ((result = (*it)->getFromConstraint()) != NULL)
+		if ((result = (*it)->getFromConstraint()) != nullptr)
 			break;
 	return result;
 }
@@ -1352,7 +1358,7 @@ bool SingleValueConstraintElement::hasPERInvisibleConstraint(const Parameter& ) 
 
 bool SingleValueConstraintElement::getCharacterSet(string& characterSet) const {
 	const CharacterStringValue* val;
-	if ((val = dynamic_cast<const CharacterStringValue*>(value.get())) != NULL) {
+	if ((val = dynamic_cast<const CharacterStringValue*>(value.get())) != nullptr) {
 		val->getValue(characterSet);
 		return true;
 	}
@@ -1492,7 +1498,7 @@ NestedConstraintConstraintElement::~NestedConstraintConstraintElement() {
 
 
 bool NestedConstraintConstraintElement::referencesType(const TypeBase& type) const {
-	if (constraint.get() == NULL)
+	if (constraint.get() == nullptr)
 		return false;
 
 	return constraint->referencesType(type);
@@ -1565,7 +1571,7 @@ string FromConstraintElement::getCharacterSet(const char* canonicalSet, int cano
 		int setSize = constrainedSet.size();
 		const char* c =&constrainedSet[0];
 		for (int i = 0; i < canonicalSetSize; i++) {
-			if (memchr(c, canonicalSet[i], setSize) != NULL)
+			if (memchr(c, canonicalSet[i], setSize) != nullptr)
 				characterSet += canonicalSet[i];
 		}
 	}
@@ -1600,7 +1606,7 @@ void WithComponentConstraintElement::printOn(ostream& strm) const {
 	else
 		strm << name;
 
-	if (constraint.get() != NULL)
+	if (constraint.get() != nullptr)
 		strm << *constraint;
 
 	switch (presence) {
@@ -1681,7 +1687,7 @@ TableConstraint::~TableConstraint() {
 }
 
 string TableConstraint::getObjectSetIdentifier() const {
-	return makeIdentifierC(objSet->getName());
+	return makeCppName(objSet->getName());
 }
 
 
@@ -1703,7 +1709,7 @@ TypeBase::TypeBase(unsigned tagNum, ModuleDefinition* md)
 
 TypeBase::TypeBase(TypeBase& copy)
 	: name(copy.name),
-	  identifier(makeIdentifierC(copy.name)),
+	  identifier(makeCppName(copy.name)),
 	  tag(copy.tag),
 	  defaultTag(copy.tag) {
 	isoptional = copy.isoptional;
@@ -1734,7 +1740,7 @@ void TypeBase::PrintFinish(ostream& os) const {
 	os << " " << constraints;
 	if (isoptional)
 		os << " OPTIONAL";
-	if (defaultValue.get() != NULL)
+	if (defaultValue.get() != nullptr)
 		os << " DEFAULT " << *defaultValue;
 	os << nl;
 }
@@ -1742,7 +1748,7 @@ void TypeBase::PrintFinish(ostream& os) const {
 
 void TypeBase::setName(const string& newName) {
 	name = newName;
-	identifier = makeIdentifierC(name);
+	identifier = makeCppName(name);
 }
 
 void TypeBase::setDefaultValue(ValuePtr value) {
@@ -1751,7 +1757,7 @@ void TypeBase::setDefaultValue(ValuePtr value) {
 
 
 void TypeBase::adjustIdentifier(bool) {
-	identifier = contexts.top()->Module->getPrefix() + makeIdentifierC(name);
+	identifier = contexts.top()->Module->getPrefix() + makeCppName(name);
 }
 
 
@@ -2160,14 +2166,14 @@ void DefinedType::generateOperators(ostream& fwd, ostream& hdr, ostream& cxx, co
 const char * DefinedType::getAncestorClass() const {
 	if (baseType.get())
 		return baseType->getAncestorClass();
-	return NULL;
+	return nullptr;
 }
 
 
 string DefinedType::getTypeName() const {
 	resolveReference();
-	if (baseType.get() == NULL)
-		return makeIdentifierC(referenceName);
+	if (baseType.get() == nullptr)
+		return makeCppName(referenceName);
 
 	string result = baseType->getIdentifier();
 
@@ -2200,14 +2206,14 @@ void DefinedType::resolveReference() const {
 	if (unresolved) {
 		unresolved = false;
 
-		if (contexts.top()->Module == NULL)
+		if (contexts.top()->Module == nullptr)
 			contexts.top()->Module = module;
 		baseType = contexts.top()->Module->findType(referenceName);
 
 		// AR Tag should not be fetched from base type
 		// That only confuses SEQUENCE code generation
 #if 0
-		if (baseType.get() != NULL) {
+		if (baseType.get() != nullptr) {
 			if (!hasNonStandardTag())
 				((Tag&)defaultTag) = ((Tag&)tag) = baseType->getTag();
 		}
@@ -2282,9 +2288,9 @@ TypePtr DefinedType::flattenThisType(TypePtr& self, const TypeBase& parent) {
 	if (needGenInfo()) {
 		if (parent.hasParameters()) {
 			size_t i;
-			const SubTypeConstraintElement*  subcons = NULL;
+			const SubTypeConstraintElement*  subcons = nullptr;
 			for (i=0; i != constraints.size(); ++i) {
-				if ((subcons = constraints[i]->getSubTypeConstraint()) != NULL) {
+				if ((subcons = constraints[i]->getSubTypeConstraint()) != nullptr) {
 					const TypePtr subtype = subcons->getSubType();
 					ParameterListRep paramList= parent.getParameters().rep;
 					for (i = 0; i < paramList.size(); ++i) {
@@ -2496,7 +2502,7 @@ void IntegerType::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, os
 				hdr << "," << nl;
 			}
 
-			hdr << makeIdentifierC((*first)->getName());
+			hdr << makeCppName((*first)->getName());
 
 			int num = (*first)->getNumber();
 			if (num != prevNum+1) {
@@ -2509,7 +2515,7 @@ void IntegerType::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, os
 		hdr << nl << "};" << nl << nl;
 
 		for (first = allowedValues.begin() ; first != last ; ++first) {
-			string fname = makeIdentifierC((*first)->getName());
+			string fname = makeCppName((*first)->getName());
 			hdr << "bool is_" << fname << "() const { return value == " << fname << "; }" << nl
 				<< "void set_" << fname << "() { value = " << fname << "; }\n" << nl;
 		}
@@ -2616,9 +2622,9 @@ TypePtr IntegerType::flattenThisType(TypePtr& self, const TypeBase& parent) {
 	TypePtr result = self;
 	if (needGenInfo()&& parent.hasParameters()) {
 		size_t i;
-		const SubTypeConstraintElement*  subcons = NULL;
+		const SubTypeConstraintElement*  subcons = nullptr;
 		for (i=0; i != constraints.size(); ++i) {
-			if ((subcons = constraints[i]->getSubTypeConstraint())!= NULL) {
+			if ((subcons = constraints[i]->getSubTypeConstraint())!= nullptr) {
 				const TypePtr subtype = subcons->getSubType();
 				ParameterListRep paramList= parent.getParameters().rep;
 				for (size_t i = 0; i < paramList.size(); ++i) {
@@ -2667,7 +2673,7 @@ EnumeratedType::EnumeratedType(NamedNumberList& enums, bool extend, NamedNumberL
 	enumerations.swap(enums);
 	numEnums = enumerations.size();
 	extendable = extend;
-	if (ext != NULL) {
+	if (ext != nullptr) {
 		enumerations.splice( enumerations.end(), *ext);
 		delete ext;
 	}
@@ -2718,7 +2724,7 @@ void EnumeratedType::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx,
 			hdr << "," << nl;
 		}
 
-		hdr << makeIdentifierC((*itr)->getName());
+		hdr << makeCppName((*itr)->getName());
 
 		int num = (*itr)->getNumber();
 		if (num != prevNum+1) {
@@ -2732,7 +2738,7 @@ void EnumeratedType::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx,
 	generateCplusplusConstraints(string(), fwd, hdr, cxx, inl);
 
 	for (itr = enumerations.begin(); itr != last; ++itr) {
-		string fname = makeIdentifierC((*itr)->getName());
+		string fname = makeCppName((*itr)->getName());
 		hdr << "bool is_" << fname << "() const { return value == " << fname << "; }" << nl
 			<< "void set_" << fname << "() { value = " << fname << "; }\n" << nl;
 	}
@@ -2915,7 +2921,7 @@ void BitStringType::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, 
 				hdr << "," << nl;
 			}
 
-			hdr << tab << makeIdentifierC((*itr)->getName()) << bat;
+			hdr << tab << makeCppName((*itr)->getName()) << bat;
 
 			int num = (*itr)->getNumber();
 			if (num != prevNum+1) {
@@ -2987,7 +2993,7 @@ void BitStringType::generateInfo(const TypeBase* type, ostream& fwd, ostream& hd
 	const SizeConstraintElement* sizeConstraint ;
 
 	if (type->getConstraints().size()&&
-			((sizeConstraint = type->getConstraints()[0]->getSizeConstraint()) != NULL)) {
+			((sizeConstraint = type->getConstraints()[0]->getSizeConstraint()) != nullptr)) {
 		string str;
 		sizeConstraint->getConstraint(str);
 		cxx << str.substr(0, str.size()-2);
@@ -3038,7 +3044,7 @@ void OctetStringType::generateConstructors(ostream& fwd, ostream& hdr, ostream& 
 	hdr <<  getIdentifier()  << "(size_type n, unsigned char v) : Inherited(n, v) {}" << nl
 		<<  "template <class Iterator>" << nl
 		<<  tab << getIdentifier() << "(Iterator first, Iterator last) : Inherited(first, last) {}" << nl
-		<<  getIdentifier() << "(const ASN1_STD vector<char>& that) : Inherited(that) {}" << nl << bat;
+		<<  getIdentifier() << "(const octets& that) : Inherited(that) {}" << nl << bat;
 
 }
 
@@ -3065,7 +3071,7 @@ void OctetStringType::generateInfo(const TypeBase* type, ostream& fwd, ostream& 
 	const SizeConstraintElement* sizeConstraint ;
 
 	if (type->getConstraints().size()&&
-			(sizeConstraint = type->getConstraints()[0]->getSizeConstraint()) != NULL) {
+			(sizeConstraint = type->getConstraints()[0]->getSizeConstraint()) != nullptr) {
 		string str;
 		sizeConstraint->getConstraint(str);
 		cxx << str.substr(0, str.size()-2);
@@ -3102,7 +3108,7 @@ SequenceType::SequenceType(TypesVector* a_std,
 						   TypesVector * ext,
 						   unsigned tagNum)
 	: TypeBase(tagNum, contexts.top()->Module), detectingLoop(false) {
-	if (a_std != NULL) {
+	if (a_std != nullptr) {
 		numFields = a_std->size();
 		a_std->swap(fields);
 		delete a_std;
@@ -3110,7 +3116,7 @@ SequenceType::SequenceType(TypesVector* a_std,
 		numFields = 0;
 
 	extendable = extend;
-	if (ext != NULL) {
+	if (ext != nullptr) {
 		fields.insert(fields.end(), ext->begin(), ext->end());
 		delete ext;
 	}
@@ -3626,7 +3632,7 @@ void SequenceType::generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr
 				cxx << "," << nl;
 
 			if (field.isRemovedType())
-				cxx << "    NULL";
+				cxx << "    nullptr";
 			else
 				cxx << "   &"	<< field.getIdentifier() << "::value_type::theInfo";
 
@@ -3743,7 +3749,7 @@ void SequenceType::generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr
 			cxx << "    " << getIdentifier() << "::theInfo.fieldInfos," << nl
 				<< "    " << getIdentifier() << "::theInfo.ids," << nl;
 	} else
-		cxx << "    NULL, NULL," << nl;
+		cxx << "    nullptr, nullptr," << nl;
 
 	cxx << "    " << numFields << ", " << nExtensions << ", " << nOptional++ << "," << nl
 		<< "    ";
@@ -3754,12 +3760,12 @@ void SequenceType::generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr
 		else
 			cxx << "     " << getIdentifier() << "::theInfo.nonOptionalExtensions," << nl;
 	} else
-		cxx << "NULL," << nl;
+		cxx << "nullptr," << nl;
 
 	cxx << "    ";
 
 	if (autoTag || nTotalFields ==0)
-		cxx << "NULL," << nl;
+		cxx << "nullptr," << nl;
 	else if (useDefaultTag) {
 		cxx << "&";
 		if (type == this)
@@ -3779,7 +3785,7 @@ void SequenceType::generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr
 		else
 			cxx << getIdentifier() << "::theInfo.names" << nl;
 	} else
-		cxx << "NULL" << nl;
+		cxx << "nullptr" << nl;
 
 	cxx << "};\n" << nl;
 }
@@ -3790,7 +3796,7 @@ SequenceOfType::SequenceOfType(TypePtr base, ConstraintPtr constraint, unsigned 
 	: TypeBase(tag, contexts.top()->Module), nonTypedef (false) {
 	assert(base.get());
 	baseType = base;
-	if (constraint.get() != NULL) {
+	if (constraint.get() != nullptr) {
 		addConstraint(constraint);
 	}
 }
@@ -3802,7 +3808,7 @@ SequenceOfType::~SequenceOfType() {
 
 void SequenceOfType::printOn(ostream& strm) const {
 	PrintStart(strm);
-	if (baseType.get() == NULL)
+	if (baseType.get() == nullptr)
 		strm << "!!Null Type!!" << nl;
 	else
 		strm << *baseType << nl;
@@ -3908,7 +3914,7 @@ void SequenceOfType::generateInfo(const TypeBase* type, ostream& fwd, ostream& h
 	const SizeConstraintElement* sizeConstraint ;
 
 	if (type->getConstraints().size()&&
-			((sizeConstraint = type->getConstraints()[0]->getSizeConstraint()) != NULL)) {
+			((sizeConstraint = type->getConstraints()[0]->getSizeConstraint()) != nullptr)) {
 		string str;
 		sizeConstraint->getConstraint(str);
 		cxx << str.substr(0, str.size()-2);
@@ -3923,7 +3929,7 @@ void SequenceOfType::generateInfo(const TypeBase* type, ostream& fwd, ostream& h
 /////////////////////////////////////////////////////////
 
 SetType::SetType()
-	: SequenceType(NULL, false, NULL, Tag::UniversalSet) {
+	: SequenceType(nullptr, false, nullptr, Tag::UniversalSet) {
 }
 
 
@@ -4259,7 +4265,7 @@ void ChoiceType::generateInfo(const TypeBase* type,ostream& fwd, ostream& hdr, o
 			}
 
 			if (sortedFields[i]->isRemovedType())
-				cxx << "    NULL";
+				cxx << "    nullptr";
 			else
 				cxx << "   &" <<  sortedFields[i]->getIdentifier()
 					<< "::value_type::theInfo";
@@ -4334,7 +4340,7 @@ void ChoiceType::generateInfo(const TypeBase* type,ostream& fwd, ostream& hdr, o
 		else
 			cxx << getIdentifier() << "::theInfo.tags," << nl;
 	} else
-		cxx << "NULL," << nl;
+		cxx << "nullptr," << nl;
 
 	if (type == this)
 		cxx << "    " << getClassNameString() << "::selectionNames" << nl;
@@ -4480,29 +4486,29 @@ void StringTypeBase::generateInfo(const TypeBase* type,ostream& fwd, ostream& hd
 	type->generateTags(cxx);
 	cxx << ",\n   &" << getAncestorClass() << "::theInfo," << nl;
 
-	const SizeConstraintElement* sizeConstraint = NULL;
+	const SizeConstraintElement* sizeConstraint = nullptr;
 	size_t i;
 	for (i = 0; i < type->getConstraints().size(); ++i)
-		if ((sizeConstraint = type->getConstraints()[i]->getSizeConstraint()) != NULL)
+		if ((sizeConstraint = type->getConstraints()[i]->getSizeConstraint()) != nullptr)
 			break;
 
-	if (sizeConstraint != NULL) {
+	if (sizeConstraint != nullptr) {
 		string str;
 		sizeConstraint->getConstraint(str);
 		cxx << "    " << str.substr(0, str.size()-2) << "," << nl;
 	} else
 		cxx << "    ASN1::Unconstrained, 0, UINT_MAX," << nl;
 
-	const FromConstraintElement* fromConstraint = NULL;
+	const FromConstraintElement* fromConstraint = nullptr;
 	for (i = 0; i < type->getConstraints().size(); ++i)
-		if ((fromConstraint = type->getConstraints()[i]->getFromConstraint()) != NULL)
+		if ((fromConstraint = type->getConstraints()[i]->getFromConstraint()) != nullptr)
 			break;
 
 	cxx << "    ";
 
 	int charSetUnalignedBits;
 	string characterSet;
-	if (fromConstraint != NULL &&
+	if (fromConstraint != nullptr &&
 			(characterSet = fromConstraint->getCharacterSet(canonicalSet, canonicalSetSize)).size()) {
 		cxx << '"';
 		for (size_t i = 0; i < characterSet.size(); ++i) {
@@ -4566,28 +4572,28 @@ void UTF8StringType::generateInfo(const TypeBase* type, ostream& fwd, ostream& h
 	generateTags(cxx);
 	cxx << ",\n   &" << getAncestorClass() << "::theInfo," << nl;
 
-	const SizeConstraintElement* sizeConstraint = NULL;
+	const SizeConstraintElement* sizeConstraint = nullptr;
 	size_t i;
 	for (i = 0; i < type->getConstraints().size(); ++i)
-		if ((sizeConstraint = type->getConstraints()[i]->getSizeConstraint()) != NULL)
+		if ((sizeConstraint = type->getConstraints()[i]->getSizeConstraint()) != nullptr)
 			break;
 
-	if (sizeConstraint != NULL) {
+	if (sizeConstraint != nullptr) {
 		string str;
 		sizeConstraint->getConstraint(str);
 		cxx << "    " << str.substr(0, str.size()-2) << "," << nl;
 	} else
 		cxx << "    ASN1::Unconstrained, 0, UINT_MAX," << nl;
 
-	const FromConstraintElement* fromConstraint = NULL;
+	const FromConstraintElement* fromConstraint = nullptr;
 	for (i = 0; i < type->getConstraints().size(); ++i)
-		if ((fromConstraint = type->getConstraints()[i]->getFromConstraint()) != NULL)
+		if ((fromConstraint = type->getConstraints()[i]->getFromConstraint()) != nullptr)
 			break;
 
 	cxx << "    ";
 
 	int range = 0xffff;
-	if (fromConstraint != NULL)
+	if (fromConstraint != nullptr)
 		range = fromConstraint->getRange(cxx);
 	else
 		cxx <<  0 << ", " << 0xffff ;
@@ -4638,28 +4644,28 @@ void BMPStringType::generateInfo(const TypeBase* type, ostream& fwd, ostream& hd
 	generateTags(cxx);
 	cxx << ",\n   &" << getAncestorClass() << "::theInfo," << nl;
 
-	const SizeConstraintElement* sizeConstraint = NULL;
+	const SizeConstraintElement* sizeConstraint = nullptr;
 	size_t i;
 	for (i = 0; i < type->getConstraints().size(); ++i)
-		if ((sizeConstraint = type->getConstraints()[i]->getSizeConstraint()) != NULL)
+		if ((sizeConstraint = type->getConstraints()[i]->getSizeConstraint()) != nullptr)
 			break;
 
-	if (sizeConstraint != NULL) {
+	if (sizeConstraint != nullptr) {
 		string str;
 		sizeConstraint->getConstraint(str);
 		cxx << "    " << str.substr(0, str.size()-2) << "," << nl;
 	} else
 		cxx << "    ASN1::Unconstrained, 0, UINT_MAX," << nl;
 
-	const FromConstraintElement* fromConstraint = NULL;
+	const FromConstraintElement* fromConstraint = nullptr;
 	for (i = 0; i < type->getConstraints().size(); ++i)
-		if ((fromConstraint = type->getConstraints()[i]->getFromConstraint()) != NULL)
+		if ((fromConstraint = type->getConstraints()[i]->getFromConstraint()) != nullptr)
 			break;
 
 	cxx << "    ";
 
 	int range = 0xffff;
-	if (fromConstraint != NULL)
+	if (fromConstraint != nullptr)
 		range = fromConstraint->getRange(cxx);
 	else
 		cxx <<  0 << ", " << 0xffff ;
@@ -4938,7 +4944,7 @@ void ObjectIdentifierType::beginParseThisTypeValue() const {
 
 void ObjectIdentifierType::endParseThisTypeValue() const {
 	contexts.top()->InOIDContext = false;
-	contexts.top()->BraceTokenContext = OID_BRACE;
+	contexts.top()->BraceTokenContext = '{'; // was OID_BRACE
 }
 
 const char * ObjectIdentifierType::getAncestorClass() const {
@@ -5047,8 +5053,8 @@ void ObjectClassFieldType::generateDecoder(ostream& cxx) {
 		string fieldIdentifier = asnObjectClassField.substr(1);
 		cxx << tableConstraint->getObjectSetIdentifier() << " objSet(*visitor.get_env());" << nl;
 
-		string cppkeyname = makeIdentifierC(keyname);
-		string cpprefname = makeIdentifierC(getName());
+		string cppkeyname = makeCppName(keyname);
+		string cpprefname = makeCppName(getName());
 		cxx	 << "if (objSet.get()) {" << nl
 			 << "    if (objSet->count(get_" << cppkeyname << "())) {" << nl
 			 << "        ref_" << cpprefname << "().grab(objSet->find(get_" <<  cppkeyname
@@ -5104,9 +5110,9 @@ const char * ImportedType::getAncestorClass() const {
 
 void ImportedType::adjustIdentifier(bool usingNamespace) {
 	if (usingNamespace)
-		identifier = cppModuleName + "::" + makeIdentifierC(name);
+		identifier = cppModuleName + "::" + makeCppName(name);
 	else
-		identifier = modulePrefix + '_' + makeIdentifierC(name);
+		identifier = modulePrefix + '_' + makeCppName(name);
 }
 
 
@@ -5116,7 +5122,7 @@ void ImportedType::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, o
 
 void ImportedType::setModuleName(const string& mname) {
 	moduleName = mname;
-	cppModuleName = makeIdentifierC(mname);
+	cppModuleName = makeCppName(mname);
 	modulePrefix = contexts.top()->Module->getImportModuleName(mname);
 }
 
@@ -5160,7 +5166,7 @@ TypeFromObject::~TypeFromObject() {
 }
 
 const char * TypeFromObject::getAncestorClass() const {
-	return NULL;
+	return nullptr;
 }
 
 void TypeFromObject::printOn(ostream& strm) const {
@@ -5243,7 +5249,7 @@ void DefinedValue::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, o
 		actualValue = contexts.top()->Module->findValue(referenceName);
 	}
 
-	if (actualValue.get() != NULL)
+	if (actualValue.get() != nullptr)
 		actualValue->generateCplusplus(fwd, hdr, cxx, inl);
 	else
 		cxx << referenceName;
@@ -5299,7 +5305,7 @@ void IntegerValue::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, o
 		cxx << 'U';
 }
 
-void IntegerValue::generateConst(ostream& fwd, ostream& hdr, ostream& cxx) const {
+void IntegerValue::generateConst(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
 	if(!getName().empty()) {
 		string work = getName();
 		str_replace(work, "-", "_");
@@ -5412,33 +5418,29 @@ void CharacterStringValue::getValue(string& v) const {
 
 /////////////////////////////////////////////////////////
 
-ObjectIdentifierValue::ObjectIdentifierValue(const string& newVal) {
-	value.push_back(newVal);
-}
 
 
-ObjectIdentifierValue::ObjectIdentifierValue(StringList& newVal) {
+ObjectIdentifierValue::ObjectIdentifierValue(ObjIdComponentList& newVal) {
 	value.swap(newVal);
 }
 
 
 void ObjectIdentifierValue::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
-	cxx << value.size();
-	for(int i=0; i<value.size(); ++i) {
-		cxx << ", " << atol(value[i].c_str());
+	ObjIdComponentList::const_iterator it;
+	for (it = getComponents().cbegin(); it != getComponents().cend(); ++it) {
+		cxx << it->getNumberForm().getNumber();
+		if (distance(getComponents().cbegin(), it) + 1< getComponents().size())
+			cxx << ", ";
 	}
 }
 
-void ObjectIdentifierValue::generateConst(ostream& fwd, ostream& hdr, ostream& cxx) const {
-	string work = getName();
-	str_replace(work, "-", "_");
-	hdr << "extern const ASN1::OBJECT_IDENTIFIER " << work << ";\n" << nl;
-	cxx << "const ASN1::OBJECT_IDENTIFIER " << work  << '(';
-
-	ostringstream dummy;
+void ObjectIdentifierValue::generateConst(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
+	string cppName = makeCppName(getName());
+	hdr << "extern " << dllMacroAPI << " const ASN1::OBJECT_IDENTIFIER " << cppName << ";" << nl << nl;
+	cxx << "const " << dllMacroAPI << " ASN1::OBJECT_IDENTIFIER " << cppName  << " {" ;
+	stringstream dummy;
 	generateCplusplus(fwd, hdr, cxx, dummy);
-
-	cxx << ");\n" << nl;
+	cxx << "};" << nl << nl;
 }
 
 void ObjectIdentifierValue::printOn(ostream& strm) const {
@@ -5446,9 +5448,14 @@ void ObjectIdentifierValue::printOn(ostream& strm) const {
 	if (value.empty())
 		strm << "empty object identifier";
 	else {
-		strm << value[0];
-		for (size_t i = 1; i < value.size(); i++)
-			strm << '.' << value[i];
+		strm << " {";
+		ObjIdComponentList::const_iterator it;
+		for (it = getComponents().cbegin(); it != getComponents().cend(); ++it) {
+			strm << *it;
+		if (distance(getComponents().cbegin(), it) + 1< getComponents().size())
+			strm << ' ';
+		}
+		strm << "}";
 	}
 	strm << nl;
 }
@@ -5481,7 +5488,7 @@ void MaxValue::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostre
 /////////////////////////////////////////////////////////
 
 SequenceValue::SequenceValue(ValuesList * list) {
-	if (list != NULL) {
+	if (list != nullptr) {
 		values.swap(*list);
 		delete list;
 	}
@@ -5529,7 +5536,7 @@ ImportModule::ImportModule(string * name, SymbolList * syms)
 		}
 	}
 
-	filename = toLower(makeIdentifierC(fullModuleName));
+	filename = toLower(makeCppName(fullModuleName));
 }
 
 
@@ -5570,7 +5577,7 @@ void ImportModule::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, o
 }
 
 void ImportModule::generateUsingDirectives(ostream& strm) const {
-	string name = makeIdentifierC(fullModuleName);
+	string name = makeCppName(fullModuleName);
 	for (size_t i = 0; i < symbols.size(); ++i)
 		symbols[i]->generateUsingDirective(name, strm);
 }
@@ -5603,7 +5610,7 @@ bool ImportModule::hasValuesOrObjects() const {
 }
 
 string ImportModule::getCModuleName() const {
-	return makeIdentifierC(fullModuleName);
+	return makeCppName(fullModuleName);
 }
 
 
@@ -5745,12 +5752,12 @@ string ModuleDefinition::getImportModuleName(const string& mName) {
 
 void ModuleDefinition::AdjustModuleName(const string& sourcePath,bool isSubModule) {
 	shortModuleName = shortenName(moduleName);
-	cppModuleName = makeIdentifierC(moduleName);
+	cppModuleName = makeCppName(moduleName);
 	generatedPath = sourcePath + DIR_SEPARATOR;
 	if (!isSubModule)
 		generatedPath += moduleName;
 	else if (types.size())
-		generatedPath += (shortModuleName + "_" +toLower(makeIdentifierC(types[0]->getName())));
+		generatedPath += (shortModuleName + "_" +toLower(makeCppName(types[0]->getName())));
 	else {
 		generatedPath += imports[0]->getFileName();
 		string tmp = imports[1]->getFileName();
@@ -6050,8 +6057,9 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 
 	cxx << "namespace " << cppModuleName << "{" << nl	 << nl;
 
-	for(i = 0; i < values.size(); i++)
-		values[i]->generateConst(fwd, hdr, cxx, inl);
+	for (auto value : values)
+		value->generateConst(fwd, hdr, cxx, inl);
+
 
 	for (i = 0; i < types.size(); i++) {
 		if (i > 0 && i%classesPerFile == 0) {
@@ -6105,14 +6113,16 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 		} else {
 			types[i]->generateCplusplus(fwd, hdr, cxx, inl);
 		}
+
 	}
 
-	i = classesCount+1;
+	i = classesCount+1; // FIXME ???
 
 	// generate Information Classes
-	for (i = 0; i < objectClasses.size(); ++i)
-		objectClasses[i]->generateCplusplus(fwd, hdr, cxx, inl);
-
+	for (int no = 0; no < objectClasses.size(); ++no) {
+		ObjectClassBasePtr objectClass = objectClasses[no];
+		objectClass->generateCplusplus(fwd, hdr, cxx, inl);
+	}
 
 	// generate Information Objects& Information ObjectSets
 	generateClassModule(fwd, hdr, cxx, inl);
@@ -6194,7 +6204,7 @@ void ModuleDefinition::generateClassModule(ostream& fwd, ostream& hdr, ostream& 
 	for (i = 0 ; i < informationObjects.size(); ++i)
 		if (dynamic_cast<DefaultObjectDefn*>(informationObjects[i].get())) {
 			InformationObject& obj = *informationObjects[i];
-			string name = makeIdentifierC(obj.getName());
+			string name = makeCppName(obj.getName());
 			if (obj.isExtendable())
 				tmphdr <<  name << "& get_" << name << "() \t\t\t\t{  return m_" << name << "; }" << nl;
 			tmphdr << "const " << name << "& get_" << name << "() const \t{  return m_" << name << "; }" << nl;
@@ -6202,8 +6212,8 @@ void ModuleDefinition::generateClassModule(ostream& fwd, ostream& hdr, ostream& 
 
 	for (i = 0; i < informationObjectSets.size(); ++i) {
 		InformationObjectSet& objSet = *informationObjectSets[i];
-		const string name = makeIdentifierC(objSet.getName());
-		const string className = makeIdentifierC(objSet.getObjectClass()->getReferenceName());
+		const string name = makeCppName(objSet.getName());
+		const string className = makeCppName(objSet.getObjectClass()->getReferenceName());
 
 		if (!objSet.hasParameters()) {
 			if (objSet.isExtendable())
@@ -6237,8 +6247,8 @@ void ModuleDefinition::generateClassModule(ostream& fwd, ostream& hdr, ostream& 
 		hdr << bat << "private:" << nl << tab;
 		for (i = 0 ; i < informationObjects.size(); ++i) {
 			InformationObject& obj = *informationObjects[i];
-			string name = makeIdentifierC(obj.getName());
-			string className = makeIdentifierC(obj.getObjectClass()->getReferenceName());
+			string name = makeCppName(obj.getName());
+			string className = makeCppName(obj.getObjectClass()->getReferenceName());
 			if (dynamic_cast<DefaultObjectDefn*>(&obj))
 				hdr << className << " m_" << name << ";" << nl;
 		}
@@ -6246,8 +6256,8 @@ void ModuleDefinition::generateClassModule(ostream& fwd, ostream& hdr, ostream& 
 		for (i = 0; i < informationObjectSets.size(); ++i) {
 			InformationObjectSet& objSet = *informationObjectSets[i];
 			if (!objSet.hasParameters()) {
-				const string name = makeIdentifierC(objSet.getName());
-				const string className = makeIdentifierC(objSet.getObjectClass()->getReferenceName());
+				const string name = makeCppName(objSet.getName());
+				const string className = makeCppName(objSet.getObjectClass()->getReferenceName());
 				hdr << className << " m_" << name << ";" << nl;
 			}
 		}
@@ -6390,7 +6400,7 @@ string ModuleDefinition::CreateSubModules(SymbolList& exportedSymbols) {
 	for (i = 0; i < exportedSymbols.size() ; ++i)
 		if (exportedSymbols[i]->isType()) {
 			TypePtr type = findType(exportedSymbols[i]->getName());
-			if (type.get() != NULL) {
+			if (type.get() != nullptr) {
 				subModule->addType(type);
 				typeMap.erase(type->getName());
 				types.erase(remove(types.begin(), types.end(), type), types.end());
@@ -6418,7 +6428,7 @@ string ModuleDefinition::CreateSubModules(SymbolList& exportedSymbols) {
 		while (it != unhandledSymbols.end()) {
 			if (subModules[i]->hasType(*it)) {
 				if (!hasSymbolInThisModule) {
-					ImportModule* im = new ImportModule(new string(getName()), NULL);
+					ImportModule* im = new ImportModule(new string(getName()), nullptr);
 					im->setFileName(subModules[i]->getFileName());
 					subModule->imports.push_back(ImportModulePtr(im));
 					hasSymbolInThisModule = true;
@@ -6431,7 +6441,7 @@ string ModuleDefinition::CreateSubModules(SymbolList& exportedSymbols) {
 		for (j = 0; j < exportedTypes.size()&& !hasSymbolInThisModule; ++j) {
 			for (size_t k = 0; k < subModules[i]->types.size()&& !hasSymbolInThisModule; ++k) {
 				if ( exportedTypes[j]->useType(*subModules[i]->types[k]) ) {
-					ImportModule* im = new ImportModule(new string(getName()), NULL);
+					ImportModule* im = new ImportModule(new string(getName()), nullptr);
 					im->setFileName(subModules[i]->getFileName());
 					subModule->imports.push_back(ImportModulePtr(im));
 					hasSymbolInThisModule = true;
@@ -6453,8 +6463,8 @@ string ModuleDefinition::CreateSubModules(SymbolList& exportedSymbols) {
 			ImportedType* importedType = dynamic_cast<ImportedType*>(exportedTypes[i].get());
 			if (importedType) {
 				ImportModule* im= subModule->findImportedModule(importedType->getModuleName());
-				if (im == NULL) {
-					im = new ImportModule(new string(importedType->getModuleName()), NULL);
+				if (im == nullptr) {
+					im = new ImportModule(new string(importedType->getModuleName()), nullptr);
 					ImportModule* theImportedModule = this->findImportedModule(importedType->getModuleName());
 					assert(theImportedModule);
 					im->setFileName(theImportedModule->getFileName());
@@ -6537,7 +6547,7 @@ void ModuleDefinition::RemoveReferences(bool verbose) {
 	for (i = 0 ; i < removeList.size(); ++i) {
 		const string& ref = removeList[i];
 		TypePtr typeToBeRemoved = findType(ref);
-		if (typeToBeRemoved.get() == NULL) {
+		if (typeToBeRemoved.get() == nullptr) {
 			clog << getName() << "." << ref << " doesn't exist, unable to remove it" << nl;
 			continue;
 		}
@@ -6582,12 +6592,12 @@ ImportModule* ModuleDefinition::findImportedModule(const string& theModuleName) 
 	//    if (imports[i].getModuleName() == theModuleName)
 	//        return&imports[i];
 	//}
-	//return NULL;
+	//return nullptr;
 	return findWithName(imports, theModuleName).get();
 }
 
 bool  ModuleDefinition::hasType(const string& name) {
-	return findType(name).get() != NULL;
+	return findType(name).get() != nullptr;
 }
 
 void ModuleDefinition::dump() const {
@@ -6600,7 +6610,7 @@ void ModuleDefinition::dump() const {
 //////////////////////////////////////////////////////////////////////////////
 FieldSpec::FieldSpec(const string& nam, bool optional)
 	: name(nam), isoptional(optional) {
-	identifier = makeIdentifierC(name.substr(1));
+	identifier = makeCppName(name.substr(1));
 }
 
 
@@ -6627,7 +6637,7 @@ TypeFieldSpec::~TypeFieldSpec() {
 }
 
 bool TypeFieldSpec::hasDefault() const {
-	return type.get() != NULL;
+	return type.get() != nullptr;
 }
 
 
@@ -6653,7 +6663,7 @@ string TypeFieldSpec::getDefault() const {
 }
 
 bool TypeFieldSpec::getKey(TypePtr& keyType, string& keyName) {
-	if (type != NULL && string(type->getAncestorClass()) == "ASN1::OBJECT_IDENTIFIER") {
+	if (type != nullptr && string(type->getAncestorClass()) == "ASN1::OBJECT_IDENTIFIER") {
 		keyType = type;
 		keyName = getName();
 		return true;
@@ -6679,7 +6689,7 @@ void TypeFieldSpec::resolveReference() const {
 
 void TypeFieldSpec::generate_info_type_constructor(ostream& cxx) const {
 	if (!type.get())
-		cxx << "  m_" << getIdentifier() << "= NULL;" << nl;
+		cxx << "  m_" << getIdentifier() << "= nullptr;" << nl;
 }
 
 void TypeFieldSpec::generate_info_type_memfun(ostream& hdr) const {
@@ -6688,7 +6698,7 @@ void TypeFieldSpec::generate_info_type_memfun(ostream& hdr) const {
 
 	if (!type.get())
 		hdr << "m_" << getIdentifier() << " ? ASN1::AbstractData::create(m_"
-			<< getIdentifier() << ") : NULL";
+			<< getIdentifier() << ") : nullptr";
 	else
 		hdr << "ASN1::AbstractData::create(&" << type->getTypeName() << "::theInfo)";
 
@@ -6720,7 +6730,7 @@ void TypeFieldSpec::generateTypeField(const string& templatePrefix,  const strin
 		<< "    if (it != objSet->end())" << nl
 		<< "        return it->get_" << getIdentifier() << "();" << nl
 		<< "    }" << nl
-		<< "  return NULL;" << nl
+		<< "  return nullptr;" << nl
 		<< "}\n" << nl;
 }
 
@@ -6740,7 +6750,7 @@ void FixedTypeValueFieldSpec::setDefault(ValuePtr value) {
 }
 
 bool FixedTypeValueFieldSpec::hasDefault() const {
-	return defaultValue.get() != NULL;
+	return defaultValue.get() != nullptr;
 }
 
 
@@ -6770,7 +6780,7 @@ void FixedTypeValueFieldSpec::printOn(ostream& strm) const {
 	if (isoptional)
 		strm << " OPTIONAL";
 
-	if (defaultValue.get() != NULL)
+	if (defaultValue.get() != nullptr)
 		strm << *defaultValue;
 }
 
@@ -6807,7 +6817,7 @@ FixedTypeValueSetFieldSpec::~FixedTypeValueSetFieldSpec() {
 }
 
 bool FixedTypeValueSetFieldSpec::hasDefault() const {
-	return defaultValueSet.get() != NULL;
+	return defaultValueSet.get() != nullptr;
 }
 
 void FixedTypeValueSetFieldSpec::beginParseSetting(FieldSettingList*) const {
@@ -6828,7 +6838,7 @@ void FixedTypeValueSetFieldSpec::printOn(ostream& strm) const {
 	if (isoptional)
 		strm << " OPTIONAL";
 
-	if (defaultValueSet.get() != NULL)
+	if (defaultValueSet.get() != nullptr)
 		strm << *defaultValueSet;
 }
 
@@ -6857,11 +6867,11 @@ VariableTypeValueFieldSpec::~VariableTypeValueFieldSpec() {
 }
 
 bool VariableTypeValueFieldSpec::hasDefault() const {
-	return defaultValue.get() != NULL;
+	return defaultValue.get() != nullptr;
 }
 
 TypePtr getFieldType(FieldSettingList* parsedFields, const string& fieldname) {
-	if (parsedFields != NULL) {
+	if (parsedFields != nullptr) {
 		for (size_t i = 0; i < parsedFields->size(); ++i) {
 			FieldSetting& fieldSetting = *((*parsedFields)[i]);
 			if (fieldSetting.getName() == fieldname) {
@@ -6893,10 +6903,10 @@ void VariableTypeValueFieldSpec::EstablishFieldRelation(FieldSpecsList* specs) {
 
 void VariableTypeValueFieldSpec::beginParseSetting(FieldSettingList* parsedFields) const {
 	TypePtr type = ::getFieldType(parsedFields, getField());
-	if (type.get() == NULL)
+	if (type.get() == nullptr)
 		type = defaultType;
 
-	if (type.get() != NULL) {
+	if (type.get() != nullptr) {
 		contexts.top()->ValueTypeContext = type;
 		type->beginParseValue();
 	}
@@ -6913,7 +6923,7 @@ int VariableTypeValueFieldSpec::getToken() const {
 
 void VariableTypeValueFieldSpec::printOn(ostream& strm) const {
 	FieldSpec::printOn(strm);
-	if (defaultValue.get() != NULL)
+	if (defaultValue.get() != nullptr)
 		strm << *defaultValue;
 }
 
@@ -6934,7 +6944,7 @@ VariableTypeValueSetFieldSpec::~VariableTypeValueSetFieldSpec() {
 }
 
 bool VariableTypeValueSetFieldSpec::hasDefault() const {
-	return defaultValueSet.get() != NULL;
+	return defaultValueSet.get() != nullptr;
 }
 
 void VariableTypeValueSetFieldSpec::EstablishFieldRelation(FieldSpecsList* specs) {
@@ -6951,7 +6961,7 @@ void VariableTypeValueSetFieldSpec::EstablishFieldRelation(FieldSpecsList* specs
 void VariableTypeValueSetFieldSpec::beginParseSetting(FieldSettingList* parsedFields) const {
 	TypePtr type = ::getFieldType(parsedFields, getField());
 
-	if (type.get() != NULL) {
+	if (type.get() != nullptr) {
 		contexts.top()->ValueTypeContext = type;
 		type->beginParseValueSet();
 	}
@@ -6966,7 +6976,7 @@ int VariableTypeValueSetFieldSpec::getToken() const {
 
 void VariableTypeValueSetFieldSpec::printOn(ostream& strm) const {
 	FieldSpec::printOn(strm);
-	if (defaultValueSet.get() != NULL)
+	if (defaultValueSet.get() != nullptr)
 		strm << *defaultValueSet;
 }
 
@@ -6985,7 +6995,7 @@ ObjectFieldSpec::~ObjectFieldSpec() {
 }
 
 bool ObjectFieldSpec::hasDefault() const {
-	return obj.get() != NULL;
+	return obj.get() != nullptr;
 }
 
 
@@ -7032,7 +7042,7 @@ ObjectSetFieldSpec::~ObjectSetFieldSpec() {
 }
 
 bool ObjectSetFieldSpec::hasDefault() const {
-	return objSet.get() != NULL;
+	return objSet.get() != nullptr;
 }
 
 
@@ -7068,27 +7078,27 @@ void ObjectSetFieldSpec::FwdDeclare(ostream& hdr) const {
 		hdr << "#undef ERROR" << nl;
 	}
 
-	hdr << "class " << makeIdentifierC(objectClass->getName()) << ";" << nl
+	hdr << "class " << makeCppName(objectClass->getName()) << ";" << nl
 		<< nl;
 }
 
 void ObjectSetFieldSpec::generate_info_type_constructor(ostream& cxx) const {
-	cxx << "  m_" << getIdentifier() << "= NULL;" << nl;
+	cxx << "  m_" << getIdentifier() << "= nullptr;" << nl;
 }
 
 void ObjectSetFieldSpec::generate_info_type_memfun(ostream& hdr) const {
-	hdr  << "const " << makeIdentifierC(objectClass->getName()) <<"* get_" << getIdentifier()
+	hdr  << "const " << makeCppName(objectClass->getName()) <<"* get_" << getIdentifier()
 		 << "() const { return m_" << getIdentifier() << "; }" << nl;
 	// default Object set not supported;
 }
 
 void ObjectSetFieldSpec::generate_info_type_mem(ostream& hdr) const {
-	hdr  << "const " << makeIdentifierC(objectClass->getName()) <<"* m_" << getIdentifier() << ";" << nl;
+	hdr  << "const " << makeCppName(objectClass->getName()) <<"* m_" << getIdentifier() << ";" << nl;
 	// default Object set not supported;
 }
 
 void ObjectSetFieldSpec::generate_value_type(ostream& hdr) const {
-	hdr  << "const "<< makeIdentifierC(objectClass->getName()) << "* get_" << getIdentifier() << "() const { return second->get_"
+	hdr  << "const "<< makeCppName(objectClass->getName()) << "* get_" << getIdentifier() << "() const { return second->get_"
 		 <<  getIdentifier() << "(); }" << nl;
 }
 
@@ -7097,11 +7107,11 @@ void ObjectSetFieldSpec::generateTypeField(const string& templatePrefix,
 		const TypeBase* keyType,
 		const string& objClassName,
 		ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
-	hdr << "    const " << makeIdentifierC(objectClass->getName()) << "* get_" << getIdentifier()
+	hdr << "    const " << makeCppName(objectClass->getName()) << "* get_" << getIdentifier()
 		<< "(const " << keyType->getTypeName() << "& key) const;" << nl;
 
 	cxx << templatePrefix
-		<< "const "<< makeIdentifierC(objectClass->getName()) << "* " << classNameString
+		<< "const "<< makeCppName(objectClass->getName()) << "* " << classNameString
 		<< "::get_" << getIdentifier() << "(const " << keyType->getTypeName() <<"& key) const" << nl
 		<< "{" << nl
 		<< "  if (objSet)" << nl
@@ -7110,7 +7120,7 @@ void ObjectSetFieldSpec::generateTypeField(const string& templatePrefix,
 		<< "  if (it != objSet->end())" << nl
 		<< "      return it->get_Errors();" << nl
 		<< "  }" << nl
-		<< "  return NULL;" << nl
+		<< "  return nullptr;" << nl
 		<< "}\n" << nl;
 }
 
@@ -7142,7 +7152,7 @@ int ObjectClassBase::getFieldToken(const char* fieldname) const {
 
 //////////////////////////////////////////////////////////////////////////////
 ObjectClassDefn::ObjectClassDefn()
-	: fieldSpecs(NULL) {
+	: fieldSpecs(nullptr) {
 }
 
 ObjectClassDefn::~ObjectClassDefn() {
@@ -7160,7 +7170,7 @@ FieldSpec* ObjectClassDefn::getField(const string& fieldName) {
 		return result;
 
 	cerr << "Undefined Object Class Field : "<< getName() << '.'<< fieldName  << nl;
-	return NULL;
+	return nullptr;
 }
 
 const FieldSpec* ObjectClassDefn::getField(const string& fieldName) const {
@@ -7169,14 +7179,14 @@ const FieldSpec* ObjectClassDefn::getField(const string& fieldName) const {
 		return result;
 
 	cerr << "Undefined Object Class Field : "<< getName() << '.'<< fieldName  << nl;
-	return NULL;
+	return nullptr;
 }
 
 void ObjectClassDefn::setWithSyntaxSpec(TokenGroupPtr list) {
 	withSyntaxSpec = list;
 	bool result = true;
 
-	if (list.get() == NULL)
+	if (list.get() == nullptr)
 		return;
 
 	for (size_t i = 0; i < withSyntaxSpec->size(); ++i)
@@ -7213,7 +7223,7 @@ TokenGroupPtr ObjectClassDefn::getWithSyntax() const {
 
 void ObjectClassDefn::PreParseObject() const {
 	if (withSyntaxSpec.get())
-		withSyntaxSpec->preMakeDefaultSyntax(NULL);
+		withSyntaxSpec->preMakeDefaultSyntax(nullptr);
 }
 
 void ObjectClassDefn::beginParseObject() const {
@@ -7295,7 +7305,7 @@ void ObjectClassDefn::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx
 
 	ResolveKey();
 
-	const string&className = makeIdentifierC(getName());
+	const string&className = makeCppName(getName());
 
 	hdr << "class "  << dllMacroAPI << " " << className  << " {" << nl
 		<< "public:" << nl;
@@ -7473,7 +7483,7 @@ DefinedObjectClass::DefinedObjectClass(const string& nam, ObjectClassBase* ref)
 }
 
 ObjectClassBase* DefinedObjectClass::getReference() {
-	if (reference == NULL)
+	if (reference == nullptr)
 		reference = contexts.top()->Module->findObjectClass(referenceName).get();
 	return reference;
 }
@@ -7540,13 +7550,13 @@ void DefinedObjectClass::printOn(ostream& strm) const {
 }
 
 void DefinedObjectClass::resolveReference() const {
-	if (reference == NULL) {
+	if (reference == nullptr) {
 		reference = contexts.top()->Module->findObjectClass(referenceName).get();
 		ImportedObjectClass* ioc = dynamic_cast<ImportedObjectClass*>(reference);
-		if (ioc != NULL) {
+		if (ioc != nullptr) {
 			const ModuleDefinitionPtr& m = ioc->getModule();
 			reference = m->findObjectClass(referenceName).get();
-			if (reference != NULL) {
+			if (reference != nullptr) {
 				ObjectClassDefn* ocd = dynamic_cast<ObjectClassDefn*>(reference);
 				if (ocd)
 					ocd->ResolveKey();
@@ -7587,6 +7597,9 @@ const TypeBase* DefinedObjectClass::getFieldType(const string& fieldName) const 
 	return getReference()->getFieldType(fieldName);
 }
 
+void DefinedObjectClass::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) {
+	fwd << "typedef ASN1::" << getReference()->getCppName() << " " << getCppName() << ";" << endl;
+}
 
 //////////////////////////////////////////////////////////////////
 
@@ -7638,7 +7651,7 @@ PrimitiveFieldName::MakeDefaultSyntax(DefinedSyntaxToken* token, FieldSettingLis
 	assert(field);
 	TokenOrGroupSpec::MakeDefaultSyntaxResult result = FAIL;
 	FieldSettingPtr setting = token->MatchSetting(name);
-	if (setting.get() != NULL) {
+	if (setting.get() != nullptr) {
 		settings->push_back(FieldSettingPtr(setting));
 		result =  CONSUMED_AND_EXHAUSTED;
 	}
@@ -7810,9 +7823,9 @@ DefinedObject::DefinedObject(const string& nam, const InformationObject* ref)
 
 
 const InformationObject* DefinedObject::getReference() const {
-	if (reference == NULL)
+	if (reference == nullptr)
 		reference = contexts.top()->Module->findInformationObject(referenceName);
-	if (reference == NULL) {
+	if (reference == nullptr) {
 		cerr << StdError(Fatal) << "Invalid Object : " << getName();
 		exit(1);
 	}
@@ -7822,7 +7835,7 @@ const InformationObject* DefinedObject::getReference() const {
 const ObjectClassBase* DefinedObject::getObjectClass() const {
 	if (contexts.top()->DummyParameters) {
 		Parameter* param = contexts.top()->DummyParameters->getParameter(getName().c_str());
-		if ((param != NULL)&& dynamic_cast<ObjectParameter*>(param)) {
+		if ((param != nullptr)&& dynamic_cast<ObjectParameter*>(param)) {
 			ObjectParameter* p = (ObjectParameter*) param;
 			return p->getGovernor();
 		}
@@ -7849,14 +7862,14 @@ void DefinedObject::printOn(ostream& strm) const {
 
 void DefinedObject::generateInstanceCode(ostream& cxx) const {
 	if (dynamic_cast<const DefaultObjectDefn*>(getReference()))
-		cxx << "get_" << makeIdentifierC(referenceName) << "().make()";
+		cxx << "get_" << makeCppName(referenceName) << "().make()";
 	else
 		reference->generateInstanceCode(cxx);
 }
 /////////////////////////////////////////////////////////////////////////////////
 
 void ImportedObject::generateInstanceCode(ostream& cxx) const {
-	cxx << toLower(makeIdentifierC(moduleName)) << "->get_" << makeIdentifierC(referenceName) << "().make()";
+	cxx << toLower(makeCppName(moduleName)) << "->get_" << makeCppName(referenceName) << "().make()";
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -7879,7 +7892,7 @@ const Setting* DefaultObjectDefn::getSetting(const string& fieldname) const {
 		return  result->getSetting();
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void DefaultObjectDefn::printOn(ostream& strm) const {
@@ -7906,7 +7919,7 @@ void DefaultObjectDefn::generateCplusplus(ostream& fwd, ostream& hdr , ostream& 
 		int has_type_setting = (flags& Setting::has_type_setting);
 		int has_objectSet_setting = (flags& Setting::has_objectSet_setting);
 
-		const	string& className = makeIdentifierC(referenceClass->getName());
+		const	string& className = makeCppName(referenceClass->getName());
 
 		string keyName = referenceClass->getKeyName().substr(1);
 		hdr << "    class " << name << " {" << nl
@@ -7973,7 +7986,7 @@ bool DefaultObjectDefn::isExtendable() const {
 
 void DefaultObjectDefn::generateInstanceCode(ostream& cxx) const {
 	string nam("  m_");
-	nam += makeIdentifierC(name);
+	nam += makeCppName(name);
 	nam += ".";
 
 	if (name.empty())
@@ -8112,7 +8125,7 @@ void ObjectSetSetting::printOn(ostream& strm) const {
 void ObjectSetSetting::generateCplusplus(const string& , const string& name, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag) {
 //  if (!objectSet->isExtendable())
 //    hdr << "const ";
-	hdr << makeIdentifierC(objectClass->getName()) << " " << name << ";" << nl ;
+	hdr << makeCppName(objectClass->getName()) << " " << name << ";" << nl ;
 
 	flag |= has_objectSet_setting;
 }
@@ -8172,12 +8185,12 @@ void InformationObjectSetDefn::printOn(ostream& strm) const {
 
 void InformationObjectSetDefn::generateInstanceCode(ostream& cxx) const {
 	if (!hasParameters()) {
-		rep->generateObjectSetInstanceCode("  m_" + makeIdentifierC(name)+".insert(",cxx);
+		rep->generateObjectSetInstanceCode("  m_" + makeCppName(name)+".insert(",cxx);
 	}
 }
 
 void InformationObjectSetDefn::generateType(ostream& fwd, ostream& hdr, ostream& cxx, ostream& ) const {
-	string typeName = makeIdentifierC(getName());
+	string typeName = makeCppName(getName());
 	string classNameString = typeName;
 	string templatePrefix;
 
@@ -8189,7 +8202,7 @@ void InformationObjectSetDefn::generateType(ostream& fwd, ostream& hdr, ostream&
 		 << "// " << classNameString  << nl
 		 << "//" << nl << nl;
 
-	string objClassName = makeIdentifierC(getObjectClass()->getReferenceName());
+	string objClassName = makeCppName(getObjectClass()->getReferenceName());
 
 	hdr << templatePrefix
 		<< "class " << typeName << " {" << nl
@@ -8244,9 +8257,9 @@ bool InformationObjectSetDefn::generateTypeConstructor(ostream& cxx) const {
 	cxx << "  ASN1::Module* module = env.find(\"" << contexts.top()->Module->getName() << "\");" << nl
 		<< "  if (module)" << nl
 		<< "  objSet = &(static_cast<"<< contexts.top()->Module->getCModuleName() << "::Module*>(module)->get_"
-		<< makeIdentifierC(getName()) << "());" << nl
+		<< makeCppName(getName()) << "());" << nl
 		<< "  else" << nl
-		<< "    objSet = NULL;" << nl;
+		<< "    objSet = nullptr;" << nl;
 	return false;
 }
 
@@ -8255,13 +8268,13 @@ bool InformationObjectSetDefn::generateTypeConstructor(ostream& cxx) const {
 
 DefinedObjectSet::DefinedObjectSet(const string& ref)
 	: referenceName(ref)
-	, reference(NULL) {
+	, reference(nullptr) {
 }
 
 const InformationObjectSet* DefinedObjectSet::getReference() const {
-	if (reference == NULL)
+	if (reference == nullptr)
 		reference = contexts.top()->Module->findInformationObjectSet(referenceName);
-	if (reference == NULL) {
+	if (reference == nullptr) {
 		cerr << StdError(Fatal) << "Invalid ObjectSet " << getName();
 		exit(1);
 	}
@@ -8361,7 +8374,7 @@ void ObjectSetFromObject::printOn(ostream& strm) const {
 }
 
 Constraint* ObjectSetFromObject::getRepresentation() const {
-	if (rep.get() == NULL) {
+	if (rep.get() == nullptr) {
 		SingleObjectConstraintElement elem(refObj);
 		rep = elem.getObjectSetFromObjectSetField(field);
 	}
@@ -8413,9 +8426,9 @@ void ObjectSetFromObjects::printOn(ostream& strm) const {
 }
 
 ConstraintPtr ObjectSetFromObjects::getRepresentation() const {
-	if (rep.get() == NULL) {
+	if (rep.get() == nullptr) {
 		rep = refObjSet->getObjectSetFromObjectField(field);
-		if (rep.get() == NULL)
+		if (rep.get() == nullptr)
 			rep = refObjSet->getObjectSetFromObjectSetField(field);
 	}
 	return rep;
@@ -8426,11 +8439,11 @@ bool ObjectSetFromObjects::hasPERInvisibleConstraint(const Parameter& ) const {
 }
 
 void ObjectSetFromObjects::generateObjSetAccessCode(ostream& strm) {
-	strm << "  " << makeIdentifierC(refObjSet->getName()) <<  " tmp(env);" << nl
+	strm << "  " << makeCppName(refObjSet->getName()) <<  " tmp(env);" << nl
 		 << "  if (tmp.get())" << nl
 		 << "  {" << nl
 		 << "    element_type *tempObjSet = new element_type;" << nl
-		 << "    typename " << makeIdentifierC(refObjSet->getName()) << "::element_type::const_iterator first = tmp->begin(), last = tmp->end();" << nl
+		 << "    typename " << makeCppName(refObjSet->getName()) << "::element_type::const_iterator first = tmp->begin(), last = tmp->end();" << nl
 		 << "    for (; first != last; ++first)" << nl
 		 << "    {" << nl
 		 << "       const element_type* infoFromObjects = first->get_" << field.substr(1) << "();" << nl
@@ -8551,7 +8564,7 @@ void SingleObjectConstraintElement::generateObjectSetInstanceCode(const string& 
 /////////////////////////////////////////////////////////////////////////
 
 ValueSetDefn::ValueSetDefn()
-	: elements(NULL) {
+	: elements(nullptr) {
 }
 
 ValueSetDefn::ValueSetDefn(TypePtr base, ConstraintPtr cons)
@@ -8569,9 +8582,9 @@ ValueSetDefn::~ValueSetDefn() {
 }
 
 void ValueSetDefn::Union(ValueSetPtr& other) {
-	if (type.get() == NULL)
+	if (type.get() == nullptr)
 		type.reset(new DefinedType(other->getType(), ""));
-	if (elements.get() == NULL)
+	if (elements.get() == nullptr)
 		elements = auto_ptr<ConstraintElementVector>( new ConstraintElementVector);
 	elements->insert(elements->end(), other->getElements()->begin(), other->getElements()->end());
 }
@@ -8585,7 +8598,7 @@ TypePtr ValueSetDefn::MakeValueSetType() {
 void ValueSetDefn::Intersect(ValueSetPtr& other) {
 	assert(other.get());
 
-	if (elements.get() == NULL || elements->size() == 0)
+	if (elements.get() == nullptr || elements->size() == 0)
 		type.reset(new DefinedType(other->getType(),""));
 
 	auto_ptr<ConstraintElementVector> root(new ConstraintElementVector);
@@ -8644,7 +8657,7 @@ ConstraintElementVector* ValueSetFromObject::getElements() {
 }
 
 ValueSetPtr ValueSetFromObject::getRepresentation() {
-	if (rep.get() == NULL) {
+	if (rep.get() == nullptr) {
 		SingleObjectConstraintElement cons(object);
 		rep = cons.getValueSetFromValueSetField(field);
 	}
@@ -8688,7 +8701,7 @@ ConstraintElementVector* ValueSetFromObjects::getElements() {
 }
 
 ValueSetPtr ValueSetFromObjects::getRepresentation() {
-	if (rep.get() == NULL) {
+	if (rep.get() == nullptr) {
 		if (isupper(field[1]))
 			rep = objectSet->getValueSetFromValueSetField(field);
 		else
@@ -8754,7 +8767,7 @@ void ObjectClassReference::AppendToModule(ModuleDefinition* from, ModuleDefiniti
 }
 
 void ObjectClassReference::generateUsingDirective(const string& moduleName, ostream& strm) const {
-	strm << "using " << moduleName << "::" << makeIdentifierC(name) << ";" << nl;
+	strm << "using " << moduleName << "::" << makeCppName(name) << ";" << nl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -8767,7 +8780,7 @@ void ObjectSetReference::AppendToModule(ModuleDefinition* from, ModuleDefinition
 }
 
 void ObjectSetReference::generateUsingDirective(const string& moduleName, ostream& strm) const {
-	strm << "using " << moduleName << "::" << makeIdentifierC(name) << ";" << nl;
+	strm << "using " << moduleName << "::" << makeCppName(name) << ";" << nl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -8879,7 +8892,7 @@ void ParameterList::Append(ParameterPtr param) {
 
 int ParameterList::getIdentifierType(const char* identifier) {
 	Parameter* p = getParameter(identifier);
-	return (p != NULL) ? p->getIdentifierType() : -1;
+	return (p != nullptr) ? p->getIdentifierType() : -1;
 }
 
 Parameter* ParameterList::getParameter(const char* identifier) {
@@ -8887,7 +8900,7 @@ Parameter* ParameterList::getParameter(const char* identifier) {
 		if (rep[i]->getName() == identifier)
 			return rep[i].get();
 	}
-	return NULL;
+	return nullptr;
 }
 
 void ParameterList::printOn(ostream& strm) const {
@@ -8914,7 +8927,7 @@ void ParameterList::generateCplusplus(string& templatePrefix, string& classNameS
 				classNameString += ", ";
 			}
 
-			string ident = makeIdentifierC(rep[i]->getName());
+			string ident = makeCppName(rep[i]->getName());
 			templatePrefix += "class " + ident;
 			classNameString += ident;
 			outputDelimeter = true;
@@ -9069,7 +9082,7 @@ ObjectSetType::ObjectSetType(InformationObjectSetPtr os)
 	: TypeBase(0, contexts.top()->Module)
 	, objSet(os) {
 	name = objSet->getName();
-	identifier = makeIdentifierC(name);
+	identifier = makeCppName(name);
 }
 
 const char * ObjectSetType::getAncestorClass() const {
@@ -9108,7 +9121,7 @@ ostream& operator<<(ostream& out, const StdError& e) {
 //  Utility
 //
 
-string makeIdentifierC(const string& identifier) {
+string makeCppName(const string& identifier) {
 	string s = identifier;
 	if (!s.empty()) {
 		str_replace(s, "-", "_");
@@ -9494,11 +9507,11 @@ vector<string> readDirectory(const string &directory, const string &extension) {
 	DIR *dir;
 	struct dirent *ent;
 
-	if ((dir = opendir(directory.c_str())) == NULL) {
+	if ((dir = opendir(directory.c_str())) == nullptr) {
 		throw runtime_error("readDirectory() - Unable to open directory.");
 	}
 
-	while ((ent = readdir(dir)) != NULL) {
+	while ((ent = readdir(dir)) != nullptr) {
 		string entry( ent->d_name );
 		size_t pos = entry.rfind(extension);
 		if (pos!=string::npos && pos==entry.length()-extension.length()) {
@@ -9609,11 +9622,11 @@ vector<string> readDirectory(const string &directory, const string &extension) {
  *
  * Revision 1.7  2002/10/03 07:12:14  btrummer
  * Fixed ObjectClassFieldType::generateDecoder():
- * if objSet.get() == NULL, true should be returned.
+ * if objSet.get() == nullptr, true should be returned.
  *
  * Revision 1.6  2002/10/03 07:02:57  btrummer
  * Bugfix in InformationObjectSetDefn::generateTypeConstructor():
- * If module == NULL, objSet must be initialized to NULL.
+ * If module == nullptr, objSet must be initialized to nullptr.
  *
  * Revision 1.5  2002/09/14 01:56:32  mangelo
  * Removed the memory leak caused by strstream::str()
