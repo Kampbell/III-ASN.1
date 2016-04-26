@@ -155,6 +155,12 @@ inline ostream& operator << (ostream& os, const Printable& obj) {
 typedef shared_ptr<NamedNumber> NamedNumberPtr;
 typedef list<NamedNumberPtr> NamedNumberList;
 
+enum class Arc {
+	ITU_T = 0,
+	ISO,
+	joint_iso_itu_t
+};
+
 
 // Types
 
@@ -1352,15 +1358,10 @@ class RemovedType : public TypeBase {
 class ValueBase : public Printable {
   public:
 	void setValueName(const string& name);
-	const string& getName() const {
-		return valueName;
-	}
-
+	const string& getName() const {		return valueName;	}
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual void generateConst(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
-	virtual bool isPERInvisibleConstraint(const Parameter&) const {
-		return false;
-	}
+	virtual bool isPERInvisibleConstraint(const Parameter&) const {		return false;	}
 
   protected:
 	void PrintBase(ostream&) const;
@@ -1373,12 +1374,10 @@ class DefinedValue : public ValueBase {
 	//PCLASSINFO(DefinedValue, ValueBase);
   public:
 	DefinedValue(const string& name);
-	DefinedValue(const ValuePtr&);
-	DefinedValue(const string& name, const ValuePtr& );
+	DefinedValue(const ValuePtr& value);
+	DefinedValue(const string& name, const ValuePtr& value);
 	void printOn(ostream&) const;
-	const string& getReference() const {
-		return referenceName;
-	}
+	const string& getReference() const { return referenceName; }
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual bool isPERInvisibleConstraint(const Parameter& param) const {
 		return param.getName() == referenceName;
@@ -1416,7 +1415,7 @@ class IntegerValue : public ValueBase {
 	IntegerValue(boost::int64_t newVal);
 	void printOn(ostream&) const;
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
-	virtual void generateConst(ostream& fwd, ostream& hdr, ostream& cxx) const;
+	virtual void generateConst(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 
 #if (__SIZEOF_LONG__ != 8)
 	operator int64_t() const {
@@ -1495,16 +1494,60 @@ class CharacterStringValue : public ValueBase {
 	string value;
 };
 
+class NumberForm {
+public:
+	NumberForm(int number = -1) : number(number) {}
+	NumberForm(const string form) : form(form) { }
+	int getNumber() const { return number; }
+	const string& getForm() const { return form; }
+	friend ostream& operator<< (ostream& os, const NumberForm& numberForm) {
+		if (numberForm.number == -1)
+		return os;
+		
+		os << '(';
+		if (numberForm.form.empty())
+			os << numberForm.number;
+		else
+			os << numberForm.form;
+		os << ')';
+		return os;
+	}
+
+private:
+	int number;
+	string form;
+};
+class ObjIdComponent {
+public:
+	ObjIdComponent(const char* name) : name(name) {}
+	ObjIdComponent(const string& name) : name(name) { if (name == "joint-iso-itu-t") numberForm = NumberForm(2); }
+	ObjIdComponent(const NumberForm& numberform) : numberForm(numberform) {}
+	ObjIdComponent(const string& name, const NumberForm& numberform) : name(name), numberForm(numberform) {}
+	const string& getName() const { return name; }
+	const NumberForm& getNumberForm() const { return numberForm; }
+	friend ostream& operator<< (ostream& os, const ObjIdComponent& oic) {
+		if (!oic.name.empty()) {
+			os << oic.name;
+			os << oic.numberForm;
+		}
+		return os;
+	}
+private:
+	string name;
+	NumberForm numberForm;
+};
+typedef vector<ObjIdComponent> ObjIdComponentList;
 
 class ObjectIdentifierValue : public ValueBase {
   public:
-	ObjectIdentifierValue(const string& newVal);
-	ObjectIdentifierValue(StringList& newVal);
-	void generateCplusplus(ostream& fwd, ostream&hdr, ostream& cxx, ostream& inl) const;
-	void generateConst(ostream& fwd, ostream& hdr, ostream& cxx) const;
+//	ObjectIdentifierValue(const string& newVal);
+	ObjectIdentifierValue(ObjIdComponentList& newVal);
+	virtual void generateCplusplus(ostream& fwd, ostream&hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateConst(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	void printOn(ostream&) const;
+	const ObjIdComponentList& getComponents() const { return value; }
   protected:
-	StringList value;
+	ObjIdComponentList value;
 };
 
 
@@ -2097,13 +2140,12 @@ class DefinedObjectClass : public ObjectClassBase {
 	virtual void endParseObject() const;
 	virtual void beginParseObjectSet() const;
 	virtual void endParseObjectSet() const;
-	void printOn(ostream& strm) const;
+	virtual void printOn(ostream& strm) const;
 	virtual void resolveReference() const;
 	virtual TypeBase* getFieldType(const string& fieldName);
 	virtual const TypeBase* getFieldType(const string& fieldName) const;
-	const string& getKeyName() const {
-		return reference->getKeyName();
-	}
+	const string& getKeyName() const	{ return reference->getKeyName(); }
+	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
   protected:
 	string referenceName;
 	mutable ObjectClassBase* reference;
