@@ -54,11 +54,8 @@ extern int LexEcho;
 #define YYDEBUG 1
 
 #define YY_HEADER_EXPORT_START_CONDITIONS 1
-
 #define YY_USER_ACTION if (LexEcho) std::cout << yytext << std::flush;
-
 #define YY_DECL int yylex(YYSTYPE* yylval_param, YYLTYPE* yylloc_param, yyscan_t yyscanner, ParserContext* context)
-
 #define YY_USER_ACTION yylloc->first_line = yylloc->last_line = yylineno; \
     yylloc->first_column = yycolumn; yylloc->last_column = yycolumn + yyleng - 1; \
     yycolumn += yyleng;
@@ -98,7 +95,7 @@ bool dumpLowerCaseToken = false;
 
 int isUpper(const char* text)
 {
-	for (const char* p = text; *p != nullptr; ++p)
+	for (const char* p = text; *p != 0; ++p)
 		if (!(isupper(*p) || *p == '-' || *p == '_'))
 			return FALSE;
 	return TRUE;
@@ -420,7 +417,8 @@ exp ({integer}|{real})[eE]-?{integer}
 
 {integer}  {
 	if (context->InOIDContext) {
-		yylval->sval = new std::string(yytext);
+//		yylval->sval = new std::string(yytext);
+		yylval->ival = atol(yytext);
 		return OID_INTEGER;
 	}
 	else {
