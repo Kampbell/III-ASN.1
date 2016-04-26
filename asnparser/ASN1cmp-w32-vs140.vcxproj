@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -11,18 +11,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{1EED4B13-2A75-4C49-A198-12F2A46F5944}</ProjectGuid>
+    <ProjectGuid>{7AB7E50F-46D1-43C3-A29E-8695F4A5295F}</ProjectGuid>
     <ProjectName>ASN1cmp</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -152,47 +152,38 @@
     <ClInclude Include="asn_ref_grammar.h" />
     <ClInclude Include="asn_ref_lex.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="unistd.h" />
     <ClInclude Include="unixstd.h" />
   </ItemGroup>
   <ItemGroup>
     <Bison Include="asn_grammar.y">
       <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
       <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</HeaderFile>
-      <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).h</DefinesFile>
+      <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</DefinesFile>
       <Report Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">all</Report>
       <ReportFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).out</ReportFile>
-      <NoLines Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</NoLines>
-      <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).h</DefinesFile>
-      <Report Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">all</Report>
-      <ReportFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).out</ReportFile>
-      <NoLines Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</NoLines>
+      <NoLines Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</NoLines>
     </Bison>
     <Bison Include="asn_ref_grammar.y">
       <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
       <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</HeaderFile>
-      <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).h</DefinesFile>
+      <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</DefinesFile>
       <FilePrefix Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </FilePrefix>
       <NamePrefix Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </NamePrefix>
       <Report Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">all</Report>
       <ReportFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).out</ReportFile>
-      <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).h</DefinesFile>
-      <Report Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">all</Report>
-      <ReportFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).out</ReportFile>
-      <NoLines Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</NoLines>
     </Bison>
     <Flex Include="asn_lex.l">
       <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
-      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).h</HeaderFile>
+      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</HeaderFile>
       <Noline Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</Noline>
-      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).h</HeaderFile>
     </Flex>
     <Flex Include="asn_ref_lex.l">
       <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
-      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).h</HeaderFile>
+      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</HeaderFile>
       <Prefix Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">id</Prefix>
-      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).h</HeaderFile>
     </Flex>
   </ItemGroup>
   <ItemGroup>
