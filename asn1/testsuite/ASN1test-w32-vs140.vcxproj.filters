@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="asn1test.cpp" />
+    <ClCompile Include="MyHTTP.cxx" />
+    <ClCompile Include="TEST1.cxx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="asn1test.h" />
+    <ClInclude Include="MyHTTP.h" />
+    <ClInclude Include="TEST1.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MyHTTP.inl" />
+    <None Include="test1.asn" />
+    <None Include="TEST1.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="asn">
+      <UniqueIdentifier>{cef4c208-1d4f-4612-92ed-824a44824ec1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="csn">
+      <UniqueIdentifier>{02da24c2-6bfa-4c16-b2ec-6c69e57dcfd7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
