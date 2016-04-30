@@ -420,8 +420,7 @@ exp ({integer}|{real})[eE]-?{integer}
 //		yylval->sval = new std::string(yytext);
 		yylval->ival = atol(yytext);
 		return OID_INTEGER;
-	}
-	else {
+	} else {
       const char * ptr = yytext;
       yylval->ival = 0;
       while (*ptr != '\0')
@@ -431,7 +430,18 @@ exp ({integer}|{real})[eE]-?{integer}
   }
 
 {real}  {
-	return REAL;
+	if (context->InOIDContext) {
+//		yylval->sval = new std::string(yytext);
+		yylval->ival = atol(yytext);
+		return OID_INTEGER;
+	} else {
+      const char * ptr = yytext;
+      yylval->ival = 0;
+      while (*ptr != '\0')
+		if (isdigit(*ptr))
+			yylval->ival = yylval->ival * 10 + *ptr++ - '0';
+      return REAL;
+	}
   }
 
 ['][01]*[']B {
