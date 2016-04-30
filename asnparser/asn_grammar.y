@@ -1580,9 +1580,7 @@ SimpleTableConstraint
 
 ComponentRelationConstraint
   : '{' DefinedObjectSet '}' '{' AtNotations '}'
-      {
-		$$ = new TableConstraint(DefinedObjectSetPtr($2), std::auto_ptr<StringList>($5));
-		  }
+		{ $$ = new TableConstraint(DefinedObjectSetPtr($2), std::auto_ptr<StringList>($5)); }
 ;
 
 AtNotations
@@ -1621,6 +1619,7 @@ ObjectClassAssignment
 ObjectAssignment
   : OBJECTREFERENCE DefinedObjectClass
     {
+		context->InformationFromObjectContext = $2;
 		$2->beginParseObject();
     }
   ASSIGNMENT Object
@@ -1630,6 +1629,7 @@ ObjectAssignment
 		$5->setName(*$1); delete $1;
 		$5->setObjectClass($2);
 		context->Module->addInformationObject(InformationObjectPtr($5));
+		context->InformationFromObjectContext = nullptr;
 	}
 ;
 
@@ -1899,7 +1899,7 @@ WithSyntaxSpec
 
 SyntaxList
   : '{' TokenOrGroupSpecs '}'   {	$$ = $2;   }
-  | '{' '}'						{    $$ = nullptr;	}
+  | '{' '}'						{   $$ = nullptr;	}
 ;
 
 TokenOrGroupSpecs
@@ -1917,7 +1917,7 @@ OptionalGroup
 ;
 
 RequiredToken
-  : Literal						{	$$= new Literal(*$1); delete $1;    }
+  : Literal						{	$$ = new Literal(*$1); delete $1;    }
   | FieldReference				{	$$ = new PrimitiveFieldName(*$1); delete $1; }
   | fieldreference				{	$$ = new PrimitiveFieldName(*$1); delete $1; }
 ;
@@ -2052,12 +2052,12 @@ DefinedSyntaxToken
 Setting
   : Type				{	$$ = new TypeSetting(TypePtr($1)); }
   | Value				{
-			ValueBase* vb = $1;
-			TypeBase*  tb = context->ValueTypeContext.get();
+							ValueBase* vb = $1;
+							TypeBase*  tb = context->ValueTypeContext.get();
 
-		    if (context->ValueTypeContext.get() == nullptr)
-				  std::cerr << StdError(Fatal) << "Parsing Error\n";
-			$$ = new ValueSetting(context->ValueTypeContext,ValuePtr($1));
+							if (context->ValueTypeContext.get() == nullptr)
+								  std::cerr << StdError(Fatal) << "Parsing Error\n";
+							$$ = new ValueSetting(context->ValueTypeContext,ValuePtr($1));
   }
   | ValueSet		   {	$$ = new ValueSetSetting(ValueSetPtr($1)); }
   | Object			   {	$$ = new ObjectSetting(InformationObjectPtr($1),context->classStack->top()); }
@@ -2295,17 +2295,8 @@ ObjectSetParameter
 /********/
 
 ValueAssignment
-  : VALUEREFERENCE Type
-      {
-    context->ValueTypeContext.reset($2);
-		$2->beginParseValue();
-      }
-    ASSIGNMENT Value
-      {
-		$2->endParseValue();
-		$5->setValueName(*$1); delete $1;
-		context->Module->addValue(ValuePtr($5));
-      }
+  : VALUEREFERENCE Type		{ context->ValueTypeContext.reset($2); $2->beginParseValue(); }
+    ASSIGNMENT Value		{ $2->endParseValue(); $5->setValueName(*$1); delete $1; context->Module->addValue(ValuePtr($5)); }
 ;
 
 
