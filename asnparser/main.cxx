@@ -73,7 +73,6 @@ extern "C" {
 #include <iterator>
 #include <limits.h>
 
-
 #ifdef _WIN32
 #define DIR_SEPARATOR '\\'
 #else
@@ -128,6 +127,7 @@ static	stack<ParserContext*>	contexts;
 static 	vector<string>			files;
 static 	vector<FILE*>			fds;
 static const char nl = '\n';
+static const char TAB = '\t';
 
 ParserContext::ParserContext(FILE* file) : file(file) {
 	IdentifierTokenContext = IDENTIFIER;
@@ -273,7 +273,7 @@ int main(int argc, char** argv) {
 	string path;
 
 	iddebug = 0;
-	yydebug = 1;
+	yydebug = 0;
 
 	while ((c=getopt(argc, argv, opt)) != -1) {
 		switch (c) {
@@ -286,7 +286,7 @@ int main(int argc, char** argv) {
 			break;
 
 		case 'd':
-//			yydebug = 1;
+			yydebug = 1;
 //			iddebug = 1;
 			break;
 
@@ -2704,15 +2704,14 @@ TypePtr EnumeratedType::flattenThisType(TypePtr& self, const TypeBase& parent) {
 
 
 void EnumeratedType::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) {
-	NamedNumberList::iterator itr, last = enumerations.end();
+	beginGenerateCplusplus(fwd, hdr, cxx, inl);
 
+	NamedNumberList::iterator itr, last = enumerations.end();
 	for (itr = enumerations.begin(); itr != last; ++itr) {
 		int num = (*itr)->getNumber();
 		if (maxEnumValue < num)
 			maxEnumValue = num;
 	}
-
-	beginGenerateCplusplus(fwd, hdr, cxx, inl);
 
 	// generate enumerations and complete the constructor implementation
 	hdr << "enum NamedNumber {" << nl;
@@ -2734,6 +2733,13 @@ void EnumeratedType::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx,
 	}
 	hdr << bat;
 	hdr  << nl <<   "};" << nl	 << nl;
+
+	// Constructor with NameNumber. Cannot goes into generateConstructor because
+	// generateConstructor is called by beginGenerateCplusplus and NamedNumber is not yet generated
+	// TODO to be refactored.
+	hdr << bat << "protected:" << nl << tab;
+	hdr << getIdentifier() << "(NamedNumber v, const void* info =&theInfo) : Inherited(v, info) {}" << nl << nl;
+	hdr << bat << "public:" << nl << tab;
 
 	generateCplusplusConstraints(string(), fwd, hdr, cxx, inl);
 
@@ -3044,7 +3050,7 @@ void OctetStringType::generateConstructors(ostream& fwd, ostream& hdr, ostream& 
 	hdr <<  getIdentifier()  << "(size_type n, unsigned char v) : Inherited(n, v) {}" << nl
 		<<  "template <class Iterator>" << nl
 		<<  tab << getIdentifier() << "(Iterator first, Iterator last) : Inherited(first, last) {}" << nl
-		<<  getIdentifier() << "(const octets& that) : Inherited(that) {}" << nl << bat;
+		<<  getIdentifier() << "(const ASN1::octets& that) : Inherited(that) {}" << nl << bat;
 
 }
 
@@ -4484,7 +4490,7 @@ void StringTypeBase::generateInfo(const TypeBase* type,ostream& fwd, ostream& hd
 		<< "    ASN1::AbstractString::create," << nl
 		<< "    ";
 	type->generateTags(cxx);
-	cxx << ",\n   &" << getAncestorClass() << "::theInfo," << nl;
+	cxx << "," << nl << "   &" << getAncestorClass() << "::theInfo," << nl;
 
 	const SizeConstraintElement* sizeConstraint = nullptr;
 	size_t i;
@@ -4496,8 +4502,11 @@ void StringTypeBase::generateInfo(const TypeBase* type,ostream& fwd, ostream& hd
 		string str;
 		sizeConstraint->getConstraint(str);
 		cxx << "    " << str.substr(0, str.size()-2) << "," << nl;
-	} else
-		cxx << "    ASN1::Unconstrained, 0, UINT_MAX," << nl;
+	} else {
+		cxx << "    ASN1::Unconstrained," << nl;
+		cxx << "    0," << nl;
+		cxx << "    UINT_MAX," << nl;
+	}
 
 	const FromConstraintElement* fromConstraint = nullptr;
 	for (i = 0; i < type->getConstraints().size(); ++i)
@@ -4521,10 +4530,18 @@ void StringTypeBase::generateInfo(const TypeBase* type,ostream& fwd, ostream& hd
 		cxx << "\", " << characterSet.size()  << "," << nl;
 		charSetUnalignedBits = CountBits(characterSet.size());
 
-	} else if (canonicalSetRep) {
-		cxx <<  canonicalSetRep << ", " << canonicalSetSize << "," << nl;
-		charSetUnalignedBits = CountBits(canonicalSetSize);
+	} else {
+		if (canonicalSetRep) {
+			cxx << canonicalSetRep << "," << nl;
+			cxx << canonicalSetSize << "," << nl;
+			charSetUnalignedBits = CountBits(canonicalSetSize);
+		} else {
+			cxx << "    " << "nullptr," << nl;
+			cxx << "    " << "0," << nl;
+			charSetUnalignedBits = CountBits(0);
+		}
 	}
+	
 
 	cxx <<  "    " << CountBits(canonicalSetSize) << "," << nl;
 
@@ -4533,8 +4550,9 @@ void StringTypeBase::generateInfo(const TypeBase* type,ostream& fwd, ostream& hd
 	while (charSetUnalignedBits > charSetAlignedBits)
 		charSetAlignedBits <<= 1;
 
-	cxx << "    " << charSetUnalignedBits << ", " << charSetAlignedBits  << nl
-		<< "};\n" << nl;
+	cxx << "    " << charSetUnalignedBits << ", " << nl;
+	cxx << "    " << charSetAlignedBits  << nl;
+	cxx	<< "};" << nl << nl;
 }
 
 /////////////////////////////////////////////////////////
@@ -4557,7 +4575,7 @@ void UTF8StringType::generateConstructors(ostream& fwd, ostream& hdr, ostream& ,
 
 void UTF8StringType::generateOperators(ostream& fwd, ostream& hdr, ostream& , const TypeBase& actualType) {
 	string atname = actualType.getIdentifier();
-	hdr  << atname << "& operator=(const wstring& that)" << nl
+	hdr  << atname << "& operator=(const std::wstring& that)" << nl
 		 << "{ Inherited::operator=(that); return *this; }" << nl
 		 << atname << "& operator=(const wchar_t* that)" << nl
 		 << "{ Inherited::operator=(that); return *this; }" << nl;
@@ -4629,7 +4647,7 @@ void BMPStringType::generateConstructors(ostream& fwd, ostream& hdr, ostream& , 
 
 void BMPStringType::generateOperators(ostream& fwd, ostream& hdr, ostream& , const TypeBase& actualType) {
 	string atname = actualType.getIdentifier();
-	hdr  << atname << "& operator=(const wstring& that)" << nl
+	hdr  << atname << "& operator=(const std::wstring& that)" << nl
 		 << "{ Inherited::operator=(that); return *this; }" << nl
 		 << atname << "& operator=(const wchar_t* that)" << nl
 		 << "{ Inherited::operator=(that); return *this; }" << nl;
@@ -4916,7 +4934,7 @@ void RelativeOIDType::beginParseThisTypeValue() const {
 
 void RelativeOIDType::endParseThisTypeValue() const {
 	contexts.top()->InOIDContext = false;
-	contexts.top()->BraceTokenContext = OID_BRACE;
+	contexts.top()->BraceTokenContext = '{'; // TODO: was OID_BRACE, is this correct?;
 }
 
 const char * RelativeOIDType::getAncestorClass() const {
@@ -4944,7 +4962,7 @@ void ObjectIdentifierType::beginParseThisTypeValue() const {
 
 void ObjectIdentifierType::endParseThisTypeValue() const {
 	contexts.top()->InOIDContext = false;
-	contexts.top()->BraceTokenContext = '{'; // was OID_BRACE
+	contexts.top()->BraceTokenContext = '{'; // TODO: was OID_BRACE, is this correct?;
 }
 
 const char * ObjectIdentifierType::getAncestorClass() const {
@@ -7071,15 +7089,13 @@ void ObjectSetFieldSpec::resolveReference() const {
 	objectClass->resolveReference();
 }
 
-void ObjectSetFieldSpec::FwdDeclare(ostream& hdr) const {
+void ObjectSetFieldSpec::FwdDeclare(ostream& fwd) const {
 	if (objectClass->getName() == "ERROR") {
 		// ERROR is defined to 0 when <windows.h> is included,
 		// undefine it.
-		hdr << "#undef ERROR" << nl;
+		fwd << "#undef ERROR" << nl;
 	}
-
-	hdr << "class " << makeCppName(objectClass->getName()) << ";" << nl
-		<< nl;
+	fwd << "class " << makeCppName(objectClass->getReferenceName()) << ";" << nl << nl;
 }
 
 void ObjectSetFieldSpec::generate_info_type_constructor(ostream& cxx) const {
@@ -7087,41 +7103,40 @@ void ObjectSetFieldSpec::generate_info_type_constructor(ostream& cxx) const {
 }
 
 void ObjectSetFieldSpec::generate_info_type_memfun(ostream& hdr) const {
-	hdr  << "const " << makeCppName(objectClass->getName()) <<"* get_" << getIdentifier()
+	const string cppReferenceName = makeCppName(objectClass->getReferenceName());
+	hdr  << "const " << cppReferenceName <<"* get_" << getIdentifier()
 		 << "() const { return m_" << getIdentifier() << "; }" << nl;
 	// default Object set not supported;
 }
 
 void ObjectSetFieldSpec::generate_info_type_mem(ostream& hdr) const {
-	hdr  << "const " << makeCppName(objectClass->getName()) <<"* m_" << getIdentifier() << ";" << nl;
+	const string cppReferenceName = makeCppName(objectClass->getReferenceName());
+	hdr  << "const " << cppReferenceName <<"* m_" << getIdentifier() << ";" << nl;
 	// default Object set not supported;
 }
 
 void ObjectSetFieldSpec::generate_value_type(ostream& hdr) const {
-	hdr  << "const "<< makeCppName(objectClass->getName()) << "* get_" << getIdentifier() << "() const { return second->get_"
+	const string cppReferenceName = makeCppName(objectClass->getReferenceName());
+	hdr  << "const "<< cppReferenceName << "* get_" << getIdentifier() << "() const { return second->get_"
 		 <<  getIdentifier() << "(); }" << nl;
 }
 
-void ObjectSetFieldSpec::generateTypeField(const string& templatePrefix,
-		const string& classNameString,
-		const TypeBase* keyType,
-		const string& objClassName,
+void ObjectSetFieldSpec::generateTypeField(const string& templatePrefix, const string& classNameString,	const TypeBase* keyType, const string& objClassName,
 		ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
-	hdr << "    const " << makeCppName(objectClass->getName()) << "* get_" << getIdentifier()
+	const string cppReferenceName = makeCppName(objectClass->getReferenceName());
+	hdr << "    const " << cppReferenceName << "* get_" << getIdentifier()
 		<< "(const " << keyType->getTypeName() << "& key) const;" << nl;
 
 	cxx << templatePrefix
-		<< "const "<< makeCppName(objectClass->getName()) << "* " << classNameString
-		<< "::get_" << getIdentifier() << "(const " << keyType->getTypeName() <<"& key) const" << nl
-		<< "{" << nl
-		<< "  if (objSet)" << nl
-		<< "  {" << nl
-		<< "    " << objClassName << "::const_iterator it = objSet->find(key);" << nl
-		<< "  if (it != objSet->end())" << nl
-		<< "      return it->get_Errors();" << nl
-		<< "  }" << nl
-		<< "  return nullptr;" << nl
-		<< "}\n" << nl;
+		<< "const "<< cppReferenceName << "* " << classNameString
+		<< "::get_" << getIdentifier() << "(const " << keyType->getTypeName() <<"& key) const {" << nl;
+	cxx	<< "  if (objSet) {" << nl;
+	cxx	<< "    " << objClassName << "::const_iterator it = objSet->find(key);" << nl;
+	cxx	<< "    if (it != objSet->end())" << nl;
+	cxx	<< "      return it->get_Errors();" << nl;
+	cxx	<< "  }" << nl;
+	cxx	<< "  return nullptr;" << nl;
+	cxx	<< "}\n" << nl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7200,6 +7215,7 @@ void ObjectClassDefn::setWithSyntaxSpec(TokenGroupPtr list) {
 
 bool ObjectClassDefn::VerifyDefaultSyntax(FieldSettingList* fieldSettings) const {
 	size_t fieldIndex=0, settingIndex=0;
+	assert(fieldSettings);
 	while (fieldIndex < fieldSpecs->size()&& settingIndex < fieldSettings->size()) {
 		if ((*fieldSpecs)[fieldIndex]->getName() == (*fieldSettings)[settingIndex]->getName()) {
 			fieldIndex++;
@@ -7288,10 +7304,15 @@ void ObjectClassDefn::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx
 	if (ocName == "TYPE-IDENTIFIER" || ocName == "ABSTRACT-SYNTAX" || ocName == "OPEN")
 		return;
 
-	hdr  << nl
-		 << "//4" << nl
-		 << "// " << getName()  << nl
-		 << "//" << nl;
+	const string className = makeCppName(getName());
+
+	hdr  << nl;
+	hdr  << "//4" << nl;
+	hdr  << "// " << getName()  << nl;
+	hdr  << "//" << nl;
+
+	fwd << nl << "class " << className << ";" << TAB << TAB << "//4 ObjectClass " << nl;
+
 
 	size_t i;
 	for (i = 0; i < fieldSpecs->size(); ++i) {
@@ -7300,12 +7321,11 @@ void ObjectClassDefn::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx
 		string str = strm.str();
 		if (str.find(getName()) != -1)
 			continue;
-		hdr << str;
+		fwd << str;
 	}
 
 	ResolveKey();
 
-	const string&className = makeCppName(getName());
 
 	hdr << "class "  << dllMacroAPI << " " << className  << " {" << nl
 		<< "public:" << nl;
@@ -8479,13 +8499,18 @@ void DefaultSyntaxBuilder::addToken(DefinedSyntaxToken* token) {
 
 auto_ptr<FieldSettingList> DefaultSyntaxBuilder::getDefaultSyntax() {
 	endSyntaxToken token;
+#ifdef FIXME
+	// The code below does not work
 	if (tokenGroup->MakeDefaultSyntax(&token, setting.get()) == TokenOrGroupSpec::NOT_CONSUMED) {
 		tokenGroup->Reset();
 		return setting;
 	}
-
 	cerr << StdError(Fatal) << "Incomplete Object Definition" << nl;
 	return auto_ptr<FieldSettingList>();
+#else
+	tokenGroup->Reset();
+	return setting;
+#endif
 }
 
 void DefaultSyntaxBuilder::ResetTokenGroup() {
