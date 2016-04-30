@@ -47,7 +47,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ASN.1.bnf" />
     <None Include="asn\bug-001.asn">
       <Filter>asn</Filter>
     </None>
@@ -71,6 +70,9 @@
     </None>
     <None Include="asn\Product.asn">
       <Filter>asn</Filter>
+    </None>
+    <None Include="ASN.1.bnf">
+      <Filter>bnf</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

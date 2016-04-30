@@ -177,6 +177,7 @@
     <ClCompile Include="TESTTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\asn1\testsuite\test1.asn" />
     <None Include="asn1c\00-empty-OK.asn1" />
     <None Include="asn1c\01-empty-OK.asn1" />
     <None Include="asn1c\03-enum-OK.asn1" />
@@ -289,6 +290,7 @@
     <None Include="asn\33-misc-OK.asn1" />
     <None Include="asn\35-set-choice-OK.asn1" />
     <None Include="asn\37-indirect-choice-OK.asn1-TODO" />
+    <None Include="asn\MyHTTP.asn" />
     <None Include="asn\TEST.asn" />
     <None Include="csn\ModuleTestEnum1.inl" />
     <None Include="csn\ModuleTestInt1.inl" />
@@ -307,17 +309,29 @@
     <ClInclude Include="asn1test.h" />
     <ClInclude Include="ASN1TestSuite.h" />
     <ClInclude Include="csn\ModuleTestEmpty.h" />
+    <ClInclude Include="csn\ModuleTestEmptytmp.h" />
     <ClInclude Include="csn\ModuleTestEnum1.h" />
+    <ClInclude Include="csn\ModuleTestEnum1tmp.h" />
     <ClInclude Include="csn\ModuleTestInt1.h" />
+    <ClInclude Include="csn\ModuleTestInt1tmp.h" />
     <ClInclude Include="csn\ModuleTestMiscComplex.h" />
+    <ClInclude Include="csn\ModuleTestMiscComplextmp.h" />
     <ClInclude Include="csn\ModuleTestSequence.h" />
+    <ClInclude Include="csn\ModuleTestSequencetmp.h" />
     <ClInclude Include="csn\ModuleTestSetAndUntaggedChoice.h" />
+    <ClInclude Include="csn\ModuleTestSetAndUntaggedChoicetmp.h" />
     <ClInclude Include="csn\ModuleTestSetSimple.h" />
+    <ClInclude Include="csn\ModuleTestSetSimpletmp.h" />
     <ClInclude Include="csn\ModuleTestTags.h" />
     <ClInclude Include="csn\ModuleTestTags3.h" />
+    <ClInclude Include="csn\ModuleTestTags3tmp.h" />
     <ClInclude Include="csn\ModuleTestTagsDistinct2.h" />
+    <ClInclude Include="csn\ModuleTestTagsDistinct2tmp.h" />
+    <ClInclude Include="csn\ModuleTestTagstmp.h" />
     <ClInclude Include="csn\MyHTTP.h" />
+    <ClInclude Include="csn\MyHTTPtmp.h" />
     <ClInclude Include="csn\TEST.h" />
+    <ClInclude Include="csn\TESTtmp.h" />
     <ClInclude Include="TESTTest.h" />
   </ItemGroup>
   <ItemGroup>

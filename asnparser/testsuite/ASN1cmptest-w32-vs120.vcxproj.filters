@@ -84,6 +84,42 @@
     <ClInclude Include="csn\MyHTTP.h">
       <Filter>csn</Filter>
     </ClInclude>
+    <ClInclude Include="csn\ModuleTestEmptytmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestEnum1tmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestInt1tmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestMiscComplextmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestSequencetmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestSetAndUntaggedChoicetmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestSetSimpletmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestTags3tmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestTagsDistinct2tmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestTagstmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\MyHTTPtmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\TESTtmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="asn\00-empty-OK.asn1">
@@ -457,6 +493,10 @@
     </None>
     <None Include="csn\MyHTTP.inl">
       <Filter>csn</Filter>
+    </None>
+    <None Include="..\..\asn1\testsuite\test1.asn" />
+    <None Include="asn\MyHTTP.asn">
+      <Filter>asn</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
