@@ -4,7 +4,11 @@ KAMPBELL/
 ISO8823-PRESENTATION/
 RDP/
 asn/
-
+VS2013DLL
+VS2013EXE
+*.inl
+*.cxx
+*.fwd
 
 # Git submodule #
 #################
