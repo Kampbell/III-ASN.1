@@ -960,7 +960,7 @@ class OctetStringType : public TypeBase {
 	virtual const char * getAncestorClass() const;
 	string getTypeName() const;
 	virtual string getPrimitiveType(const string& ) const {
-		return "const octets&";
+		return "const ASN1::octets&";
 	}
 	virtual const char* getConstrainedType() const;
 	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
@@ -3031,26 +3031,26 @@ class ParserContext {
 	ParserContext(FILE* file = nullptr);
 	~ParserContext();
 
-	yyscan_t			lexer;
-	FILE*				file;
-	ModuleDefinition *	Module			= nullptr;
-	ClassStack *		classStack		= nullptr;
-	ParameterList *		DummyParameters = nullptr;
-	TypePtr				ValueTypeContext;
-	vector<string>		RemoveList;
-	int					IdentifierTokenContext;// = IDENTIFIER; chicken/egg problem
-	int					ReferenceTokenContext /* = MODULEREFERENCE */;
-	int					NullTokenContext;// = NULL_TYPE; chicken/egg problem
-	int					BraceTokenContext				= '{';
-	int					InOIDContext					= FALSE;
-	int					InMacroContext					= FALSE;
-	int					InMIBContext					= FALSE;
-	int					InObjectSetContext				= 0;
-	int					InWithSyntaxContext				= FALSE;
-	int					hasObjectTypeMacro				= FALSE;
-	const ObjectClassBase * InformationFromObjectContext	= nullptr;
-	int					ParsingConstructedType			= FALSE;
-	int					InTopParser						= TRUE;
+	yyscan_t				lexer;
+	FILE*					file;
+	ModuleDefinition *		Module			= nullptr;
+	ClassStack *			classStack		= nullptr;
+	ParameterList *			DummyParameters = nullptr;
+	TypePtr					ValueTypeContext;
+	vector<string>			RemoveList;
+	int						IdentifierTokenContext;// = IDENTIFIER; chicken/egg problem
+	int						ReferenceTokenContext /* = MODULEREFERENCE */;
+	int						NullTokenContext;// = NULL_TYPE; chicken/egg problem
+	int						BraceTokenContext				= '{';
+	int						InOIDContext					= FALSE;
+	int						InMacroContext					= FALSE;
+	int						InMIBContext					= FALSE;
+	int						InObjectSetContext				= 0;
+	int						InWithSyntaxContext				= FALSE;
+	int						hasObjectTypeMacro				= FALSE;
+	const ObjectClassBase*	InformationFromObjectContext	= nullptr;
+	int						ParsingConstructedType			= FALSE;
+	int						InTopParser						= TRUE;
 };
 
 #endif
