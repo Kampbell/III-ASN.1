@@ -1105,7 +1105,7 @@ namespace ASN1 {
       : AbstractData(info),value(first, last)
       { }
 
-    explicit OBJECT_IDENTIFIER(const OBJECT_IDENTIFIER & other);
+    OBJECT_IDENTIFIER(const OBJECT_IDENTIFIER & other);
     OBJECT_IDENTIFIER(unsigned nelem, .../*list of unsigned*/);
     OBJECT_IDENTIFIER(const std::initializer_list<int>& list);
     OBJECT_IDENTIFIER & operator=(const OBJECT_IDENTIFIER & other)
@@ -2147,9 +2147,8 @@ namespace ASN1 {
 	  SEQUENCE * clone() const { return static_cast<SEQUENCE*>(do_clone()); }
 	  void swap(SEQUENCE& other);
 
-	  /**
-	   *  Returns the pointer to the component of the SEQUENCE at position \c pos.
-	   */
+	  
+	  // Returns the pointer to the component of the SEQUENCE at position \c pos.
 	  AbstractData* getField(unsigned pos) {
 		  assert(pos < fields.size());
 		  return fields[pos];
@@ -2342,7 +2341,7 @@ namespace ASN1 {
 	  };
   };
 
-  /** Base class for ASN SEQUENCE type.
+  /** Base class for ASN SEQUENCE OF type.
    */
   template <class T, class Constraint = EmptyConstraint>
   class SEQUENCE_OF : public SEQUENCE_OF_Base  {
