@@ -43,15 +43,13 @@ namespace ASN1
             AssocVectorCompare(const C& src) : C(src)
             {}
 
-            bool operator()(const first_argument_type& lhs,
-                const first_argument_type& rhs) const
+            bool operator()(const first_argument_type& lhs,  const first_argument_type& rhs) const
             { return C::operator()(lhs, rhs); }
 
             bool operator()(const Data& lhs, const Data& rhs) const
             { return operator()(lhs.first, rhs.first); }
 
-            bool operator()(const Data& lhs,
-                const first_argument_type& rhs) const
+            bool operator()(const Data& lhs, const first_argument_type& rhs) const
             { return operator()(lhs.first, rhs); }
 
             bool operator()(const first_argument_type& lhs,
@@ -71,11 +69,7 @@ namespace ASN1
 // * iterators are random
 ////////////////////////////////////////////////////////////////////////////////
 
-    template
-    <
-        class K,
-        class V,
-        class C = ASN1_STD less<K>,
+    template<class K, class V, class C = ASN1_STD less<K>,
 #if defined(HP_aCC_RW)
         class A = ASN1_STD allocator
 #else
@@ -131,15 +125,12 @@ namespace ASN1
 
         // 23.3.1.1 construct/copy/destroy
 
-        AssocVector(const key_compare& comp = key_compare(),
-            const A& alloc = A())
+        AssocVector(const key_compare& comp = key_compare(), const A& alloc = A())
         : Base(alloc), MyCompare(comp)
         {}
 
         template <class InputIterator>
-        AssocVector(InputIterator first, InputIterator last,
-            const key_compare& comp = key_compare(),
-            const A& alloc = A())
+        AssocVector(InputIterator first, InputIterator last, const key_compare& comp = key_compare(), const A& alloc = A())
         : Base(first, last, alloc), MyCompare(comp)
         {
             MyCompare& me = *this;
@@ -219,10 +210,10 @@ namespace ASN1
         void swap(AssocVector& other)
         {
             //using namespace std;
-      Base::swap(other);
+			Base::swap(other);
             MyCompare& me = *this;
             MyCompare& rhs = other;
-      ASN1_STD swap(me, rhs);
+			ASN1_STD swap(me, rhs);
         }
 
         void clear()
