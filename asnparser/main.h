@@ -105,12 +105,12 @@ void iderror(const char* str);
 enum StdErrorType { Information, Warning, Error, Fatal };
 
 class StdError {
-  public:
+public:
 	StdError(StdErrorType ne) : e(ne) { }
 	//StdError(StdErrorType ne, unsigned ln) : e(ne), l(ln) { }
 	friend ostream& operator<<(ostream& out, const StdError& e);
 
-  protected:
+protected:
 	StdErrorType e;
 };
 
@@ -124,7 +124,7 @@ class StdError {
 typedef vector<string> StringList;
 
 class NamedNumber { ////: public PObject
-  public:
+public:
 	NamedNumber(string * nam);
 	NamedNumber(string * nam, int num);
 	NamedNumber(string * nam, const string& ref);
@@ -134,7 +134,7 @@ class NamedNumber { ////: public PObject
 	const string& getName() const { return name; }
 	int getNumber() const { return number; }
 
-  protected:
+protected:
 	string name;
 	string reference;
 	int number;
@@ -142,12 +142,12 @@ class NamedNumber { ////: public PObject
 };
 
 class Printable {
-  public:
-	virtual void printOn(ostream&) const = 0;
+public:
+	virtual void print(ostream&) const = 0;
 };
 
 inline ostream& operator << (ostream& os, const Printable& obj) {
-	obj.printOn(os);
+	obj.print(os);
 	return os;
 }
 
@@ -169,7 +169,7 @@ typedef shared_ptr<TypeBase> TypePtr;
 typedef vector<TypePtr> TypesVector;
 
 class Tag : public Printable {
-  public:
+public:
 	enum Type {
 		Universal,
 		Application,
@@ -218,7 +218,7 @@ class Tag : public Printable {
 		return (type|number)!= 0;
 	}
 
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	bool operator == (const Tag& other) const {
 		return type == other.type&& number == other.number&& mode == other.mode;
 	}
@@ -246,7 +246,7 @@ typedef shared_ptr<ValueSet> ValueSetPtr;
 typedef shared_ptr<Constraint> ConstraintPtr;
 
 class ConstraintElementBase : public Printable {
-  public:
+public:
 	ConstraintElementBase();
 	~ConstraintElementBase();
 
@@ -274,9 +274,9 @@ class ConstraintElementBase : public Printable {
 	virtual const SubTypeConstraintElement* getSubTypeConstraint() const;
 
 	// do not set const here - it is different function!!!
-	virtual void printOn(ostream&) {}
+	virtual void print(ostream&) {}
 
-  protected:
+protected:
 	shared_ptr<ConstraintElementBase> exclusions;
 };
 
@@ -291,7 +291,7 @@ public:
 
 	Constraint(const Constraint& other);
 
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	void PrintElements(ostream&) const;
 
 	bool isExtendable() const {
@@ -339,18 +339,18 @@ typedef shared_ptr<Constraint> ConstraintPtr;
 typedef vector<ConstraintPtr> ConstraintList;
 
 class ConstrainAllConstraintElement : public ConstraintElementBase {
-  public:
+public:
 	ConstrainAllConstraintElement(ConstraintElementPtr excl);
-	void printOn(ostream&) const {}
+	void print(ostream&) const {}
 };
 
 
 
 class ElementListConstraintElement : public ConstraintElementBase {
-  public:
+public:
 	ElementListConstraintElement();
 	ElementListConstraintElement(auto_ptr<ConstraintElementVector> list);
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 
 	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual void getConstraint(string& str) const;
@@ -374,7 +374,7 @@ class ElementListConstraintElement : public ConstraintElementBase {
 		ConstraintElementVector::const_iterator first,
 		ConstraintElementVector::const_iterator last
 	);
-  protected:
+protected:
 	ConstraintElementVector elements;
 };
 
@@ -383,10 +383,10 @@ class ValueBase;
 typedef shared_ptr<ValueBase> ValuePtr;
 
 class SingleValueConstraintElement : public ConstraintElementBase {
-  public:
+public:
 	SingleValueConstraintElement(const ValuePtr& val);
 	~SingleValueConstraintElement();
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 
 	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual void getConstraint(string& str) const;
@@ -397,7 +397,7 @@ class SingleValueConstraintElement : public ConstraintElementBase {
 	virtual bool hasPERInvisibleConstraint(const Parameter&) const;
 	virtual bool getCharacterSet(string& characterSet) const;
 
-  protected:
+protected:
 	const ValuePtr value;
   private:
 	SingleValueConstraintElement& operator = (const SingleValueConstraintElement&);
@@ -405,17 +405,17 @@ class SingleValueConstraintElement : public ConstraintElementBase {
 
 
 class ValueRangeConstraintElement : public ConstraintElementBase {
-  public:
+public:
 	ValueRangeConstraintElement(ValuePtr lowerBound, ValuePtr upperBound);
 	~ValueRangeConstraintElement();
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	void generateRange(ostream& strm);
 	virtual void getConstraint(string& str) const;
 
 	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual bool hasPERInvisibleConstraint(const Parameter&) const;
 	virtual bool getCharacterSet(string& characterSet) const;
-  protected:
+protected:
 	ValuePtr lower;
 	ValuePtr upper;
 };
@@ -424,10 +424,10 @@ class ValueRangeConstraintElement : public ConstraintElementBase {
 
 class SubTypeConstraintElement : public ConstraintElementBase {
 	//PCLASSINFO(SubTypeConstraintElement, ConstraintElementBase);
-  public:
+public:
 	SubTypeConstraintElement(TypePtr typ);
 	~SubTypeConstraintElement();
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	void generateCplusplus(const string&, ostream&, ostream&, ostream&) const;
 	virtual bool referencesType(const TypeBase& type) const;
 	virtual bool hasPERInvisibleConstraint(const Parameter&) const;
@@ -437,39 +437,39 @@ class SubTypeConstraintElement : public ConstraintElementBase {
 	const TypePtr getSubType() const {
 		return subtype;
 	}
-  protected:
+protected:
 	TypePtr subtype;
 };
 
 
 class NestedConstraintConstraintElement : public ConstraintElementBase {
-  public:
+public:
 	NestedConstraintConstraintElement(ConstraintPtr con);
 	~NestedConstraintConstraintElement();
 
 	virtual bool referencesType(const TypeBase& type) const;
 	virtual bool hasPERInvisibleConstraint(const Parameter&) const;
 
-  protected:
+protected:
 	ConstraintPtr constraint;
 };
 
 
 class SizeConstraintElement : public NestedConstraintConstraintElement {
-  public:
+public:
 	SizeConstraintElement(ConstraintPtr constraint);
 	virtual void getConstraint(string& str) const;
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual const SizeConstraintElement* getSizeConstraint() const;
 };
 
 
 class FromConstraintElement : public NestedConstraintConstraintElement {
-  public:
+public:
 	FromConstraintElement(ConstraintPtr constraint);
 	virtual void getConstraint(string& str) const;
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual const FromConstraintElement* getFromConstraint() const;
 	string getCharacterSet(const char* canonicalSet, int canonicalSetSize) const;
@@ -478,9 +478,9 @@ class FromConstraintElement : public NestedConstraintConstraintElement {
 
 
 class WithComponentConstraintElement : public NestedConstraintConstraintElement {
-  public:
+public:
 	WithComponentConstraintElement(string name, ConstraintPtr constraint, int presence);
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual bool hasPERInvisibleConstraint(const Parameter&) const {
 		return false;
@@ -493,20 +493,20 @@ class WithComponentConstraintElement : public NestedConstraintConstraintElement 
 		Default
 	};
 
-  protected:
+protected:
 	string name;
 	int     presence;
 };
 
 
 class InnerTypeConstraintElement : public ElementListConstraintElement {
-  public:
+public:
 	InnerTypeConstraintElement(auto_ptr<ConstraintElementVector> list, bool partial);
 
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 
-  protected:
+protected:
 	bool partial;
 };
 
@@ -516,29 +516,30 @@ typedef vector<ActualParameterPtr> ActualParameterList;
 typedef shared_ptr<ActualParameterList> ActualParameterListPtr;
 
 class UserDefinedConstraintElement : public ConstraintElementBase {
-  public:
+public:
 	UserDefinedConstraintElement(ActualParameterListPtr list);
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual bool hasPERInvisibleConstraint(const Parameter&) const {
 		return true;
 	}
-  protected:
+protected:
 	ActualParameterListPtr parameters;
 };
 
+class AtNotation : public Printable {
+public:
+private:
+};
 class DefinedObjectSet;
 typedef shared_ptr<DefinedObjectSet> DefinedObjectSetPtr;
 class TableConstraint {
-  public:
-	TableConstraint(shared_ptr<DefinedObjectSet> objSet,
-					auto_ptr<StringList> atNotations = auto_ptr<StringList>());
+public:
+	TableConstraint(shared_ptr<DefinedObjectSet> objSet, auto_ptr<StringList> atNotations = auto_ptr<StringList>());
 	~TableConstraint();
 	bool ReferenceType(const TypeBase& type);
 	string getObjectSetIdentifier() const;
-	const StringList* getAtNotations() const {
-		return atNotations.get();
-	}
+	const StringList* getAtNotations() const {	return atNotations.get();}
   private:
 	shared_ptr<DefinedObjectSet> objSet;
 	auto_ptr<StringList> atNotations;
@@ -547,60 +548,52 @@ class TableConstraint {
 /////////////////////////////////////////////
 
 class Parameter : public Printable {
-  public:
+public:
 	Parameter(const string& name);
 	Parameter(const string& name, int type);
 	Parameter(const Parameter& other);
 	int getIdentifierType();
 	const string& getName() const;
-	void printOn(ostream& strm) const;
-	virtual bool isTypeParameter() const {
-		return true;
-	}
+	void print(ostream& strm) const;
+	virtual bool isTypeParameter() const {return true;}
 	virtual bool ReferencedBy(const TypeBase&) const;
 	virtual ActualParameterPtr MakeActualParameter() const;
-  protected:
+protected:
 	string name;
 	int identifierType;
 };
 
 class ValueParameter : public Parameter {
-  public:
+public:
 	ValueParameter(TypePtr governor, const string& nam );
 	ValueParameter(const ValueParameter& other);
 	~ValueParameter();
-	TypeBase* getGovernor() {
-		return governor.get();
-	}
-	void printOn(ostream& strm) const;
-	virtual bool isTypeParameter() const {
-		return false;
-	}
-	virtual bool ReferencedBy(const TypeBase&) const {
-		return false;
-	}
+	TypeBase* getGovernor() { return governor.get();}
+	void print(ostream& strm) const;
+	virtual bool isTypeParameter() const {		return false;	}
+	virtual bool ReferencedBy(const TypeBase&) const {		return false;	}
 	virtual ActualParameterPtr MakeActualParameter() const;
-  protected:
+protected:
 	TypePtr governor;
 };
 
 class DefinedObjectClass;
 typedef shared_ptr<DefinedObjectClass> DefinedObjectClassPtr;
 class ObjectParameter : public Parameter {
-  public:
+public:
 	ObjectParameter(DefinedObjectClassPtr governor,
 					const string& name);
 	~ObjectParameter();
 	DefinedObjectClass* getGovernor() {
 		return governor.get();
 	}
-	void printOn(ostream& strm) const;
+	void print(ostream& strm) const;
 	virtual bool isTypeParameter() const {
 		return false;
 	}
 	virtual bool ReferencedBy(const TypeBase&) const;
 	virtual ActualParameterPtr MakeActualParameter() const;
-  protected:
+protected:
 	DefinedObjectClassPtr governor;
 };
 
@@ -608,7 +601,7 @@ typedef shared_ptr<Parameter> ParameterPtr;
 typedef vector<ParameterPtr> ParameterListRep;
 
 class ParameterList : public Printable {
-  public:
+public:
 	void Append(ParameterPtr param);
 	bool isEmpty() const {
 		return rep.empty();
@@ -616,7 +609,7 @@ class ParameterList : public Printable {
 	int getIdentifierType(const char* identifier);
 	Parameter* getParameter(const char* identifier);
 	void generateCplusplus(string& templatePrefix, string& classNameString);
-	void printOn(ostream& strm) const;
+	void print(ostream& strm) const;
 	shared_ptr<ParameterList> getReferencedParameters(const TypeBase& type) const;
 	ActualParameterListPtr MakeActualParameters() const;
 	void swap(ParameterList& other) {
@@ -631,8 +624,8 @@ typedef shared_ptr<ParameterList> ParameterListPtr;
 class ModuleDefinition;
 
 class TypeBase : public Printable {
-  public:
-	void printOn(ostream&) const;
+public:
+	void print(ostream&) const;
 
 	void beginParseValue() const;
 	void endParseValue() const;
@@ -737,7 +730,7 @@ class TypeBase : public Printable {
 	ModuleDefinition* getModule() const {
 		return module;
 	}
-  protected:
+protected:
 	TypeBase(unsigned tagNum, ModuleDefinition* md);
 	TypeBase(TypeBase& copy);
 
@@ -765,14 +758,14 @@ class TypeBase : public Printable {
 
 
 class DefinedType : public TypeBase {
-  public:
+public:
 	DefinedType(const string& name);
 	DefinedType(TypePtr refType);
 	DefinedType(TypePtr refType, TypePtr& bType);
 	DefinedType(TypePtr refType, const string& name);
 	DefinedType(TypePtr refType, const TypeBase& parent);
 
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 
 	virtual bool isChoice() const;
 	virtual bool isParameterizedType() const;
@@ -797,7 +790,7 @@ class DefinedType : public TypeBase {
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
 	virtual bool isPrimitiveType() const;
 
-  protected:
+protected:
 	void ConstructFromType(TypePtr& refType, const string& name);
 	string referenceName;
 	mutable TypePtr baseType;
@@ -806,30 +799,30 @@ class DefinedType : public TypeBase {
 
 
 class ParameterizedType : public DefinedType {
-  public:
+public:
 	ParameterizedType(const string& name, ActualParameterList& args);
 	ParameterizedType(TypePtr& refType,
 					  const TypeBase& parent,
 					  ActualParameterList& args);
 
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 
 	virtual bool isParameterizedType() const;
 	virtual string getTypeName() const;
 	virtual bool referencesType(const TypeBase& type) const;
 	virtual bool useType(const TypeBase& type) const;
 	virtual RemoveResult canRemoveType(const TypeBase&);
-  protected:
+protected:
 	ActualParameterList arguments;
 };
 
 
 class SelectionType : public TypeBase {
-  public:
+public:
 	SelectionType(const string& name, TypePtr base);
 	~SelectionType();
 
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 
 	virtual void flattenUsedTypes();
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
@@ -839,14 +832,14 @@ class SelectionType : public TypeBase {
 	virtual bool referencesType(const TypeBase& type) const;
 	virtual bool useType(const TypeBase& type) const;
 
-  protected:
+protected:
 	string selection;
 	TypePtr baseType;
 };
 
 
 class BooleanType : public TypeBase {
-  public:
+public:
 	BooleanType();
 	virtual void generateOperators(ostream& fwd, ostream& hdr, ostream& cxx, const TypeBase& actualType);
 	virtual const char * getAncestorClass() const;
@@ -858,7 +851,7 @@ class BooleanType : public TypeBase {
 
 
 class IntegerType : public TypeBase {
-  public:
+public:
 	IntegerType();
 	IntegerType(NamedNumberList&);
 	virtual const char * getAncestorClass() const;
@@ -884,15 +877,15 @@ class IntegerType : public TypeBase {
 	beginParseThisTypeValue() const,
 							endParseThisTypeValue() const;
 
-  protected:
+protected:
 	NamedNumberList allowedValues;
 };
 
 
 class EnumeratedType : public TypeBase {
-  public:
+public:
 	EnumeratedType(NamedNumberList& enums, bool extend, NamedNumberList* ext);
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	virtual void generateOperators(ostream& fwd, ostream& hdr, ostream& cxx, const TypeBase& actualType);
@@ -914,7 +907,7 @@ class EnumeratedType : public TypeBase {
 	beginParseThisTypeValue() const,
 							endParseThisTypeValue() const;
 
-  protected:
+protected:
 	NamedNumberList enumerations;
 	size_t numEnums;
 	bool extendable;
@@ -923,7 +916,7 @@ class EnumeratedType : public TypeBase {
 
 
 class RealType : public TypeBase {
-  public:
+public:
 	RealType();
 	virtual const char * getAncestorClass() const;
 	virtual string getPrimitiveType(const string& ) const {
@@ -935,7 +928,7 @@ class RealType : public TypeBase {
 
 
 class BitStringType : public TypeBase {
-  public:
+public:
 	BitStringType();
 	BitStringType(NamedNumberList&);
 	virtual const char * getAncestorClass() const;
@@ -949,13 +942,13 @@ class BitStringType : public TypeBase {
 	virtual void beginParseThisTypeValue() const;
 	virtual void endParseThisTypeValue() const;
 
-  protected:
+protected:
 	NamedNumberList allowedBits;
 };
 
 
 class OctetStringType : public TypeBase {
-  public:
+public:
 	OctetStringType();
 	virtual const char * getAncestorClass() const;
 	string getTypeName() const;
@@ -969,7 +962,7 @@ class OctetStringType : public TypeBase {
 
 
 class NullType : public TypeBase {
-  public:
+public:
 	NullType();
 	virtual const char * getAncestorClass() const;
 	virtual void beginParseThisTypeValue() const;
@@ -978,8 +971,8 @@ class NullType : public TypeBase {
 
 
 class SequenceType : public TypeBase {
-	void printOn(ostream&) const;
-  public:
+	void print(ostream&) const;
+public:
 	SequenceType(TypesVector* std, bool extendable, TypesVector * extensions, unsigned tagNum = Tag::UniversalSequence);
 	virtual void flattenUsedTypes();
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
@@ -1000,7 +993,7 @@ class SequenceType : public TypeBase {
 	virtual RemoveResult canRemoveType(const TypeBase&);
 	virtual bool removeThisType(const TypeBase&);
 	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
-  protected:
+protected:
 	TypesVector fields;
 	size_t numFields;
 	mutable vector<bool> needFwdDeclare;
@@ -1010,10 +1003,10 @@ class SequenceType : public TypeBase {
 
 
 class SequenceOfType : public TypeBase {
-  public:
+public:
 	SequenceOfType(TypePtr base, ConstraintPtr constraint = ConstraintPtr(), unsigned tag = Tag::UniversalSequence);
 	~SequenceOfType();
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void flattenUsedTypes();
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
 	virtual bool isPrimitiveType() const;
@@ -1030,14 +1023,14 @@ class SequenceOfType : public TypeBase {
 	void setNonTypedef(bool v)					{ nonTypedef = v; }
 	virtual RemoveResult canRemoveType(const TypeBase&);
 	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
-  protected:
+protected:
 	TypePtr baseType;
 	bool nonTypedef;
 };
 
 
 class SetType : public SequenceType {
-  public:
+public:
 	SetType();
 	SetType(SequenceType& seq);
 	virtual const char * getAncestorClass() const;
@@ -1045,14 +1038,14 @@ class SetType : public SequenceType {
 
 
 class SetOfType : public SequenceOfType {
-  public:
+public:
 	SetOfType(TypePtr base, ConstraintPtr constraint = ConstraintPtr());
 	virtual string getTypeName() const;
 };
 
 
 class ChoiceType : public SequenceType {
-  public:
+public:
 	ChoiceType(TypesVector * std = nullptr, bool extendable = false, TypesVector * extensions = nullptr);
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	virtual void generateOperators(ostream& fwd, ostream& hdr, ostream& cxx, const TypeBase& actualType);
@@ -1069,31 +1062,31 @@ class ChoiceType : public SequenceType {
 
 
 class EmbeddedPDVType : public TypeBase {
-  public:
+public:
 	EmbeddedPDVType();
 	virtual const char * getAncestorClass() const;
 };
 
 
 class ExternalType : public TypeBase {
-  public:
+public:
 	ExternalType();
 	virtual const char * getAncestorClass() const;
 };
 
 
 class AnyType : public TypeBase {
-  public:
+public:
 	AnyType(const string& ident);
-	void printOn(ostream& strm) const;
+	void print(ostream& strm) const;
 	virtual const char * getAncestorClass() const;
-  protected:
+protected:
 	string identifier;
 };
 
 
 class StringTypeBase : public TypeBase {
-  public:
+public:
 	StringTypeBase(int tag);
 	virtual string getTypeName() const;
 	virtual string getPrimitiveType(const string& ) const {
@@ -1106,7 +1099,7 @@ class StringTypeBase : public TypeBase {
 	virtual const char* getCanonicalSetString() const {
 		return nullptr;
 	};
-  protected:
+protected:
 	const char* canonicalSet = nullptr;
 	const char* canonicalSetRep = nullptr;
 	int canonicalSetSize = 0;
@@ -1114,7 +1107,7 @@ class StringTypeBase : public TypeBase {
 
 
 class UTF8StringType : public StringTypeBase {
-  public:
+public:
 	UTF8StringType();
 	virtual const char * getAncestorClass() const;
 	virtual string getPrimitiveType(const string& ) const {
@@ -1127,7 +1120,7 @@ class UTF8StringType : public StringTypeBase {
 
 
 class BMPStringType : public StringTypeBase {
-  public:
+public:
 	BMPStringType();
 	virtual const char * getAncestorClass() const;
 	virtual string getPrimitiveType(const string& ) const {
@@ -1140,91 +1133,91 @@ class BMPStringType : public StringTypeBase {
 
 
 class GeneralStringType : public StringTypeBase {
-  public:
+public:
 	GeneralStringType();
 	virtual const char * getAncestorClass() const;
 };
 
 
 class GraphicStringType : public StringTypeBase {
-  public:
+public:
 	GraphicStringType();
 	virtual const char * getAncestorClass() const;
 };
 
 
 class IA5StringType : public StringTypeBase {
-  public:
+public:
 	IA5StringType();
 	virtual const char * getAncestorClass() const;
 };
 
 
 class ISO646StringType : public StringTypeBase {
-  public:
+public:
 	ISO646StringType();
 	virtual const char * getAncestorClass() const;
 };
 
 
 class NumericStringType : public StringTypeBase {
-  public:
+public:
 	NumericStringType();
 	virtual const char * getAncestorClass() const;
 };
 
 
 class PrintableStringType : public StringTypeBase {
-  public:
+public:
 	PrintableStringType();
 	virtual const char * getAncestorClass() const;
 };
 
 
 class TeletexStringType : public StringTypeBase {
-  public:
+public:
 	TeletexStringType();
 	virtual const char * getAncestorClass() const;
 };
 
 
 class T61StringType : public StringTypeBase {
-  public:
+public:
 	T61StringType();
 	virtual const char * getAncestorClass() const;
 };
 
 
 class UniversalStringType : public StringTypeBase {
-  public:
+public:
 	UniversalStringType();
 	virtual const char * getAncestorClass() const;
 };
 
 
 class VideotexStringType : public StringTypeBase {
-  public:
+public:
 	VideotexStringType();
 	virtual const char * getAncestorClass() const;
 };
 
 
 class VisibleStringType : public StringTypeBase {
-  public:
+public:
 	VisibleStringType();
 	virtual const char * getAncestorClass() const;
 };
 
 
 class UnrestrictedCharacterStringType : public StringTypeBase {
-  public:
+public:
 	UnrestrictedCharacterStringType();
 	virtual const char * getAncestorClass() const;
 };
 
 
 class GeneralizedTimeType : public TypeBase {
-  public:
+public:
 	GeneralizedTimeType();
 	virtual const char * getAncestorClass() const;
 	virtual string getPrimitiveType() const {
@@ -1235,7 +1228,7 @@ class GeneralizedTimeType : public TypeBase {
 
 
 class UTCTimeType : public TypeBase {
-  public:
+public:
 	UTCTimeType();
 	virtual const char * getAncestorClass() const;
 	virtual string getPrimitiveType() const {
@@ -1246,14 +1239,14 @@ class UTCTimeType : public TypeBase {
 
 
 class ObjectDescriptorType : public TypeBase {
-  public:
+public:
 	ObjectDescriptorType();
 	virtual const char * getAncestorClass() const;
 };
 
 
 class RelativeOIDType : public TypeBase {
-  public:
+public:
 	RelativeOIDType();
 	virtual const char * getAncestorClass() const;
 	virtual void beginParseThisTypeValue() const;
@@ -1262,7 +1255,7 @@ class RelativeOIDType : public TypeBase {
 };
 
 class ObjectIdentifierType : public TypeBase {
-  public:
+public:
 	ObjectIdentifierType();
 	virtual const char * getAncestorClass() const;
 	virtual void beginParseThisTypeValue() const;
@@ -1276,11 +1269,11 @@ class ObjectClassBase;
 typedef shared_ptr<ObjectClassBase> ObjectClassBasePtr;
 
 class ObjectClassFieldType : public TypeBase {
-  public:
+public:
 	ObjectClassFieldType(ObjectClassBasePtr  objclass, const string& field);
 	~ObjectClassFieldType();
 	virtual const char * getAncestorClass() const;
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual bool canReferenceType() const;
 	virtual bool referencesType(const TypeBase& type) const;
 	TypeBase* getFieldType();
@@ -1290,7 +1283,7 @@ class ObjectClassFieldType : public TypeBase {
 	void generateDecoder(ostream&);
 	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
 	string getConstrainedTypeName() const;
-  protected:
+protected:
 	ObjectClassBasePtr asnObjectClass;
 	string asnObjectClassField;
 	shared_ptr<TableConstraint> tableConstraint;
@@ -1298,7 +1291,7 @@ class ObjectClassFieldType : public TypeBase {
 
 
 class ImportedType : public TypeBase {
-  public:
+public:
 	ImportedType(const TypePtr& ref);
 	ImportedType(const string& name, bool parameterised);
 	virtual const char * getAncestorClass() const;
@@ -1317,7 +1310,7 @@ class ImportedType : public TypeBase {
 		return moduleName;
 	}
 	bool isPrimitiveType() const;
-  protected:
+protected:
 	string modulePrefix;
 	bool    parameterised;
 	const TypePtr reference;
@@ -1333,19 +1326,19 @@ typedef shared_ptr<InformationObject> InformationObjectPtr;
 
 
 class TypeFromObject : public TypeBase {
-  public:
+public:
 	TypeFromObject(InformationObjectPtr  obj, const string& fld);
 	~TypeFromObject();
 	virtual const char * getAncestorClass() const;
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
-  protected:
+protected:
 	InformationObjectPtr refObj;
 	string field;
 };
 
 class RemovedType : public TypeBase {
-  public:
+public:
 	RemovedType(const TypeBase& type);
 	virtual bool isRemovedType() const {
 		return true;
@@ -1356,15 +1349,15 @@ class RemovedType : public TypeBase {
 // Values
 
 class ValueBase : public Printable {
-  public:
+public:
 	void setValueName(const string& name);
 	const string& getName() const {		return valueName;	}
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual void generateConst(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual bool isPERInvisibleConstraint(const Parameter&) const {		return false;	}
 
-  protected:
-	void PrintBase(ostream&) const;
+protected:
+	void printBase(ostream&) const;
 	string valueName;
 };
 
@@ -1372,24 +1365,24 @@ typedef vector<ValuePtr> ValuesList;
 
 class DefinedValue : public ValueBase {
 	//PCLASSINFO(DefinedValue, ValueBase);
-  public:
+public:
 	DefinedValue(const string& name);
 	DefinedValue(const ValuePtr& value);
 	DefinedValue(const string& name, const ValuePtr& value);
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	const string& getReference() const { return referenceName; }
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual bool isPERInvisibleConstraint(const Parameter& param) const {
 		return param.getName() == referenceName;
 	}
-  protected:
+protected:
 	string referenceName;
 	mutable ValuePtr actualValue;
 	mutable bool unresolved;
 };
 
 class ImportedValue : public DefinedValue {
-  public:
+public:
 	ImportedValue(const string& modName, const string& name, const ValuePtr& v)
 		: DefinedValue(name, v), moduleName(modName) {}
 	const string& getModuleName() const {
@@ -1401,19 +1394,19 @@ class ImportedValue : public DefinedValue {
 
 
 class BooleanValue : public ValueBase {
-  public:
+public:
 	BooleanValue(bool newVal);
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
-  protected:
+protected:
 	bool value;
 };
 
 
 class IntegerValue : public ValueBase {
-  public:
+public:
 	IntegerValue(boost::int64_t newVal);
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual void generateConst(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 
@@ -1426,71 +1419,71 @@ class IntegerValue : public ValueBase {
 		return (long)value;
 	}
 
-  protected:
+protected:
 	boost::int64_t value;
 };
 
 
 class RealValue : public ValueBase {
-  public:
+public:
 	RealValue(double newVal);
-	void printOn(ostream&) const {}
-  protected:
+	void print(ostream&) const {}
+protected:
 	double value;
 };
 
 
 class OctetStringValue : public ValueBase {
-  public:
+public:
 	OctetStringValue() { }
 	OctetStringValue(const string& newVal);
-	void printOn(ostream&) const {}
-  protected:
+	void print(ostream&) const {}
+protected:
 	vector<char> value;
 };
 
 
 class BitStringValue : public ValueBase {
-  public:
+public:
 	BitStringValue() { }
 	BitStringValue(const string& newVal);
 	BitStringValue(StringList * newVal);
-	void printOn(ostream&) const;
-  protected:
+	void print(ostream&) const;
+protected:
 	string value;
 };
 
 
 class NullValue : public ValueBase {
-  public:
-	void printOn(ostream&) const {}
+public:
+	void print(ostream&) const {}
 };
 
 
 class CharacterValue : public ValueBase {
-  public:
+public:
 	CharacterValue(char c);
 	CharacterValue(char t1, char t2);
 	CharacterValue(char q1, char q2, char q3, char q4);
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	unsigned getValue() const {
 		return value;
 	}
-  protected:
+protected:
 	unsigned value;
 };
 
 
 class CharacterStringValue : public ValueBase {
-  public:
+public:
 	CharacterStringValue() { }
 	CharacterStringValue(const string& newVal);
 	CharacterStringValue(StringList& newVal);
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	void getValue(string& v) const;
-  protected:
+protected:
 	string value;
 };
 
@@ -1530,6 +1523,9 @@ public:
 			os << oic.name;
 			os << oic.numberForm;
 		}
+		else {
+			os << oic.numberForm;
+		}
 		return os;
 	}
 private:
@@ -1539,47 +1535,47 @@ private:
 typedef vector<ObjIdComponent> ObjIdComponentList;
 
 class ObjectIdentifierValue : public ValueBase {
-  public:
+public:
 //	ObjectIdentifierValue(const string& newVal);
 	ObjectIdentifierValue(ObjIdComponentList& newVal);
 	virtual void generateCplusplus(ostream& fwd, ostream&hdr, ostream& cxx, ostream& inl) const;
 	virtual void generateConst(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	const ObjIdComponentList& getComponents() const { return value; }
-  protected:
+protected:
 	ObjIdComponentList value;
 };
 
 
 class MinValue : public ValueBase {
-  public:
-	void printOn(ostream&) const;
+public:
+	void print(ostream&) const;
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 };
 
 
 class MaxValue : public ValueBase {
-  public:
-	void printOn(ostream&) const;
+public:
+	void print(ostream&) const;
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 };
 
 
 class SequenceValue : public ValueBase {
-  public:
+public:
 	SequenceValue(ValuesList * list = nullptr);
-	void printOn(ostream&) const;
-  protected:
+	void print(ostream&) const;
+protected:
 	ValuesList values;
 };
 
 class ChoiceValue : public ValueBase {
-  public:
+public:
 	ChoiceValue(const TypePtr& typ, const string& fieldName, ValuePtr val)
 		: type(typ), fieldname(fieldName), value(val) { }
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
-  protected:
+protected:
 	const TypePtr type;
 	string fieldname;
 	ValuePtr value;
@@ -1589,7 +1585,7 @@ class ChoiceValue : public ValueBase {
 
 // ValueSet
 class ValueSet : public Printable {
-  public:
+public:
 	virtual void Union(ValueSetPtr&) = 0;
 	virtual void Intersect(ValueSetPtr&) = 0;
 	virtual TypePtr MakeValueSetType() = 0;
@@ -1599,7 +1595,7 @@ class ValueSet : public Printable {
 };
 
 class ValueSetDefn : public ValueSet {
-  public:
+public:
 	ValueSetDefn();
 	ValueSetDefn(TypePtr type, ConstraintPtr cons);
 	~ValueSetDefn();
@@ -1607,7 +1603,7 @@ class ValueSetDefn : public ValueSet {
 	void Union(ValueSetPtr&);
 	void Intersect(ValueSetPtr&);
 	TypePtr MakeValueSetType();
-	void printOn(ostream& os) const;
+	void print(ostream& os) const;
 
 	TypePtr getType() {
 		return type;
@@ -1616,7 +1612,7 @@ class ValueSetDefn : public ValueSet {
 		return elements.get();
 	}
 	void resolveReference() const;
-  protected:
+protected:
 	TypePtr type;
 	auto_ptr<ConstraintElementVector> elements;
 	bool extendable;
@@ -1626,17 +1622,17 @@ class ValueSetDefn : public ValueSet {
 
 class ObjectSetConstraintElement;
 class ValueSetFromObject : public ValueSet {
-  public:
+public:
 	ValueSetFromObject(InformationObjectPtr obj, const string& fld);
 	~ValueSetFromObject();
 	void Union(ValueSetPtr&);
 	void Intersect(ValueSetPtr&);
 	TypePtr MakeValueSetType();
-	void printOn(ostream& ) const;
+	void print(ostream& ) const;
 
 	TypePtr getType();
 	ConstraintElementVector* getElements();
-  protected:
+protected:
 	ValueSetPtr getRepresentation();
 
 	InformationObjectPtr object;
@@ -1647,18 +1643,18 @@ class ValueSetFromObject : public ValueSet {
 typedef shared_ptr<ObjectSetConstraintElement> ObjectSetConstraintElementPtr;
 
 class ValueSetFromObjects : public ValueSet {
-  public:
+public:
 	ValueSetFromObjects(ObjectSetConstraintElementPtr objSet,
 						const string& fld);
 	~ValueSetFromObjects();
 	void Union(ValueSetPtr&);
 	void Intersect(ValueSetPtr&);
 	TypePtr MakeValueSetType();
-	void printOn(ostream& ) const;
+	void print(ostream& ) const;
 
 	TypePtr getType();
 	ConstraintElementVector* getElements();
-  protected:
+protected:
 	ValueSetPtr getRepresentation();
 
 	ObjectSetConstraintElementPtr objectSet;
@@ -1678,20 +1674,14 @@ typedef shared_ptr<FieldSpec> FieldSpecPtr;
 typedef vector<FieldSpecPtr> FieldSpecsList;
 
 class FieldSpec : public Printable {
-  public:
+public:
 	FieldSpec(const string& nam, bool optional = false);
 	virtual ~FieldSpec();
 
-	bool isOptional() const {
-		return isoptional;
-	}
 	virtual bool hasDefault() const = 0;
-	const string& getName() const {
-		return name;
-	}
-	const string& getIdentifier() const {
-		return identifier;
-	}
+	const bool isOptional() const					{ return isoptional;	}
+	const string& getName() const					{ return name;	}
+	const string& getIdentifier() const				{ return identifier; }
 	virtual string getField() const = 0;
 
 	virtual void EstablishFieldRelation(FieldSpecsList* ) {}
@@ -1699,36 +1689,41 @@ class FieldSpec : public Printable {
 	virtual void endParseSetting() const {}
 
 	virtual int getToken() const = 0;
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 
-	virtual void resolveReference() const {};
+	virtual void resolveReference() const {
+	};
 
 	// used only for FixedTypeValueField and FixedTypeValueSetField
-	virtual TypeBase* getFieldType() {
-		return nullptr;
+	virtual TypeBase* getFieldType()				{ return nullptr;
 	}
-	virtual const TypeBase* getFieldType() const {
-		return nullptr;
+	virtual const TypeBase* getFieldType() const	{ return nullptr;
 	}
 
 	//
 
-	virtual bool getKey(TypePtr& , string& ) {
-		return false;
+	virtual bool getKey(TypePtr& , string& )		{ return false;	}
+	virtual void FwdDeclare(ostream& ) const {
 	}
-	virtual void FwdDeclare(ostream& ) const {}
-	virtual void generate_info_type_constructor(ostream&) const {}
-	virtual void generate_info_type_memfun(ostream& ) const {}
-	virtual void generate_info_type_mem(ostream& ) const {}
-
-	virtual void generate_value_type(ostream& ) const {}
+	virtual void generate_info_type_constructor(ostream& os) const {
+		os << "// constructor for " << name << "--" << identifier << endl;
+	}
+	virtual void generate_info_type_memfun(ostream& os) const {
+		os << "// memfun for " << name << "--" << identifier << endl;
+	}
+	virtual void generate_info_type_mem(ostream& os) const {
+		os << "// type_mem for " << name << "--" << identifier << endl;
+	}
+	virtual void generate_value_type(ostream& os) const {
+		os << "// value_type for " << name << "--" << identifier << endl;
+	}
 	virtual void generateTypeField(const string& templatePrefix,
 								   const string& classNameString,
 								   const TypeBase* keyType,
 								   const string& objClassName,
 								   ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 
-  protected:
+protected:
 
 	string name;
 	string identifier;
@@ -1736,7 +1731,7 @@ class FieldSpec : public Printable {
 };
 
 class TypeFieldSpec : public FieldSpec {
-  public:
+public:
 	TypeFieldSpec(const string& nam, bool optional = false, TypePtr defaultType= TypePtr());
 	~TypeFieldSpec();
 	virtual bool hasDefault() const;
@@ -1746,26 +1741,27 @@ class TypeFieldSpec : public FieldSpec {
 	virtual int getToken() const;
 	virtual bool getKey(TypePtr& keyType, string& keyName);
 
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void resolveReference() const;
-	virtual void generate_info_type_constructor(ostream&) const;
-	virtual void generate_info_type_memfun(ostream& hdr) const;
-	virtual void generate_info_type_mem(ostream& ) const;
-	virtual void generate_value_type(ostream& hdr) const;
+	virtual void generate_info_type_constructor(ostream& os) const;
+	virtual void generate_info_type_memfun(ostream& os) const;
+	virtual void generate_info_type_mem(ostream& os) const;
+	virtual void generate_value_type(ostream& os) const;
 	virtual void generateTypeField(const string& templatePrefix,
 								   const string& classNameString,
 								   const TypeBase* keyType,
 								   const string& objClassName,
 								   ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
-  protected:
+protected:
 	TypePtr type;
 };
+
+
 class FixedTypeValueFieldSpec;
 typedef shared_ptr<FixedTypeValueFieldSpec> FixedTypeValueFieldSpecPtr;
 class FixedTypeValueFieldSpec : public FieldSpec {
-  public:
-	FixedTypeValueFieldSpec(const string& nam, TypePtr t, bool optional = false,
-							bool unique = false);
+public:
+	FixedTypeValueFieldSpec(const string& nam, TypePtr t, bool optional = false, bool unique = false);
 	~FixedTypeValueFieldSpec();
 
 	virtual bool hasDefault() const;
@@ -1775,21 +1771,30 @@ class FixedTypeValueFieldSpec : public FieldSpec {
 	virtual void endParseSetting() const;
 	virtual int getToken() const;
 
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void resolveReference() const;
 
 	virtual bool getKey(TypePtr& keyType, string& keyName);
 	virtual TypeBase* getFieldType();
 	virtual const TypeBase* getFieldType() const;
 
-  protected:
+	virtual void generate_info_type_constructor(ostream& os) const;
+	virtual void generate_info_type_memfun(ostream& os) const;
+	virtual void generate_info_type_mem(ostream& os) const;
+	virtual void generate_value_type(ostream& os) const;
+	virtual void generateTypeField(const string& templatePrefix,
+								   const string& classNameString,
+								   const TypeBase* keyType,
+								   const string& objClassName,
+								   ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
+protected:
 	bool isUnique;
 	TypePtr  type;
 	ValuePtr defaultValue;
 };
 
 class FixedTypeValueSetFieldSpec : public FieldSpec {
-  public:
+public:
 	FixedTypeValueSetFieldSpec(const string& nam, TypePtr t, bool optional = false);
 	~FixedTypeValueSetFieldSpec();
 
@@ -1804,70 +1809,85 @@ class FixedTypeValueSetFieldSpec : public FieldSpec {
 	virtual void endParseSetting() const;
 	virtual int getToken() const;
 
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void resolveReference() const;
 
 	virtual TypeBase* getFieldType();
 	virtual const TypeBase* getFieldType() const;
 
-  protected:
+	virtual void generate_info_type_constructor(ostream& os) const;
+	virtual void generate_info_type_memfun(ostream& os) const;
+	virtual void generate_info_type_mem(ostream& os) const;
+	virtual void generate_value_type(ostream& os) const;
+	virtual void generateTypeField(const string& templatePrefix,
+								   const string& classNameString,
+								   const TypeBase* keyType,
+								   const string& objClassName,
+								   ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
+protected:
 	TypePtr  type;
 	ValueSetPtr defaultValueSet;
 };
 
 class VariableTypeValueFieldSpec : public FieldSpec {
-  public:
-	VariableTypeValueFieldSpec(const string& nam,
-							   const string& fieldname,
-							   bool optional = false);
+public:
+	VariableTypeValueFieldSpec(const string& nam,  const string& fieldname, bool optional = false);
 	~VariableTypeValueFieldSpec();
 
 	virtual bool hasDefault() const;
-	string getField() const {
-		return fieldName;
-	}
-	void setDefault(ValuePtr value) {
-		defaultValue = value;
-	}
+	string getField() const							{ return fieldName;	}
+	void setDefault(ValuePtr value)					{ defaultValue = value;	}
 	virtual void EstablishFieldRelation(FieldSpecsList* specs);
 
 	virtual void beginParseSetting(FieldSettingList*) const;
 	virtual void endParseSetting() const;
 	virtual int getToken() const;
 
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void resolveReference() const;
 
-  protected:
+	virtual void generate_info_type_constructor(ostream& os) const;
+	virtual void generate_info_type_memfun(ostream& os) const;
+	virtual void generate_info_type_mem(ostream& os) const;
+	virtual void generate_value_type(ostream& os) const;
+	virtual void generateTypeField(const string& templatePrefix,
+								   const string& classNameString,
+								   const TypeBase* keyType,
+								   const string& objClassName,
+								   ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
+protected:
 	string fieldName;
 	ValuePtr defaultValue;
 	TypePtr defaultType;
 };
 
 class VariableTypeValueSetFieldSpec : public FieldSpec {
-  public:
-	VariableTypeValueSetFieldSpec(const string& nam,
-								  const string& fieldname,
-								  bool optional = false);
+public:
+	VariableTypeValueSetFieldSpec(const string& nam, const string& fieldname, bool optional = false);
 	~VariableTypeValueSetFieldSpec();
 
 	virtual bool hasDefault() const;
-	string getField() const {
-		return fieldName;
-	}
-	void setDefault(ValueSetPtr valueSet) {
-		defaultValueSet = valueSet;
-	}
+	string getField() const							{ return fieldName; }
+	void setDefault(ValueSetPtr valueSet)			{ defaultValueSet = valueSet; }
 	virtual void EstablishFieldRelation(FieldSpecsList* specs);
 
 	virtual void beginParseSetting(FieldSettingList*) const;
 	virtual void endParseSetting() const;
 	virtual int getToken() const;
 
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void resolveReference() const;
 
-  protected:
+	virtual void generate_info_type_constructor(ostream& os) const;
+	virtual void generate_info_type_memfun(ostream& os) const;
+	virtual void generate_info_type_mem(ostream& os) const;
+	virtual void generate_value_type(ostream& os) const;
+	virtual void generateTypeField(const string& templatePrefix,
+								   const string& classNameString,
+								   const TypeBase* keyType,
+								   const string& objClassName,
+								   ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
+protected:
 	string fieldName;
 	ValueSetPtr defaultValueSet;
 };
@@ -1875,10 +1895,8 @@ class VariableTypeValueSetFieldSpec : public FieldSpec {
 class DefinedObjectClass;
 typedef shared_ptr<DefinedObjectClass> DefinedObjectClassPtr;
 class ObjectFieldSpec : public FieldSpec {
-  public:
-	ObjectFieldSpec(const string& nam,
-					DefinedObjectClass* oclass,
-					bool optional = false);
+public:
+	ObjectFieldSpec(const string& nam, DefinedObjectClass* oclass, bool optional = false);
 	~ObjectFieldSpec();
 
 	virtual bool hasDefault() const;
@@ -1888,15 +1906,26 @@ class ObjectFieldSpec : public FieldSpec {
 	virtual void endParseSetting() const;
 	virtual int getToken() const;
 
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void resolveReference() const;
-  protected:
+
+	virtual void generate_info_type_constructor(ostream& os) const;
+	virtual void generate_info_type_memfun(ostream& os) const;
+	virtual void generate_info_type_mem(ostream& os) const;
+	virtual void generate_value_type(ostream& os) const;
+	virtual void generateTypeField(const string& templatePrefix,
+								   const string& classNameString,
+								   const TypeBase* keyType,
+								   const string& objClassName,
+								   ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
+
+protected:
 	DefinedObjectClass* objectClass;
 	InformationObjectPtr obj;
 };
 
 class ObjectSetFieldSpec : public FieldSpec {
-  public:
+public:
 	ObjectSetFieldSpec(const string& nam,  DefinedObjectClassPtr oclass,  bool optional = false);
 	~ObjectSetFieldSpec();
 
@@ -1908,19 +1937,17 @@ class ObjectSetFieldSpec : public FieldSpec {
 	virtual void endParseSetting() const;
 	virtual int getToken() const;
 
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void resolveReference() const;
 	virtual void FwdDeclare(ostream& hdr) const;
 	virtual void generate_info_type_constructor(ostream& ) const;
 	virtual void generate_info_type_memfun(ostream& hdr) const;
 	virtual void generate_info_type_mem(ostream& ) const;
 	virtual void generate_value_type(ostream& hdr) const;
-	virtual void generateTypeField(const string& templatePrefix,
-								   const string& classNameString,
-								   const TypeBase* keyType,
-								   const string& objClassName,
+	virtual void generateTypeField(const string& templatePrefix,  const string& classNameString,
+								   const TypeBase* keyType,   const string& objClassName,
 		ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
-  protected:
+protected:
 	DefinedObjectClassPtr objectClass;
 	ConstraintPtr objSet;
 };
@@ -1929,7 +1956,7 @@ class ObjectSetFieldSpec : public FieldSpec {
 class DefinedSyntaxToken;
 
 class TokenOrGroupSpec : public Printable {
-  public:
+public:
 	virtual ~TokenOrGroupSpec() {};
 	virtual bool ValidateField(FieldSpecsList* ) = 0;
 	virtual bool hasLiteral(const string& str) const = 0;
@@ -1946,43 +1973,34 @@ class TokenOrGroupSpec : public Printable {
 };
 
 class Literal : public TokenOrGroupSpec {
-  public:
-	Literal(const string& str)
-		: name(str ) { }
-	Literal (const char* str): name(str) {}
+public:
+	Literal(const string& str) : name(str ) { }
+	Literal(const char* str): name(str) {}
 	virtual ~Literal() {};
-	void printOn(ostream& os) const;
-	virtual bool ValidateField(FieldSpecsList* ) {
-		return true;
-	}
+	void print(ostream& os) const;
+	virtual bool ValidateField(FieldSpecsList* ) { return true;	}
 	virtual MakeDefaultSyntaxResult  MakeDefaultSyntax(DefinedSyntaxToken* token, FieldSettingList* setting);
-	virtual bool hasLiteral(const string& str) const {
-		return str == name;
-	}
+	virtual bool hasLiteral(const string& str) const { return str == name; }
 	virtual void preMakeDefaultSyntax(FieldSettingList*) {};
 	virtual void cancelMakeDefaultSyntax(int no = 0) const {}
 
-  protected:
+protected:
 	string name;
 };
 
 class PrimitiveFieldName : public TokenOrGroupSpec {
-  public:
-	PrimitiveFieldName(const string& fieldname)
-		: name(fieldname) {
-	}
+public:
+	PrimitiveFieldName(const string& fieldname)	: name(fieldname) {}
 	PrimitiveFieldName(const char* fieldname) : name(fieldname) {}
 	PrimitiveFieldName(const PrimitiveFieldName& other) {
 		name = other.name;
 		field = other.field;
 	}
 	~PrimitiveFieldName() {};
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual bool ValidateField(FieldSpecsList* fields);
 	virtual MakeDefaultSyntaxResult  MakeDefaultSyntax(DefinedSyntaxToken* token, FieldSettingList* setting);
-	virtual bool hasLiteral(const string&) const {
-		return false;
-	}
+	virtual bool hasLiteral(const string&) const { return false; }
 	virtual void preMakeDefaultSyntax(FieldSettingList* settings);
 	virtual void cancelMakeDefaultSyntax(int no = 0) const;
   private:
@@ -1994,29 +2012,21 @@ typedef shared_ptr<TokenOrGroupSpec> TokenOrGroupSpecPtr;
 typedef vector<TokenOrGroupSpecPtr> TokenOrGroupSpecList;
 
 class TokenGroup : public TokenOrGroupSpec {
-  public:
+public:
 	TokenGroup() : optional(false), cursor(0) {}
 	TokenGroup(const TokenGroup& other);
 	~TokenGroup() {}
-	void addToken(TokenOrGroupSpecPtr token) {
-		tokenOrGroupSpecList.push_back(token);
-	}
-	void setOptional() {
-		optional = true;
-	}
-	void printOn(ostream&) const;
+	void addToken(TokenOrGroupSpecPtr token) {	tokenOrGroupSpecList.push_back(token); }
+	void setOptional() { optional = true; }
+	void print(ostream&) const;
 	bool ValidateField(FieldSpecsList* fields);
 	MakeDefaultSyntaxResult  MakeDefaultSyntax(DefinedSyntaxToken* token,	FieldSettingList* setting);
 	virtual bool hasLiteral(const string& str) const;
 	virtual void preMakeDefaultSyntax(FieldSettingList* settings);
 	virtual void cancelMakeDefaultSyntax(int no = 0) const;
 
-	size_t size() const {
-		return tokenOrGroupSpecList.size();
-	}
-	TokenOrGroupSpec& operator[](size_t i) {
-		return *(tokenOrGroupSpecList[i]);
-	}
+	size_t size() const { return tokenOrGroupSpecList.size(); }
+	TokenOrGroupSpec& operator[](size_t i) { return *(tokenOrGroupSpecList[i]);	}
 	virtual void Reset();
   private:
 	TokenOrGroupSpecList tokenOrGroupSpecList;
@@ -2027,7 +2037,7 @@ class TokenGroup : public TokenOrGroupSpec {
 typedef shared_ptr<TokenGroup> TokenGroupPtr;
 
 class DefaultSyntaxBuilder {
-  public:
+public:
 	DefaultSyntaxBuilder(TokenGroupPtr tkGrp);
 	~DefaultSyntaxBuilder();
 	void addToken(DefinedSyntaxToken* token);
@@ -2039,7 +2049,7 @@ class DefaultSyntaxBuilder {
 };
 
 class ObjectClassBase : public Printable {
-  public:
+public:
 	ObjectClassBase() {};
 	ObjectClassBase(const string& nam) {		setName(nam);	}
 	virtual ~ObjectClassBase() {};
@@ -2069,7 +2079,7 @@ class ObjectClassBase : public Printable {
 	virtual void resolveReference() const = 0;
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) {}
 	virtual const string& getKeyName() const = 0;
-  protected:
+protected:
 	string cppname;
 	string name;
 };
@@ -2078,9 +2088,8 @@ class ObjectClassDefn;
 typedef shared_ptr<ObjectClassDefn> ObjectClassDefnPtr;
 typedef vector<ObjectClassBasePtr> ObjectClassesList;
 class ObjectClassDefn : public ObjectClassBase {
-  public:
+public:
 	ObjectClassDefn();
-
 	~ObjectClassDefn();
 
 	void setFieldSpecs(auto_ptr<FieldSpecsList> list);
@@ -2090,28 +2099,22 @@ class ObjectClassDefn : public ObjectClassBase {
 	const FieldSpec* getField(const string& fieldName) const;
 
 	virtual bool VerifyDefaultSyntax(FieldSettingList*) const;
-	virtual bool hasLiteral(const string& str) const {
-		return withSyntaxSpec->hasLiteral(str);
-	}
+	virtual bool hasLiteral(const string& str) const { return withSyntaxSpec->hasLiteral(str); }
 	virtual TokenGroupPtr getWithSyntax() const;
 	virtual void PreParseObject() const;
 	virtual void beginParseObject() const;
 	virtual void endParseObject() const;
 	virtual void beginParseObjectSet() const;
 	virtual void endParseObjectSet() const;
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void resolveReference() const;
 
 	void ResolveKey();
-	const string& getKeyName() const {
-		return keyName;
-	}
-	virtual const string& getReferenceName() const {
-		return name;
-	}
+	const string& getKeyName() const { return keyName; }
+	virtual const string& getReferenceName() const { return name; }
 
 	void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
-  protected:
+protected:
 	auto_ptr<FieldSpecsList> fieldSpecs;
 	TokenGroupPtr withSyntaxSpec;
 	TypePtr keyType;
@@ -2120,7 +2123,7 @@ class ObjectClassDefn : public ObjectClassBase {
 
 
 class DefinedObjectClass : public ObjectClassBase {
-  public:
+public:
 	DefinedObjectClass(ObjectClassBase* ref);
 	DefinedObjectClass(const string& nam, ObjectClassBase* ref = nullptr);
 	~DefinedObjectClass() {}
@@ -2140,13 +2143,13 @@ class DefinedObjectClass : public ObjectClassBase {
 	virtual void endParseObject() const;
 	virtual void beginParseObjectSet() const;
 	virtual void endParseObjectSet() const;
-	virtual void printOn(ostream& strm) const;
+	virtual void print(ostream& strm) const;
 	virtual void resolveReference() const;
 	virtual TypeBase* getFieldType(const string& fieldName);
 	virtual const TypeBase* getFieldType(const string& fieldName) const;
 	const string& getKeyName() const	{ return reference->getKeyName(); }
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
-  protected:
+protected:
 	string referenceName;
 	mutable ObjectClassBase* reference;
 };
@@ -2156,21 +2159,17 @@ typedef shared_ptr<ModuleDefinition> ModuleDefinitionPtr;
 typedef vector<ModuleDefinitionPtr> ModuleList;
 
 class ImportedObjectClass : public DefinedObjectClass {
-  public:
+public:
 	ImportedObjectClass(const string& modName, const string& nam,  ObjectClassBase* ref);
-	const string& getModuleName() const {
-		return moduleName;
-	}
-	const ModuleDefinitionPtr& getModule() const {
-		return module;
-	}
+	const string& getModuleName() const { return moduleName; }
+	const ModuleDefinitionPtr& getModule() const { return module; }
   private:
 	string				moduleName;
 	ModuleDefinitionPtr	module;
 };
 
 class Setting : public Printable {
-  public:
+public:
 
 	enum {
 		has_type_setting = 0x01,
@@ -2188,132 +2187,97 @@ class Setting : public Printable {
 };
 
 class TypeSetting : public Setting {
-  public:
-	TypeSetting(TypePtr typeBase) {
-		type = typeBase;
-	}
+public:
+	TypeSetting(TypePtr typeBase) { 	type = typeBase; }
 	~TypeSetting() {}
 
-	TypePtr getType() {
-		return type;
-	}
-	const TypeBase* getType() const {
-		return type.get();
-	}
-	void printOn(ostream& strm) const;
+	TypePtr getType() {	return type; }
+	const TypeBase* getType() const {	return type.get();	}
+	void print(ostream& strm) const;
 	virtual void generateCplusplus(const string& prefix, const string& name, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
 	virtual void generateInfo(const string& name,ostream& hdr);
-  protected:
+protected:
 	TypePtr type;
 };
 
 
 class ValueSetting : public Setting {
-  public:
+public:
 	ValueSetting(TypePtr typeBase, ValuePtr valueBase);
 	~ValueSetting();
 
-	ValuePtr getValue() {
-		return value;
-	}
-	const ValuePtr getValue() const {
-		return value;
-	}
-	TypePtr getType() {
-		return type;
-	}
-	const TypeBase* getType() const {
-		return type.get();
-	}
-	void printOn(ostream& strm) const;
+	ValuePtr getValue()					{		return value;	}
+	const ValuePtr getValue() const		{		return value;	}
+	TypePtr getType()					{		return type;	}
+	const TypeBase* getType() const		{		return type.get();	}
+	void print(ostream& strm) const;
 	virtual void generateCplusplus(const string& prefix, const string& name, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
 	virtual void generateInitializationList(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
-  protected:
+protected:
 	TypePtr  type;
 	ValuePtr value;
 };
 
 class ValueSetSetting : public Setting {
-  public:
+public:
 	ValueSetSetting(ValueSetPtr set);
 	~ValueSetSetting();
 
-	ValueSetPtr getValueSet() {
-		return valueSet;
-	}
-	const ValueSetPtr getValueSet() const {
-		return valueSet;
-	}
-	void printOn(ostream& strm) const;
+	ValueSetPtr getValueSet()			{ return valueSet;	}
+	const ValueSetPtr getValueSet() const {	return valueSet; }
+	void print(ostream& strm) const;
 	virtual void generateCplusplus(const string& prefix, const string& name, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
-  protected:
+protected:
 	ValueSetPtr valueSet;
 };
 
 class InformationObject;
 typedef shared_ptr<InformationObject> InformationObjectPtr;
 class ObjectSetting : public Setting {
-  public:
+public:
 	ObjectSetting(InformationObjectPtr obj, ObjectClassBase* objClass);
 	~ObjectSetting();
-	InformationObjectPtr getObject() {
-		return object;
-	}
-	const InformationObject* getObject() const {
-		return object.get();
-	}
-	void printOn(ostream& strm) const;
+	InformationObjectPtr getObject()			{ return object;	}
+	const InformationObject* getObject() const	{ return object.get(); }
+	void print(ostream& strm) const;
 	virtual void generateCplusplus(const string& prefix, const string& name, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
-  protected:
+protected:
 	ObjectClassBase* objectClass;
 	InformationObjectPtr object;
 };
 
 class ObjectSetSetting : public Setting {
-  public:
-	ObjectSetSetting(ConstraintPtr objSet, ObjectClassBase* objClass)
-		: objectClass(objClass), objectSet(objSet) { }
+public:
+	ObjectSetSetting(ConstraintPtr objSet, ObjectClassBase* objClass) : objectClass(objClass), objectSet(objSet) { }
 	~ObjectSetSetting();
-	ConstraintPtr getObjectSet() {
-		return objectSet;
-	}
-	const ConstraintPtr getObjectSet() const {
-		return objectSet;
-	}
-	void printOn(ostream&) const;
+	ConstraintPtr getObjectSet() {	return objectSet;	}
+	const ConstraintPtr getObjectSet() const {	return objectSet;	}
+	void print(ostream&) const;
 	virtual void generateCplusplus(const string& prefix, const string& name, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
 	virtual void generateInfo(const string& name,ostream& hdr);
-	virtual bool isExtendable() const {
-		return objectSet->isExtendable();
-	}
+	virtual bool isExtendable() const {	return objectSet->isExtendable();	}
 	void generateInstanceCode(const string& prefix, ostream& cxx) const;
-  protected:
+protected:
 	ObjectClassBase* objectClass;
 	ConstraintPtr objectSet;
 };
 
 class FieldSetting : public Printable {
-  public:
+public:
 	FieldSetting(const string& fieldname, auto_ptr<Setting> aSetting);
 	~FieldSetting();
 
-	const string& getName() const {
-		return name;
-	}
-	Setting* getSetting() {
-		return setting.get();
-	}
-	const Setting* getSetting() const {
-		return setting.get();
-	}
-	void printOn(ostream&) const;
+	const string& getName() const {	return name; }
+	Setting* getSetting() {	return setting.get(); }
+	const Setting* getSetting() const {	return setting.get();}
+	void print(ostream&) const;
 
 	bool isExtendable() const;
 	void generateCplusplus(const string& prefix, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
 	void generateInitializationList(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	void generateInfo(ostream& hdr);
 	void generateInstanceCode(const string& prefix, ostream& cxx) const;
-  protected:
+protected:
 	string name;
 	string identifier;
 	auto_ptr<Setting> setting;
@@ -2321,7 +2285,7 @@ class FieldSetting : public Printable {
 
 
 class InformationObject : public Printable {
-  public:
+public:
 	InformationObject() : parameters(nullptr) {}
 	virtual ~InformationObject();
 	void setName(const string& str) {
@@ -2331,7 +2295,7 @@ class InformationObject : public Printable {
 		return name;
 	}
 	const string& getClassName() const;
-	void PrintBase(ostream&) const;
+	void printBase(ostream&) const;
 	virtual bool setObjectClass(const ObjectClassBase* definedClass) = 0;
 	virtual const ObjectClassBase* getObjectClass() const = 0;
 	virtual const Setting* getSetting(const string& fieldname) const = 0;
@@ -2339,7 +2303,7 @@ class InformationObject : public Printable {
 	virtual void generateCplusplus(ostream&, ostream&, ostream&) {}
 	virtual bool isExtendable() const = 0;
 	virtual void generateInstanceCode(ostream& cxx) const = 0;
-  protected:
+protected:
 	virtual bool VerifyObjectDefinition() = 0;
 	string name;
 	auto_ptr<ParameterList> parameters;
@@ -2348,7 +2312,7 @@ class InformationObject : public Printable {
 typedef vector<InformationObjectPtr> InformationObjectList;
 
 class DefinedObject : public InformationObject {
-  public:
+public:
 	DefinedObject(const string& name, const InformationObject* ref=nullptr);
 	bool VerifyObjectDefinition();
 	const InformationObject* getReference() const;
@@ -2356,19 +2320,19 @@ class DefinedObject : public InformationObject {
 		return true;
 	}
 	const ObjectClassBase* getObjectClass() const;
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual const Setting* getSetting(const string& fieldname) const;
 	virtual bool isExtendable() const {
 		return reference->isExtendable();
 	}
 	virtual void generateInstanceCode(ostream& cxx) const;
-  protected:
+protected:
 	string referenceName;
 	mutable const InformationObject* reference;
 };
 
 class ImportedObject : public DefinedObject {
-  public:
+public:
 	ImportedObject(const string& modName, const string& name, const InformationObject* ref)
 		: DefinedObject(name, ref), moduleName(modName) {}
 	const string& getModuleName() const {
@@ -2380,7 +2344,7 @@ class ImportedObject : public DefinedObject {
 };
 
 class DefaultObjectDefn : public InformationObject {
-  public:
+public:
 	DefaultObjectDefn(auto_ptr<FieldSettingList> list) : settings(list) {}
 	~DefaultObjectDefn() { }
 	bool VerifyObjectDefinition();
@@ -2390,21 +2354,21 @@ class DefaultObjectDefn : public InformationObject {
 		return referenceClass;
 	}
 
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual const Setting* getSetting(const string& fieldname) const;
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr , ostream& cxx, ostream& inl);
 	virtual bool isExtendable() const;
 	virtual void generateInstanceCode(ostream& cxx) const;
-  protected:
+protected:
 	auto_ptr<FieldSettingList> settings;
 	const ObjectClassBase* referenceClass;
 };
 
 class ObjectFromObject : public InformationObject {
-  public:
+public:
 	ObjectFromObject(InformationObjectPtr referenceObj, const string& fld);
 	~ObjectFromObject();
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual bool setObjectClass(const ObjectClassBase* ) {
 		return true;
 	}
@@ -2414,14 +2378,14 @@ class ObjectFromObject : public InformationObject {
 		return refObj->isExtendable();
 	}
 	virtual void generateInstanceCode(ostream& cxx) const;
-  protected:
+protected:
 	virtual bool VerifyObjectDefinition();
 	InformationObjectPtr refObj;
 	string field;
 };
 
 class DefinedSyntaxToken {
-  public:
+public:
 	virtual ~DefinedSyntaxToken() {};
 	virtual bool MatchLiteral(const string&) {
 		return false;
@@ -2435,26 +2399,26 @@ class DefinedSyntaxToken {
 };
 
 class LiteralToken : public DefinedSyntaxToken {
-  public:
+public:
 	LiteralToken(const string& tokenName) : name(tokenName) { }
 	virtual bool MatchLiteral(const string& literal) {
 		return literal == name;
 	}
-  protected:
+protected:
 	string name;
 };
 
 class SettingToken : public DefinedSyntaxToken {
-  public:
+public:
 	SettingToken(auto_ptr<Setting> set) : setting(set) {}
 	~SettingToken() { }
 	virtual FieldSettingPtr MatchSetting(const string&);
-  protected:
+protected:
 	auto_ptr<Setting> setting;
 };
 
 class endSyntaxToken : public DefinedSyntaxToken {
-  public:
+public:
 	endSyntaxToken() {}
 	virtual bool isendSyntaxToken() {
 		return true;
@@ -2464,7 +2428,7 @@ class endSyntaxToken : public DefinedSyntaxToken {
 
 
 class InformationObjectSet : public Printable {
-  public:
+public:
 	virtual ~InformationObjectSet() {}
 
 	virtual const string& getName() const = 0;
@@ -2481,7 +2445,7 @@ class InformationObjectSet : public Printable {
 };
 
 class InformationObjectSetDefn : public InformationObjectSet {
-  public:
+public:
 	InformationObjectSetDefn(const string& nam,
 							 ObjectClassBasePtr objClass,
 							 ConstraintPtr set,
@@ -2504,10 +2468,10 @@ class InformationObjectSetDefn : public InformationObjectSet {
 		return parameters.get() != nullptr;
 	}
 	void generateInstanceCode(ostream& cxx) const;
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void generateType(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	bool generateTypeConstructor(ostream& cxx) const;
-  protected:
+protected:
 	string name;
 	ObjectClassBasePtr objectClass;
 	ConstraintPtr rep;
@@ -2515,7 +2479,7 @@ class InformationObjectSetDefn : public InformationObjectSet {
 };
 
 class ImportedObjectSet :  public InformationObjectSet {
-  public:
+public:
 	ImportedObjectSet(const string& modName, const InformationObjectSet* objSet) : reference(objSet), moduleName(modName) {}
 	virtual const string& getName() const {
 		return reference->getName();
@@ -2547,7 +2511,7 @@ class ImportedObjectSet :  public InformationObjectSet {
 	}
 	void generateInstanceCode(ostream& ) const {}
 	virtual void generateType(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {}
-	void printOn(ostream&) const {}
+	void print(ostream&) const {}
   private:
 	const InformationObjectSet* reference;
 	string moduleName;
@@ -2556,14 +2520,14 @@ class ImportedObjectSet :  public InformationObjectSet {
 typedef shared_ptr<InformationObjectSet> InformationObjectSetPtr;
 typedef vector<InformationObjectSetPtr> InformationObjectSetList;
 class ObjectSetConstraintElement : public ConstraintElementBase {
-  public:
+public:
 	virtual const ObjectClassBase* getObjectClass() const = 0;
 	virtual string getName() const = 0;
 	virtual void generateObjSetAccessCode(ostream& ) {}
 };
 
 class DefinedObjectSet : public ObjectSetConstraintElement {
-  public:
+public:
 	DefinedObjectSet(const string& ref);
 
 	virtual const ObjectClassBase* getObjectClass() const;
@@ -2579,26 +2543,26 @@ class DefinedObjectSet : public ObjectSetConstraintElement {
 
 	virtual const InformationObjectSet* getReference() const;
 
-	void printOn(ostream&) const;
-  protected:
+	void print(ostream&) const;
+protected:
 	string referenceName;
 	mutable const InformationObjectSet* reference;
 };
 
 class ParameterizedObjectSet : public DefinedObjectSet {
-  public:
+public:
 	ParameterizedObjectSet(const string& ref, ActualParameterListPtr args);
 	~ParameterizedObjectSet();
 	virtual string getName() const;
 
-	void printOn(ostream&) const;
-  protected:
+	void print(ostream&) const;
+protected:
 	ActualParameterListPtr arguments;
 };
 
 
 class ObjectSetFromObject : public ObjectSetConstraintElement {
-  public:
+public:
 	ObjectSetFromObject(InformationObjectPtr obj, const string& fld);
 	~ObjectSetFromObject();
 
@@ -2611,8 +2575,8 @@ class ObjectSetFromObject : public ObjectSetConstraintElement {
 	virtual ConstraintPtr getObjectSetFromObjectSetField(const string& field) const;
 	virtual bool hasPERInvisibleConstraint(const Parameter& param) const;
 
-	void printOn(ostream&) const;
-  protected:
+	void print(ostream&) const;
+protected:
 	Constraint* getRepresentation() const;
 	InformationObjectPtr refObj;
 	string field;
@@ -2620,7 +2584,7 @@ class ObjectSetFromObject : public ObjectSetConstraintElement {
 };
 
 class ObjectSetFromObjects : public ObjectSetConstraintElement {
-  public:
+public:
 	ObjectSetFromObjects(ObjectSetConstraintElementPtr objSet, const string& fld);
 	~ObjectSetFromObjects();
 
@@ -2633,9 +2597,9 @@ class ObjectSetFromObjects : public ObjectSetConstraintElement {
 	virtual ConstraintPtr getObjectSetFromObjectSetField(const string& field) const;
 
 	virtual bool hasPERInvisibleConstraint(const Parameter& param) const;
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 	virtual void generateObjSetAccessCode(ostream& );
-  protected:
+protected:
 	ConstraintPtr getRepresentation() const;
 	ObjectSetConstraintElementPtr refObjSet;
 	string field;
@@ -2643,7 +2607,7 @@ class ObjectSetFromObjects : public ObjectSetConstraintElement {
 };
 
 class SingleObjectConstraintElement : public ConstraintElementBase {
-  public:
+public:
 	SingleObjectConstraintElement(InformationObjectPtr obj);
 	~SingleObjectConstraintElement();
 
@@ -2653,13 +2617,13 @@ class SingleObjectConstraintElement : public ConstraintElementBase {
 	virtual ConstraintPtr getObjectSetFromObjectSetField(const string& field) const;
 	virtual bool hasPERInvisibleConstraint(const Parameter& param) const;
 	virtual void generateObjectSetInstanceCode(const string& prefix, ostream& cxx) const;
-	void printOn(ostream&) const;
-  protected:
+	void print(ostream&) const;
+protected:
 	InformationObjectPtr object;
 };
 
 class ObjectSetType : public TypeBase {
-  public:
+public:
 	ObjectSetType(InformationObjectSetPtr objSet);
 	virtual const char * getAncestorClass() const;
 	virtual void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
@@ -2672,7 +2636,7 @@ class ObjectSetType : public TypeBase {
 // ImportedSymbol
 class ModuleDefinition;
 class Symbol : public Printable {
-  public:
+public:
 	Symbol(const string& sym, bool param);
 	bool isParameterisedImport() const {
 		return parameterized;
@@ -2690,14 +2654,14 @@ class Symbol : public Printable {
 		return name;
 	}
 
-	void printOn(ostream& strm) const;
-  protected:
+	void print(ostream& strm) const;
+protected:
 	string name;
 	bool parameterized;
 };
 
 class TypeReference : public Symbol {
-  public:
+public:
 	TypeReference(const string& sym, bool param) : Symbol(sym,param) {}
 	virtual void AppendToModule(ModuleDefinition* from, ModuleDefinition* to);
 	virtual void AppendToModule(const string& fromName, ModuleDefinition* to);
@@ -2708,7 +2672,7 @@ class TypeReference : public Symbol {
 };
 
 class ValueReference : public Symbol {
-  public:
+public:
 	ValueReference(const string& sym, bool param) : Symbol(sym,param) {}
 	virtual bool isValuesOrObjects() const {
 		return true;
@@ -2717,14 +2681,14 @@ class ValueReference : public Symbol {
 };
 
 class ObjectClassReference : public Symbol {
-  public:
+public:
 	ObjectClassReference(const string& sym, bool param) : Symbol(sym,param) {}
 	virtual void generateUsingDirective(const string& moduleName, ostream& strm) const;
 	virtual void AppendToModule(ModuleDefinition* from, ModuleDefinition* to);
 };
 
 class ObjectReference : public Symbol {
-  public:
+public:
 	ObjectReference(const string& sym, bool param) : Symbol(sym,param) {}
 	virtual void AppendToModule(ModuleDefinition* from, ModuleDefinition* to);
 	virtual bool isValuesOrObjects() const {
@@ -2733,7 +2697,7 @@ class ObjectReference : public Symbol {
 };
 
 class ObjectSetReference : public Symbol {
-  public:
+public:
 	ObjectSetReference(const string& sym, bool param) : Symbol(sym,param) {}
 	virtual void generateUsingDirective(const string& moduleName, ostream& strm) const;
 	virtual void AppendToModule(ModuleDefinition* from, ModuleDefinition* to);
@@ -2744,7 +2708,7 @@ class ObjectSetReference : public Symbol {
 // ActualParameter
 
 class ActualParameter : public Printable {
-  public:
+public:
 	virtual bool referencesType(const TypeBase& ) const {
 		return false;
 	}
@@ -2757,30 +2721,30 @@ class ActualParameter : public Printable {
 };
 
 class ActualTypeParameter : public ActualParameter {
-  public:
+public:
 	ActualTypeParameter(TypePtr type);
 	~ActualTypeParameter();
 
 	bool referencesType(const TypeBase& type) const;
 	bool useType(const TypeBase& ) const;
 	bool generateTemplateArgument(string& name) const;
-	void printOn(ostream& strm) const;
-  protected:
+	void print(ostream& strm) const;
+protected:
 	TypePtr param;
 };
 
 class ActualValueParameter : public ActualParameter {
-  public:
+public:
 	ActualValueParameter(ValuePtr value);
 	~ActualValueParameter();
 
-	void printOn(ostream& strm) const;
-  protected:
+	void print(ostream& strm) const;
+protected:
 	ValuePtr param;
 };
 
 class ActualValueSetParameter : public ActualParameter {
-  public:
+public:
 	ActualValueSetParameter(TypePtr valueSetType);
 	~ActualValueSetParameter();
 
@@ -2788,37 +2752,37 @@ class ActualValueSetParameter : public ActualParameter {
 	bool useType(const TypeBase& ) const;
 	bool generateTemplateArgument(string& ) const;
 
-	void printOn(ostream& strm) const;
-  protected:
+	void print(ostream& strm) const;
+protected:
 	TypePtr param;
 };
 
 class ActualObjectParameter : public ActualParameter {
-  public:
+public:
 	ActualObjectParameter(InformationObjectPtr obj);
 	~ActualObjectParameter();
 	bool generateTemplateArgument(string& name) const;
 	virtual bool useType(const TypeBase& ) const;
 	virtual bool referencesType(const TypeBase& type) const;
 
-	void printOn(ostream& strm) const;
-  protected:
+	void print(ostream& strm) const;
+protected:
 	InformationObjectPtr param;
 };
 
 class ActualObjectSetParameter : public ActualParameter {
-  public:
+public:
 	ActualObjectSetParameter(shared_ptr<ObjectSetConstraintElement> objectSet);
 	~ActualObjectSetParameter();
 	bool generateTemplateArgument(string& name) const;
 	virtual bool useType(const TypeBase& ) const;
 	virtual bool referencesType(const TypeBase& type) const;
 
-	void printOn(ostream& strm) const;
+	void print(ostream& strm) const;
 	virtual bool isTemplateArgument() const {
 		return true;
 	}
-  protected:
+protected:
 	shared_ptr<ObjectSetConstraintElement> param;
 };
 
@@ -2829,7 +2793,7 @@ typedef vector<SymbolPtr> SymbolList;
 
 class ImportModule : public Printable {
 	//PCLASSINFO(ImportModule, PObject);
-  public:
+public:
 	ImportModule(string * name, SymbolList * syms);
 	void setFileName(const string& name) {
 		filename = name;
@@ -2838,7 +2802,7 @@ class ImportModule : public Printable {
 		return filename;
 	}
 
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 
 	void generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	void generateUsingDirectives(ostream& strm) const;
@@ -2853,7 +2817,7 @@ class ImportModule : public Printable {
 		return filename;
 	}
 
-  protected:
+protected:
 	string   fullModuleName;
 	string   shortModuleName;
 	SymbolList symbols;
@@ -2867,12 +2831,12 @@ typedef vector<ImportModulePtr> ImportsList;
 typedef map<string, TypePtr> TypeMap;
 
 class ModuleDefinition : public Printable {
-  public:
+public:
 	ModuleDefinition(const string& name);
 	ModuleDefinition(const string& name, const string& filePath, Tag::Mode defTagMode);
 	~ModuleDefinition();
 
-	void printOn(ostream&) const;
+	void print(ostream&) const;
 
 	Tag::Mode getDefaultTagMode() const {
 		return defaultTagMode;
@@ -2953,7 +2917,7 @@ class ModuleDefinition : public Printable {
 	void generateClassModule(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	void CreateObjectSetTypes();
 
-	void addToRemoveList(const string& reference);
+	void addToremoveList(const string& reference);
 	void RemoveReferences(bool verbose);
 	ImportModule* findImportedModule(const string& theModuleName);
 
@@ -3008,7 +2972,7 @@ extern ModuleList Modules;
 
 #ifndef REENTRANT_PARSER
 extern ModuleDefinition * Module;
-extern ParameterList * DummyParameters;
+extern ParameterList * dummyParameters;
 extern ClassStack *classStack;
 #endif
 
@@ -3027,7 +2991,7 @@ typedef void* yyscan_t;
 #endif
 
 class ParserContext {
-  public:
+public:
 	ParserContext(FILE* file = nullptr);
 	~ParserContext();
 
@@ -3035,22 +2999,22 @@ class ParserContext {
 	FILE*					file;
 	ModuleDefinition *		Module			= nullptr;
 	ClassStack *			classStack		= nullptr;
-	ParameterList *			DummyParameters = nullptr;
-	TypePtr					ValueTypeContext;
-	vector<string>			RemoveList;
-	int						IdentifierTokenContext;// = IDENTIFIER; chicken/egg problem
-	int						ReferenceTokenContext /* = MODULEREFERENCE */;
-	int						NullTokenContext;// = NULL_TYPE; chicken/egg problem
-	int						BraceTokenContext				= '{';
-	int						InOIDContext					= FALSE;
-	int						InMacroContext					= FALSE;
-	int						InMIBContext					= FALSE;
-	int						InObjectSetContext				= 0;
-	int						InWithSyntaxContext				= FALSE;
+	ParameterList *			dummyParameters = nullptr;
+	TypePtr					valueTypeContext;
+	vector<string>			removeList;
+	int						identifierTokenContext;// = IDENTIFIER; chicken/egg problem
+	int						referenceTokenContext /* = MODULEREFERENCE */;
+	int						nullTokenContext;// = NULL_TYPE; chicken/egg problem
+	int						braceTokenContext				= '{';
+	int						inOIDContext					= FALSE;
+	int						inMacroContext					= FALSE;
+	int						inMIBContext					= FALSE;
+	int						inObjectSetContext				= 0;
+	int						inWithSyntaxContext				= FALSE;
 	int						hasObjectTypeMacro				= FALSE;
-	const ObjectClassBase*	InformationFromObjectContext	= nullptr;
-	int						ParsingConstructedType			= FALSE;
-	int						InTopParser						= TRUE;
+	const ObjectClassBase*	informationFromObjectContext	= nullptr;
+	int						parsingConstructedType			= FALSE;
+	int						inTopParser						= TRUE;
 };
 
 #endif

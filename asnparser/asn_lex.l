@@ -112,15 +112,15 @@ static int TokenSelect(YYSTYPE * yylval, int ctx, int token1, int token2, yyscan
 
 static int is_WORD(ParserContext* context, yyscan_t yyscanner)
 {
-	return (context->InWithSyntaxContext || 
+	return (context->inWithSyntaxContext || 
 	         (!context->classStack->empty() && context->classStack->top()->hasLiteral(yyget_text(yyscanner)))) 
-			&& !context->ParsingConstructedType;
+			&& !context->parsingConstructedType;
 }
 
 static int getUpperCaseToken(ParserContext* context, const char* text)
 {
      int result = 0;
-	if (context->DummyParameters && (result = context->DummyParameters->getIdentifierType(text)) != -1) {
+	if (context->dummyParameters && (result = context->dummyParameters->getIdentifierType(text)) != -1) {
 		result = result;goto exit;
 	}
 
@@ -128,8 +128,8 @@ static int getUpperCaseToken(ParserContext* context, const char* text)
 		if ((result = context->Module->getIdentifierType(text)) != -1) {
 			goto exit;
 		} else 
-		if (((context->InWithSyntaxContext && isUpper(text)) || 
-		(!context->classStack->empty() && context->classStack->top()->hasLiteral(text))) && !context->ParsingConstructedType) {
+		if (((context->inWithSyntaxContext && isUpper(text)) || 
+		(!context->classStack->empty() && context->classStack->top()->hasLiteral(text))) && !context->parsingConstructedType) {
 			result = WORD_t;goto exit;
 		} else {
 			result = TYPEREFERENCE;
@@ -148,28 +148,28 @@ static int getLowerCaseToken(ParserContext* context, const char* text)
 	int result = 0;
 
 	if (true) {
-	if (context->DummyParameters && (result = context->DummyParameters->getIdentifierType(text)) != -1)
+	if (context->dummyParameters && (result = context->dummyParameters->getIdentifierType(text)) != -1)
 		return result;
 
-	if (context->InOIDContext)
+	if (context->inOIDContext)
 	    return OID_IDENTIFIER;
 
 	if (context->Module && (result = context->Module->getIdentifierType(text)) != -1)
 		return result;
 
-    return context->IdentifierTokenContext;
+    return context->identifierTokenContext;
 	} else {
-	if (context->InOIDContext) {
+	if (context->inOIDContext) {
 	    result = OID_IDENTIFIER;
 	} else
 
-	if (context->DummyParameters && (result = context->DummyParameters->getIdentifierType(text)) != -1) {
+	if (context->dummyParameters && (result = context->dummyParameters->getIdentifierType(text)) != -1) {
 	} else
 
 	if (context->Module && (result = context->Module->getIdentifierType(text)) != -1) {
 	} else
 
-    result = context->IdentifierTokenContext;
+    result = context->identifierTokenContext;
 
 exit:
 	if (dumpLowerCaseToken)
@@ -249,7 +249,7 @@ exp ({integer}|{real})[eE]-?{integer}
 "MINUS-INFINITY"    { return MINUS_INFINITY; }
 "NOT-A-NUMBER"		{ return NOT_A_NUMBER; }
 "NOTATION"			{ return TokenSelect(yylval, !is_WORD(context, yyscanner) ,NOTATION, WORD_t, yyscanner); }  
-"NULL"              { return context->NullTokenContext; }
+"NULL"              { return context->nullTokenContext; }
 "NumericString"     { return NumericString; }
 "OBJECT"            { return OBJECT; }
 "OCTET"             { return OCTET; }
@@ -343,16 +343,16 @@ exp ({integer}|{real})[eE]-?{integer}
 "@"  { return '@'; }
 
 "{"  {
-	int result =  context->BraceTokenContext;
-	switch (context->BraceTokenContext)
+	int result =  context->braceTokenContext;
+	switch (context->braceTokenContext)
 	{
 	case OBJECTSET_BRACE:
-		context->BraceTokenContext = OBJECT_BRACE;
+		context->braceTokenContext = OBJECT_BRACE;
 		break;
 	case OBJECT_BRACE:
 	case OID_BRACE:
 	case VALUESET_BRACE:
-		context->BraceTokenContext = '{';
+		context->braceTokenContext = '{';
 		break;
 	}
 	return result; 
@@ -416,7 +416,7 @@ exp ({integer}|{real})[eE]-?{integer}
   }
 
 {integer}  {
-	if (context->InOIDContext) {
+	if (context->inOIDContext) {
 //		yylval->sval = new std::string(yytext);
 		yylval->ival = atol(yytext);
 		return OID_INTEGER;
@@ -430,7 +430,7 @@ exp ({integer}|{real})[eE]-?{integer}
   }
 
 {real}  {
-	if (context->InOIDContext) {
+	if (context->inOIDContext) {
 //		yylval->sval = new std::string(yytext);
 		yylval->ival = atol(yytext);
 		return OID_INTEGER;
@@ -446,12 +446,12 @@ exp ({integer}|{real})[eE]-?{integer}
 
 ['][01]*[']B {
   yylval->sval = new std::string(yytext);
-  return context->IdentifierTokenContext==BIT_IDENTIFIER ? BS_BSTRING : BSTRING;
+  return context->identifierTokenContext==BIT_IDENTIFIER ? BS_BSTRING : BSTRING;
 }
 
 ['][0-9a-zA-Z]*[']H {
   yylval->sval = new std::string(yytext);
-  return context->IdentifierTokenContext==BIT_IDENTIFIER ? BS_HSTRING : HSTRING;
+  return context->identifierTokenContext==BIT_IDENTIFIER ? BS_HSTRING : HSTRING;
 }
 
 ([a-z]|([a-z][a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {
@@ -462,7 +462,7 @@ exp ({integer}|{real})[eE]-?{integer}
 "&"([a-z]|([a-z][a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {   /* See X.681 section 7.5 */
     yylval->sval = new std::string(yytext);
 	int result;
-	if (context->InformationFromObjectContext && (result = context->InformationFromObjectContext->getFieldToken(yytext)))
+	if (context->informationFromObjectContext && (result = context->informationFromObjectContext->getFieldToken(yytext)))
 		return result;
 		
     return fieldreference;
@@ -471,7 +471,7 @@ exp ({integer}|{real})[eE]-?{integer}
 "&"([A-Z]|([A-Z][a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {	  /* See X.681 section 7.4 */
     yylval->sval = new std::string(yytext);
 	int result;
-	if (context->InformationFromObjectContext && (result = context->InformationFromObjectContext->getFieldToken(yytext)))
+	if (context->informationFromObjectContext && (result = context->informationFromObjectContext->getFieldToken(yytext)))
 		return result;
     return FieldReference;
   }
