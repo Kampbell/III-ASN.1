@@ -1,22 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="asn1test.cpp" />
     <ClCompile Include="MyHTTP.cxx">
       <Filter>csn</Filter>
     </ClCompile>
     <ClCompile Include="TEST1.cxx">
       <Filter>csn</Filter>
     </ClCompile>
+    <ClCompile Include="ASN1TestSuite.cpp" />
+    <ClCompile Include="Driver.cpp" />
+    <ClCompile Include="ASN1Test.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="asn1test.h" />
     <ClInclude Include="MyHTTP.h">
       <Filter>csn</Filter>
     </ClInclude>
     <ClInclude Include="TEST1.h">
       <Filter>csn</Filter>
     </ClInclude>
+    <ClInclude Include="ASN1TestSuite.h" />
+    <ClInclude Include="ASN1Test.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="test1.asn">

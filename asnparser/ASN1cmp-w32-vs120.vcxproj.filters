@@ -27,8 +27,8 @@
     <ClCompile Include="asn_ref_lex.cxx">
       <Filter>out</Filter>
     </ClCompile>
-    <ClCompile Include="main.cxx" />
     <ClCompile Include="getopt.c" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h" />

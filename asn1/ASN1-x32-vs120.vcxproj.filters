@@ -11,46 +11,46 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="asn1.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="asn1_useful.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AVNDecoder.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AVNEncoder.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BERDecoder.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BEREncoder.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CoderEnv.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InvalidTracer.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ios_helper.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PERDecoder.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PEREncoder.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ValidChecker.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="asn1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="asn1_useful.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AVNDecoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AVNEncoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BERDecoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BEREncoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CoderEnv.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InvalidTracer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ios_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PERDecoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PEREncoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ValidChecker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

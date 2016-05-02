@@ -51,8 +51,8 @@ ASN1CTest::~ASN1CTest() {
 }
 void ASN1CTest::test03_enum_OK() {
 	bool result = true;
-	vector<char> strm;
-	const char* data;
+	octets strm;
+	const octet* data;
 	{	// Enum1
 		strm.clear();
 		Enum1 asn1, asn2;
@@ -189,5 +189,3 @@ CppUnit::Test* ASN1CTest::suite() {
 	return pSuite;
 }
 }
-/*
-*/

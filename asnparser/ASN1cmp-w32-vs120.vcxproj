@@ -142,7 +142,7 @@
     <ClCompile Include="asn_ref_grammar.cxx" />
     <ClCompile Include="asn_ref_lex.cxx" />
     <ClCompile Include="getopt.c" />
-    <ClCompile Include="main.cxx">
+    <ClCompile Include="main.cpp">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
     </ClCompile>
   </ItemGroup>
