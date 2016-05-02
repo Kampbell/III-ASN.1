@@ -100,7 +100,11 @@ int lexicographic_compare_bytes(const char* first1, size_t size1,
 AbstractData::AbstractData(const void* information)
 	: info_(information) {
 }
-
+/*
+ostream& operator<<(ostream& os, const AbstractData& abstractData) {
+	return os;
+}
+*/
 ////////////////////////////////////////////////////////////
 
 ASN1_API const Null::InfoType Null::theInfo = {

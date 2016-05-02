@@ -327,7 +327,10 @@ namespace ASN1 {
    *  However all the copy constructors do copy the  constraints and tags from the object been copied.
    *  It is the programmer's responsibility to prevent using copy constructor on different types.
    */
-  class ASN1_API AbstractData
+ASN1_API ASN1_STD ostream & operator<<(ASN1_STD ostream &strm, const AbstractData & obj);
+ASN1_API ASN1_STD istream & operator>>(ASN1_STD istream &strm, AbstractData & obj);
+
+class ASN1_API AbstractData
   {
   public:
     virtual ~AbstractData() {};
@@ -454,8 +457,8 @@ namespace ASN1 {
 
 
   public:
-    friend ASN1_STD ostream & operator<<(ASN1_STD ostream &strm, const AbstractData & obj);
-    friend ASN1_STD istream & operator >>(ASN1_STD istream &strm, AbstractData & obj);
+    friend ASN1_API ASN1_STD ostream & operator<<(ASN1_STD ostream &strm, const AbstractData & obj);
+    friend ASN1_API ASN1_STD istream & operator>>(ASN1_STD istream &strm, AbstractData & obj);
 
     iostate get_from(ASN1_STD istream &);
     iostate print_on(ASN1_STD ostream &) const ;
