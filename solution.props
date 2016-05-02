@@ -12,7 +12,7 @@
   </PropertyGroup>
   <PropertyGroup Label="PropertySheets">
     <IncludePath>$(SolutionDir)asn1;$(Poco)/inc;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)$(Configuration);$(Poco)/lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)lib;$(Poco)/lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
