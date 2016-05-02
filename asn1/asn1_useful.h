@@ -12,6 +12,34 @@
 
 namespace ASN1 {
 
+/*
+EmbeddedPDV ::=  [UNIVERSAL 11] IMPLICIT SEQUENCE { 
+	identification CHOICE {
+		syntaxes SEQUENCE {
+			abstract					OBJECT IDENTIFIER,
+			transfer					OBJECT IDENTIFIER 
+		},
+		
+		syntax							OBJECT IDENTIFIER,
+		presentation-context-id			INTEGER,
+
+		context-negotiation SEQUENCE {
+			presentation-context-id		INTEGER,
+			transfer-syntax				OBJECT IDENTIFIER 
+		},
+		
+		transfer-syntax					OBJECT IDENTIFIER,
+		fixed NULL
+	},,
+	data-value OCTET STRING 
+} 
+( WITH COMPONENTS {
+	... ,
+    data-value-descriptor ABSENT 
+}
+)
+*/ 
+
 //
 // EXTERNAL_encoding
 //
@@ -145,10 +173,19 @@ private:
     static const char* selectionNames[3];
 }; // end class EXTERNAL_encoding
 
-//
-// EXTERNAL
-//
-
+/*
+EXTERNAL  ::=  [UNIVERSAL 8] IMPLICIT SEQUENCE {
+	direct-reference		OBJECT IDENTIFIER OPTIONAL,
+	indirect-reference		INTEGER OPTIONAL,
+	data-value-descriptor	ObjectDescriptor  OPTIONAL,
+	encoding  CHOICE {
+		single-ASN1-type  [0] ANY,
+		octet-aligned     [1] IMPLICIT OCTET STRING,
+		arbitrary         [2] IMPLICIT BIT STRING
+	}
+}
+*/
+ 
 class ASN1_API EXTERNAL : public ASN1::SEQUENCE
 {
     typedef ASN1::SEQUENCE Inherited;
@@ -296,18 +333,24 @@ private:
 }; // end class EXTERNAL
 
 
-//
-// ABSTRACT-SYNTAX
-//
+/*
+ABSTRACT-SYNTAX ::= CLASS {
+	&id OBJECT IDENTIFIER UNIQUE,
+	&Type,
+	&property BIT STRING { handles-invalid-encoding(0)} DEFAULT {}
+} WITH SYNTAX {
+	&Type IDENTIFIED BY &id [HAS PROPERTY &property] 
+}
+*/
 
 class ASN1_API ABSTRACT_SYNTAX
 {
 public:
     typedef ASN1::OBJECT_IDENTIFIER key_type;
-    class info_type
+    class ASN1_API info_type
     {
     public:
-        info_type();
+        info_type(const void* info = nullptr);
         ASN1::AbstractData* get_Type() const { return m_Type ? ASN1::AbstractData::create(m_Type) : NULL; }
     protected:
         const void* m_Type;
@@ -436,19 +479,25 @@ public:
 private:
     map_type rep;
 };
+extern ASN1_API ABSTRACT_SYNTAX	abstract_syntaxes;
 
-//
-// TYPE-IDENTIFIER
-//
+/*
+TYPE-IDENTIFIER ::= CLASS {
+	&id  OBJECT IDENTIFIER UNIQUE,
+    &Type
+} WITH SYNTAX {
+	&Type IDENTIFIED BY &id 
+}
+*/
 
 class ASN1_API TYPE_IDENTIFIER
 {
 public:
     typedef ASN1::OBJECT_IDENTIFIER key_type;
-    class info_type
+    class ASN1_API info_type
     {
     public:
-        info_type();
+        info_type(const void* info = nullptr);
         ASN1::AbstractData* get_Type() const { return m_Type ? ASN1::AbstractData::create(m_Type) : NULL; }
     protected:
         const void* m_Type;
@@ -577,6 +626,7 @@ public:
 private:
     map_type rep;
 };
+extern ASN1_API TYPE_IDENTIFIER	type_identifiers;
 
 } // namespace ASN1
 

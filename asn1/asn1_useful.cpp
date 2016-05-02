@@ -87,9 +87,18 @@ ASN1_API const EXTERNAL::InfoType EXTERNAL::theInfo = {
     EXTERNAL::fieldNames
 };
 
-ABSTRACT_SYNTAX::info_type::info_type()
+
+ASN1_API ABSTRACT_SYNTAX	abstract_syntaxes;
+ASN1_API TYPE_IDENTIFIER	type_identifiers;
+
+ABSTRACT_SYNTAX::info_type::info_type(const void* info)
 {
-  m_Type= NULL;
+  m_Type= info;
+}
+
+TYPE_IDENTIFIER::info_type::info_type(const void* info)
+{
+  m_Type= info;
 }
 
 } // namespace ASN1
