@@ -1,5 +1,5 @@
 /*
- * asn1test.h
+ * ASN1test.h
  * 
  * Copyright (c) 2001 Institute for Information Industry, Taiwan, Republic of China 
  * (http://www.iii.org.tw/iiia/ewelcome.htm)
@@ -11,19 +11,33 @@
  *
  */
 
-#ifndef ASN1TEST_H
-#define ASN1TEST_H
+#ifndef ASN1Test_h_INCLUDED
+#define ASN1Test_h_INCLUDED
+
+#include "CppUnit/TestCase.h"
 #include <asn1.h>
-#include <stdio.h>
 
-#define TEST(str, env, v1, v2, encodedStrm) CoderTest(str, env, v1, v2, encodedStrm, __LINE__)
+namespace ASN1 {
+	class ASN1Test : public CppUnit::TestCase	{
+	private:
+	  CoderEnv env;
 
-using namespace ASN1;
-extern bool CoderTest(const char* str,
-					  CoderEnv& env, 
-                      const AbstractData& v1, 
-                      AbstractData& v2, 
-                      const char* encodedStrm,
-					  int lineno);
+	public:
+		ASN1Test(const std::string& name);
+		~ASN1Test();
+
+		void testBERCoder();
+		void testPERCoder();
+		void testValueNotationTests();
+		void testIterator();
+		void testABSTRACT_SYNTAX();
+		void testEXTERNAL();
+		void testTYPE_IDENTIFIER();
+
+		void setUp();
+		void tearDown();
+
+		static CppUnit::Test* suite();
+	};
+}
 #endif
-
