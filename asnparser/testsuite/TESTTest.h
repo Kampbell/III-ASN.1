@@ -1,7 +1,6 @@
 #ifndef TESTTest_INCLUDED
 #define TESTTest_INCLUDED
 
-#include "Poco/Foundation.h"
 #include "CppUnit/TestCase.h"
 #include "asn1.h"
 
