@@ -459,6 +459,7 @@ CppUnit::Test* ASN1Test::suite() {
 	CppUnit_addTest(pSuite, ASN1Test, testBERCoder);
 	CppUnit_addTest(pSuite, ASN1Test, testPERCoder);
 	CppUnit_addTest(pSuite, ASN1Test, testABSTRACT_SYNTAX);
+	CppUnit_addTest(pSuite, ASN1Test, testTYPE_IDENTIFIER);
 	CppUnit_addTest(pSuite, ASN1Test, testEXTERNAL);
 
 	return pSuite;
