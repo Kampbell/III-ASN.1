@@ -12,7 +12,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F012966D-7796-4562-8587-6ADF79466B8F}</ProjectGuid>
-    <ProjectName>testASN1cmp</ProjectName>
+    <ProjectName>testASN1c</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -61,7 +61,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <CustomBuildStep>
-      <Command>..\..\bin\ASN1cmpd -c -v -o csn -i asn</Command>
+      <Command>..\..\bin\ASN1cd -m -c -v -o csn -i asn</Command>
       <Outputs>csn\MyHTTP.cxx;csn\MyHTTP.inl;csn\MyHTTP.h;csn\TEST.cxx;csn\TEST.inl;csn\TEST.h;%(Outputs)</Outputs>
     </CustomBuildStep>
     <PropertyGroup>
@@ -151,7 +151,7 @@
     </PreBuildEvent>
     <CustomBuildStep>
       <Outputs>csn\MyHTTP.cxx;csn\MyHTTP.inl;csn\MyHTTP.h;csn\TEST.cxx;csn\TEST.inl;csn\TEST.h;%(Outputs)</Outputs>
-      <Command>..\..\bin\ASN1cmp -c -v -o csn asn/TEST.asn</Command>
+      <Command>..\..\bin\ASN1c -m -c -v -o csn asn/TEST.asn</Command>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -282,14 +282,15 @@
     <None Include="asn\03-enum-OK.asn1" />
     <None Include="asn\07-int-OK.asn1" />
     <None Include="asn\17-tags-OK.asn1" />
+    <None Include="asn\18-class-OK.asn1" />
     <None Include="asn\22-tags-OK.asn1" />
     <None Include="asn\24-sequence-OK.asn1" />
     <None Include="asn\29-tags-OK.asn1" />
     <None Include="asn\30-set-OK.asn1" />
-    <None Include="asn\32-sequence-of-OK.asn1-TODO" />
+    <None Include="asn\32-sequence-of-OK.asn1" />
     <None Include="asn\33-misc-OK.asn1" />
     <None Include="asn\35-set-choice-OK.asn1" />
-    <None Include="asn\37-indirect-choice-OK.asn1-TODO" />
+    <None Include="asn\37-indirect-choice-OK.asn1" />
     <None Include="asn\MyHTTP.asn" />
     <None Include="asn\TEST.asn" />
     <None Include="csn\ModuleTestEnum1.inl" />

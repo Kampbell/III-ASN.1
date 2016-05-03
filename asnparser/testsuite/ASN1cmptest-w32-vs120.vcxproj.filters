@@ -479,12 +479,6 @@
     <None Include="csn\ModuleTestTagsDistinct2.inl">
       <Filter>csn</Filter>
     </None>
-    <None Include="asn\37-indirect-choice-OK.asn1-TODO">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\32-sequence-of-OK.asn1-TODO">
-      <Filter>asn</Filter>
-    </None>
     <None Include="asn\TEST.asn">
       <Filter>asn</Filter>
     </None>
@@ -496,6 +490,15 @@
     </None>
     <None Include="..\..\asn1\testsuite\test1.asn" />
     <None Include="asn\MyHTTP.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\32-sequence-of-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\37-indirect-choice-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\18-class-OK.asn1">
       <Filter>asn</Filter>
     </None>
   </ItemGroup>
