@@ -485,19 +485,19 @@ ModuleDefinitionList
 ModuleDefinition
 	: MODULEREFERENCE DefinitiveIdentifier DEFINITIONS TagDefault ASSIGNMENT BEGIN_t
 		{
-			context->Module = findModule($1->c_str());
+			context->module = findModule($1->c_str());
 			if ($2) {
-					context->Module->setDefinitiveObjId(*$2); delete $2;
+					context->module->setDefinitiveObjId(*$2); delete $2;
 			}
 		}
 	ModuleBody END
 		{
-			//context->Module->ResolveObjectClassReferences();
-			context->Module = nullptr;
+			//context->module->resolveObjectClassReferences();
+			context->module = nullptr;
 		}
 ;
 DefinitiveIdentifier
-	: '{' DefinitiveObjIdComponentList '}'			{	  $$ = $2;		}
+	: '{' DefinitiveObjIdComponentList '}'		{	  $$ = $2;		}
 	| %empty									{	  $$ = nullptr;	}
 ;
 
@@ -546,8 +546,8 @@ Exports
 ;
 
 SymbolsExported
-	: SymbolList			{ context->Module->setExports(*$1);	delete $1; }
-	| %empty			{ context->Module->setExportAll(); }
+	: SymbolList			{ context->module->setExports(*$1);	delete $1; }
+	| %empty			{ context->module->setExportAll(); }
 ;
 
 Imports
@@ -575,7 +575,7 @@ SymbolsFromModule
 			if (context->hasObjectTypeMacro)
 				std::cerr << "Info: including OBJECT-TYPE macro" << std::endl;
 		}
-		context->Module->addImport(ImportModulePtr(new ImportModule($3, $1)));
+		context->module->addImport(ImportModulePtr(new ImportModule($3, $1)));
       }
 ;
 
@@ -635,7 +635,7 @@ ValueSetTypeAssignment
     ASSIGNMENT ValueSet
       {
 		$2->endParseValueSet();
-		context->Module->addType($5->MakeValueSetType());
+		context->module->addType($5->MakeValueSetType());
 		delete $5;
       }
 ;
@@ -644,7 +644,7 @@ TypeAssignment
 	: TYPEREFERENCE ASSIGNMENT Type
       {
 		$3->setName(*$1); delete $1;
-		context->Module->addType(TypePtr($3));
+		context->module->addType(TypePtr($3));
       }
 ;
 
@@ -1052,7 +1052,7 @@ SetOfType
 TaggedType
 	: Tag Type
       {
-		$2->setTag($1.tagClass, $1.tagNumber, context->Module->getDefaultTagMode());
+		$2->setTag($1.tagClass, $1.tagNumber, context->module->getDefaultTagMode());
 		$$ = $2;
       }
 	| Tag IMPLICIT Type
@@ -1502,7 +1502,7 @@ ObjectClassAssignment
 	: OBJECTCLASSREFERENCE ASSIGNMENT ObjectClass
     {
 		$3->setName(*$1); delete $1;
-		context->Module->addObjectClass(ObjectClassBasePtr($3));
+		context->module->addObjectClass(ObjectClassBasePtr($3));
 	}
 ;
 
@@ -1519,7 +1519,7 @@ ObjectAssignment
 		context->classStack->pop();
 		$5->setName(*$1); delete $1;
 		$5->setObjectClass($2);
-		context->Module->addInformationObject(InformationObjectPtr($5));
+		context->module->addInformationObject(InformationObjectPtr($5));
 		context->informationFromObjectContext = nullptr;
 	}
 ;
@@ -1531,7 +1531,7 @@ ObjectSetAssignment
 	}
   ASSIGNMENT ObjectSet
     {
-		context->Module->addInformationObjectSet(InformationObjectSetPtr(
+		context->module->addInformationObjectSet(InformationObjectSetPtr(
 		new InformationObjectSetDefn(*$1, ObjectClassBasePtr($2), ConstraintPtr($5))));
 		delete $1;
 		context->classStack->pop();
@@ -2010,7 +2010,7 @@ ParameterizedTypeAssignment
 		context->dummyParameters = nullptr;
 		$5->setName(*$1); delete $1;
 		$5->setParameters(*$2); delete $2;
-		context->Module->addType(TypePtr($5));
+		context->module->addType(TypePtr($5));
       }
 ;
 
@@ -2057,7 +2057,7 @@ ParameterizedObjectAssignment
 		$6->setName(*$1); delete $1;
 		$6->setObjectClass($3);
 		$6->setParameters(std::auto_ptr<ParameterList>($2));
-		context->Module->addInformationObject(InformationObjectPtr($6));
+		context->module->addInformationObject(InformationObjectPtr($6));
 	}
 ;
 
@@ -2070,7 +2070,7 @@ ParameterizedObjectSetAssignment
     ASSIGNMENT ObjectSet
       {
 		context->dummyParameters = nullptr;
-		context->Module->addInformationObjectSet(InformationObjectSetPtr(
+		context->module->addInformationObjectSet(InformationObjectSetPtr(
 				new InformationObjectSetDefn(*$1, ObjectClassBasePtr($3),
 				                            ConstraintPtr($6), ParameterListPtr($2))));
 		delete $1;
@@ -2149,7 +2149,7 @@ ObjectSetParameter
 
 ValueAssignment
 	: VALUEREFERENCE Type		{ context->valueTypeContext.reset($2); $2->beginParseValue(); }
-    ASSIGNMENT Value		{ $2->endParseValue(); $5->setValueName(*$1); delete $1; context->Module->addValue(ValuePtr($5)); }
+    ASSIGNMENT Value		{ $2->endParseValue(); $5->setValueName(*$1); delete $1; context->module->addValue(ValuePtr($5)); }
 ;
 
 

@@ -124,8 +124,8 @@ static int getUpperCaseToken(ParserContext* context, const char* text)
 		result = result;goto exit;
 	}
 
-	if (context->Module)	{
-		if ((result = context->Module->getIdentifierType(text)) != -1) {
+	if (context->module)	{
+		if ((result = context->module->getIdentifierType(text)) != -1) {
 			goto exit;
 		} else 
 		if (((context->inWithSyntaxContext && isUpper(text)) || 
@@ -154,7 +154,7 @@ static int getLowerCaseToken(ParserContext* context, const char* text)
 	if (context->inOIDContext)
 	    return OID_IDENTIFIER;
 
-	if (context->Module && (result = context->Module->getIdentifierType(text)) != -1)
+	if (context->module && (result = context->module->getIdentifierType(text)) != -1)
 		return result;
 
     return context->identifierTokenContext;
@@ -166,7 +166,7 @@ static int getLowerCaseToken(ParserContext* context, const char* text)
 	if (context->dummyParameters && (result = context->dummyParameters->getIdentifierType(text)) != -1) {
 	} else
 
-	if (context->Module && (result = context->Module->getIdentifierType(text)) != -1) {
+	if (context->module && (result = context->module->getIdentifierType(text)) != -1) {
 	} else
 
     result = context->identifierTokenContext;

@@ -69,9 +69,9 @@ typedef std::vector<std::string> StringList;
 
 %}
 
-%define api.prefix	{id}
-%lex-param			{ParserContext* context}
-%parse-param		{ParserContext* context}{const string& path}
+%define api.prefix		{id}
+%lex-param				{ParserContext* context}
+%parse-param			{ParserContext* context}{const string& path}
 
 %token MODULEREFERENCE 
 %token TYPEREFERENCE  
@@ -217,23 +217,23 @@ ModuleDefinitionList
 ModuleDefinition
   : TypeReference '{' '}' DEFINITIONS TagDefault ASSIGNMENT BEGIN_t
       {
-		context->Module = new ModuleDefinition(*$1, path, (Tag::Mode)$5);
-		Modules.push_back(ModuleDefinitionPtr(context->Module));
+		context->module = new ModuleDefinition(*$1, path, (Tag::Mode)$5);
+		modules.push_back(ModuleDefinitionPtr(context->module));
 		delete $1;
       }
     ModuleBody END
 	  {
-		context->Module = nullptr;
+		context->module = nullptr;
 	  }
   | TypeReference DEFINITIONS TagDefault ASSIGNMENT BEGIN_t
       {
-		context->Module = new ModuleDefinition(*$1, path, (Tag::Mode)$3);
-		Modules.push_back(ModuleDefinitionPtr(context->Module));
+		context->module = new ModuleDefinition(*$1, path, (Tag::Mode)$3);
+		modules.push_back(ModuleDefinitionPtr(context->module));
 		delete $1;
       }
     ModuleBody END
 	  {
-		context->Module = nullptr;
+		context->module = nullptr;
 	  }
   ;
 
@@ -284,7 +284,7 @@ SymbolsFromModuleList
 SymbolsFromModule
   : SymbolList FROM GlobalModuleReference
       {
-    context->Module->addImportedIdentifiers(*$1, *$3);
+    context->module->addImportedIdentifiers(*$1, *$3);
     delete $1;
     delete $3;
 	  }
@@ -355,11 +355,11 @@ Assignment
 ValueSetTypeAssignment
   : TYPEREFERENCE Type ASSIGNMENT '{' '}'
       {
-	context->Module->addIdentifier($1, TYPEREFERENCE);
+	context->module->addIdentifier($1, TYPEREFERENCE);
       }
    | WOULDBE_OBJECTCLASSREFERENCE Type ASSIGNMENT '{' '}'
       {
-	context->Module->addIdentifier($1, TYPEREFERENCE);
+	context->module->addIdentifier($1, TYPEREFERENCE);
       }
     
    ;
@@ -367,11 +367,11 @@ ValueSetTypeAssignment
 TypeAssignment
   : TYPEREFERENCE ASSIGNMENT Type
       {
-	context->Module->addIdentifier($1, TYPEREFERENCE);
+	context->module->addIdentifier($1, TYPEREFERENCE);
       }
   | WOULDBE_OBJECTCLASSREFERENCE ASSIGNMENT Type
       {
-	context->Module->addIdentifier($1, TYPEREFERENCE);
+	context->module->addIdentifier($1, TYPEREFERENCE);
       } 
   ;
 
@@ -643,25 +643,25 @@ SizeConstraint
 ObjectClassAssignment
   : WOULDBE_OBJECTCLASSREFERENCE ASSIGNMENT ObjectClass
     {
-  context->Module->addIdentifier($1, OBJECTCLASSREFERENCE);
+  context->module->addIdentifier($1, OBJECTCLASSREFERENCE);
     }
   ;
 
 ObjectAssignment
   : IDENTIFIER DefinedObjectClass ASSIGNMENT Object
     {
-  context->Module->addIdentifier($1, OBJECTREFERENCE);
+  context->module->addIdentifier($1, OBJECTREFERENCE);
 	}
   ;
 
 ObjectSetAssignment
   : TYPEREFERENCE DefinedObjectClass ASSIGNMENT ObjectSet
     {
-  context->Module->addIdentifier($1, OBJECTSETREFERENCE);
+  context->module->addIdentifier($1, OBJECTSETREFERENCE);
 	}
   | WOULDBE_OBJECTCLASSREFERENCE DefinedObjectClass ASSIGNMENT ObjectSet
     {
-  context->Module->addIdentifier($1, OBJECTSETREFERENCE);
+  context->module->addIdentifier($1, OBJECTSETREFERENCE);
 	}
   ;
 
@@ -766,11 +766,11 @@ ParameterizedAssignment
 ParameterizedTypeAssignment
   : ParameterizedTypeReference ASSIGNMENT Type
       {
-    context->Module->addIdentifier($1, PARAMETERIZEDTYPEREFERENCE);
+    context->module->addIdentifier($1, PARAMETERIZEDTYPEREFERENCE);
       }
   | ParameterizedWouldbeObjectClassReference ASSIGNMENT Type
       {
-    context->Module->addIdentifier($1, PARAMETERIZEDTYPEREFERENCE);
+    context->module->addIdentifier($1, PARAMETERIZEDTYPEREFERENCE);
       }
      
   ;
@@ -778,43 +778,43 @@ ParameterizedTypeAssignment
 ParameterizedValueAssignment
   : ParameterizedIdentifier Type	ASSIGNMENT Value
       {
-    context->Module->addIdentifier($1, PARAMETERIZEDVALUEREFERENCE); 
+    context->module->addIdentifier($1, PARAMETERIZEDVALUEREFERENCE); 
 	  }
   ;
 
 ParameterizedValueSetTypeAssignment
   : ParameterizedTypeReference Type ASSIGNMENT '{' '}'
       { 
-    context->Module->addIdentifier($1, PARAMETERIZEDTYPEREFERENCE);
+    context->module->addIdentifier($1, PARAMETERIZEDTYPEREFERENCE);
 	  }
   | ParameterizedWouldbeObjectClassReference Type ASSIGNMENT '{' '}'
       { 
-    context->Module->addIdentifier($1, PARAMETERIZEDTYPEREFERENCE);
+    context->module->addIdentifier($1, PARAMETERIZEDTYPEREFERENCE);
 	  }
   ;
 
 ParameterizedObjectClassAssignment
   : ParameterizedWouldbeObjectClassReference ASSIGNMENT ObjectClass
       { 
-    context->Module->addIdentifier($1, PARAMETERIZEDOBJECTCLASSREFERENCE);
+    context->module->addIdentifier($1, PARAMETERIZEDOBJECTCLASSREFERENCE);
 	  }
   ;
 
 ParameterizedObjectAssignment
   : ParameterizedIdentifier DefinedObjectClass ASSIGNMENT Object
       { 
-    context->Module->addIdentifier($1, PARAMETERIZEDOBJECTREFERENCE);
+    context->module->addIdentifier($1, PARAMETERIZEDOBJECTREFERENCE);
 	  }
   ;
 
 ParameterizedObjectSetAssignment
   : ParameterizedTypeReference DefinedObjectClass ASSIGNMENT ObjectSet
       { 
-    context->Module->addIdentifier($1, PARAMETERIZEDOBJECTSETREFERENCE);
+    context->module->addIdentifier($1, PARAMETERIZEDOBJECTSETREFERENCE);
 	  }
   | ParameterizedWouldbeObjectClassReference DefinedObjectClass ASSIGNMENT ObjectSet
       { 
-    context->Module->addIdentifier($1, PARAMETERIZEDOBJECTSETREFERENCE);
+    context->module->addIdentifier($1, PARAMETERIZEDOBJECTSETREFERENCE);
 	  }
   ;
 
@@ -840,7 +840,7 @@ ParameterList
 ValueAssignment 
   : IDENTIFIER Type ASSIGNMENT Value
       {
-  context->Module->addIdentifier($1, VALUEREFERENCE);
+  context->module->addIdentifier($1, VALUEREFERENCE);
       }
   ;
 

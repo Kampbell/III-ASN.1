@@ -310,8 +310,8 @@ int parenthesisCount = 0;
 ([A-Z]|([A-Z][A-Z0-9_-]*[A-Z0-9_]))  {
     yylval.sval = new std::string(yytext);
 	int result;
-	if (context->Module)
-	  if ((result = context->Module->getIdentifierType(yytext)) == OBJECTCLASSREFERENCE)
+	if (context->module)
+	  if ((result = context->module->getIdentifierType(yytext)) == OBJECTCLASSREFERENCE)
 	     return OBJECTCLASSREFERENCE;
 	return WOULDBE_OBJECTCLASSREFERENCE;
 }
