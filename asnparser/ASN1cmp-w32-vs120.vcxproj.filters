@@ -59,9 +59,6 @@
     <None Include="asn\ISO8823-PRESENTATION.asn">
       <Filter>asn</Filter>
     </None>
-    <None Include="asn\ACSE-1.asn">
-      <Filter>asn</Filter>
-    </None>
     <None Include="asn\Shop.asn">
       <Filter>asn</Filter>
     </None>
@@ -73,6 +70,9 @@
     </None>
     <None Include="ASN.1.bnf">
       <Filter>bnf</Filter>
+    </None>
+    <None Include="asn\ASN.asn">
+      <Filter>asn</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

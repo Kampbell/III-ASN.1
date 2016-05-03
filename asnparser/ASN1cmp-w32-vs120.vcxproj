@@ -197,7 +197,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ASN.1.bnf" />
-    <None Include="asn\ACSE-1.asn" />
+    <None Include="asn\ASN.asn" />
     <None Include="asn\bug-001.asn" />
     <None Include="asn\ISO8823-PRESENTATION.asn" />
     <None Include="asn\Items.asn" />
