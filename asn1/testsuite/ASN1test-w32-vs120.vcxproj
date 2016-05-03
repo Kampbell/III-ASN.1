@@ -95,7 +95,7 @@
       <ForceFileOutput>MultiplyDefinedSymbolOnly</ForceFileOutput>
     </Link>
     <CustomBuildStep>
-      <Command>..\..\bin\ASN1cmpd -c -v test1.asn</Command>
+      <Command>..\..\bin\ASN1cd -m -c -v test1.asn</Command>
       <Outputs>MyHTTP.cxx;MyHTTP.inl;MyHTTP.h;TEST.cxx;TEST.inl;TEST.h;%(Outputs)</Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
@@ -136,7 +136,7 @@
     </Link>
     <CustomBuildStep>
       <Outputs>MyHTTP.cxx;MyHTTP.inl;MyHTTP.h;TEST.cxx;TEST.inl;TEST.h;%(Outputs)</Outputs>
-      <Command>..\..\bin\ASN1cmp -c -v test1.asn</Command>
+      <Command>..\..\bin\ASN1c -m -c -v test1.asn</Command>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
