@@ -15,46 +15,45 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="asn_grammar.cxx">
-      <Filter>out</Filter>
-    </ClCompile>
+    <ClCompile Include="getopt.c" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="yyerror.c" />
     <ClCompile Include="asn_lex.cxx">
-      <Filter>out</Filter>
-    </ClCompile>
-    <ClCompile Include="asn_ref_grammar.cxx">
       <Filter>out</Filter>
     </ClCompile>
     <ClCompile Include="asn_ref_lex.cxx">
       <Filter>out</Filter>
     </ClCompile>
-    <ClCompile Include="getopt.c" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="asn_ref_grammar.cxx">
+      <Filter>out</Filter>
+    </ClCompile>
+    <ClCompile Include="asn_grammar.code.c">
+      <Filter>out</Filter>
+    </ClCompile>
+    <ClCompile Include="asn_grammar.tab.c">
+      <Filter>out</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h" />
+    <ClInclude Include="unixstd.h" />
+    <ClInclude Include="FlexLexer.h" />
     <ClInclude Include="asn_lex.h">
       <Filter>out</Filter>
     </ClInclude>
     <ClInclude Include="asn_ref_lex.h">
       <Filter>out</Filter>
     </ClInclude>
-    <ClInclude Include="unixstd.h" />
-    <ClInclude Include="asn_grammar.h">
+    <ClInclude Include="asn_ref_grammar.h">
       <Filter>out</Filter>
     </ClInclude>
-    <ClInclude Include="asn_ref_grammar.h">
+    <ClInclude Include="asn_grammar.tab.h">
       <Filter>out</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="asn\bug-001.asn">
       <Filter>asn</Filter>
-    </None>
-    <None Include="asn_grammar.out">
-      <Filter>out</Filter>
-    </None>
-    <None Include="asn_ref_grammar.out">
-      <Filter>out</Filter>
     </None>
     <None Include="asn\ISO8823-PRESENTATION.asn">
       <Filter>asn</Filter>
@@ -68,26 +67,31 @@
     <None Include="asn\Product.asn">
       <Filter>asn</Filter>
     </None>
-    <None Include="ASN.1.bnf">
-      <Filter>bnf</Filter>
-    </None>
     <None Include="asn\ASN.asn">
       <Filter>asn</Filter>
     </None>
+    <None Include="asn_ref_grammar.out">
+      <Filter>out</Filter>
+    </None>
+    <None Include="asn_grammar.output">
+      <Filter>out</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <Bison Include="asn_grammar.y">
+    <BtYacc Include="asn_grammar.bty">
       <Filter>bnf</Filter>
-    </Bison>
+    </BtYacc>
+  </ItemGroup>
+  <ItemGroup>
     <Bison Include="asn_ref_grammar.y">
       <Filter>bnf</Filter>
     </Bison>
   </ItemGroup>
   <ItemGroup>
-    <Flex Include="asn_ref_lex.l">
+    <Flex Include="asn_lex.l">
       <Filter>bnf</Filter>
     </Flex>
-    <Flex Include="asn_lex.l">
+    <Flex Include="asn_ref_lex.l">
       <Filter>bnf</Filter>
     </Flex>
   </ItemGroup>

@@ -27,7 +27,9 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="..\..\win-flex-bison\bin\Release\custom_build_rules\win_flex_bison_custom_build.props" />
+    <Import Project="..\..\btyacc\msvc\btyacc.props" />
+    <Import Project="..\..\win-flex-bison\bin\Release\custom_build_rules\win_flex_custom_build.props" />
+    <Import Project="..\..\win-flex-bison\bin\Release\custom_build_rules\win_bison_custom_build.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -48,12 +50,14 @@
     <IncludePath>../boost;$(IncludePath);../asn1</IncludePath>
     <TargetName>$(ProjectName)d</TargetName>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>C:\boost\boost_1_55_0;$(IncludePath)</IncludePath>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
@@ -63,7 +67,7 @@
       <AdditionalOptions>/Zm500  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CRT_SECURE_NO_WARNINGS;YYDEBUG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <PrecompiledHeaderOutputFile>.\Debug/$(TargetName).pch</PrecompiledHeaderOutputFile>
@@ -135,9 +139,19 @@
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="asn_grammar.cxx" />
+    <ClCompile Include="asn_grammar.code.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="asn_grammar.tab.c" />
     <ClCompile Include="asn_lex.cxx" />
     <ClCompile Include="asn_ref_grammar.cxx" />
     <ClCompile Include="asn_ref_lex.cxx" />
@@ -145,16 +159,22 @@
     <ClCompile Include="main.cpp">
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
     </ClCompile>
+    <ClCompile Include="yyerror.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="asn_grammar.h" />
+    <ClInclude Include="asn_grammar.tab.h" />
     <ClInclude Include="asn_lex.h" />
     <ClInclude Include="asn_ref_grammar.h" />
     <ClInclude Include="asn_ref_lex.h" />
+    <ClInclude Include="FlexLexer.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="unixstd.h" />
   </ItemGroup>
   <ItemGroup>
+    <!--
     <Bison Include="asn_grammar.y">
       <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
       <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</HeaderFile>
@@ -166,48 +186,55 @@
       <Report Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">all</Report>
       <ReportFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).out</ReportFile>
       <NoLines Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</NoLines>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </Bison>
+    -->
     <Bison Include="asn_ref_grammar.y">
       <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
-      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</HeaderFile>
       <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).h</DefinesFile>
-      <FilePrefix Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </FilePrefix>
-      <NamePrefix Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </NamePrefix>
       <Report Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">all</Report>
       <ReportFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).out</ReportFile>
+      <NoLines Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</NoLines>
       <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).h</DefinesFile>
       <Report Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">all</Report>
       <ReportFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).out</ReportFile>
       <NoLines Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</NoLines>
     </Bison>
-    <Flex Include="asn_lex.l">
-      <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
-      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).h</HeaderFile>
-      <Noline Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</Noline>
-      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).h</HeaderFile>
-    </Flex>
-    <Flex Include="asn_ref_lex.l">
-      <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
-      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).h</HeaderFile>
-      <Prefix Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">id</Prefix>
-      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).h</HeaderFile>
-    </Flex>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ASN.1.bnf" />
     <None Include="asn\ASN.asn" />
     <None Include="asn\bug-001.asn" />
     <None Include="asn\ISO8823-PRESENTATION.asn" />
     <None Include="asn\Items.asn" />
     <None Include="asn\Product.asn" />
     <None Include="asn\Shop.asn" />
-    <None Include="asn_grammar.out" />
+    <None Include="asn_grammar.output" />
     <None Include="asn_ref_grammar.out" />
+  </ItemGroup>
+  <ItemGroup>
+    <BtYacc Include="asn_grammar.bty" />
+  </ItemGroup>
+  <ItemGroup>
+    <Flex Include="asn_lex.l">
+      <Noline Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</Noline>
+      <Noline Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</Noline>
+    </Flex>
+    <Flex Include="asn_ref_lex.l">
+      <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
+      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).h</HeaderFile>
+      <Noline Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</Noline>
+      <OutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).cxx</OutputFile>
+      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).h</HeaderFile>
+      <Noline Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</Noline>
+      <Prefix Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">id</Prefix>
+      <Prefix Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">id</Prefix>
+    </Flex>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\win-flex-bison\bin\Release\custom_build_rules\win_flex_bison_custom_build.targets" />
+    <Import Project="..\..\btyacc\msvc\btyacc.targets" />
+    <Import Project="..\..\win-flex-bison\bin\Release\custom_build_rules\win_flex_custom_build.targets" />
+    <Import Project="..\..\win-flex-bison\bin\Release\custom_build_rules\win_bison_custom_build.targets" />
   </ImportGroup>
 </Project>
