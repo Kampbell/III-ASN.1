@@ -1,3 +1,14 @@
+%option bison-bridge
+%option reentrant 
+%option stack
+/*
+%option bison-locations 
+%option yylineno
+*/
+%option outfile="asn_lex.cxx"
+%option header-file="asn_lex.h"
+%option never-interactive 
+
 %{
 
 /*
@@ -41,7 +52,7 @@
  */
 
 #include "main.h"
-#include "asn_grammar.h"
+#include "asn_grammar.tab.h"
 #include <ctype.h>
 
 
@@ -55,11 +66,13 @@ extern int LexEcho;
 
 #define YY_HEADER_EXPORT_START_CONDITIONS 1
 #define YY_USER_ACTION if (LexEcho) std::cout << yytext << std::flush;
-#define YY_DECL int yylex(YYSTYPE* yylval_param, YYLTYPE* yylloc_param, yyscan_t yyscanner, ParserContext* context)
+//#define YY_DECL int yylex(YYSTYPE* yylval_param, YYLTYPE* yylloc, yyscan_t yyscanner, ParserContext* context)
+#define YY_DECL int yylex(YYSTYPE* yylval_param, yyscan_t yyscanner, ParserContext* context)
+/*
 #define YY_USER_ACTION yylloc->first_line = yylloc->last_line = yylineno; \
     yylloc->first_column = yycolumn; yylloc->last_column = yycolumn + yyleng - 1; \
     yycolumn += yyleng;
-
+*/
 static const char* SYMBOLS[] = {
   "$end", "error", "$undefined", "MODULEREFERENCE",
   "TYPEREFERENCE", "OBJECTCLASSREFERENCE", "VALUEREFERENCE",
@@ -179,14 +192,6 @@ exit:
 }
 
 %}
-%option bison-locations 
-%option bison-bridge
-%option reentrant 
-%option yylineno
-%option outfile="asn_lex.cxx"
-%option header-file="asn_lex.h"
-%option stack
-%option never-interactive
 
 %x multiline_comment comment_line directive remove_directive
 

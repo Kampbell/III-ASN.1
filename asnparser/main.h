@@ -51,10 +51,13 @@
 #pragma warning(disable:4390)
 #pragma warning(disable:4102)
 #pragma warning(disable:4244)
+#pragma warning(disable:4189)	// variable locale initialisée mais non référencée
+#pragma warning(disable:4706)	// assignation au sein d'une expression conditionnelle
 #pragma warning(disable:4018)	// '<' : incompatibilité signed/unsigned
+
 #endif
 
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
 #include <list>
 #include <map>
@@ -734,25 +737,25 @@ protected:
 	TypeBase(unsigned tagNum, ModuleDefinition* md);
 	TypeBase(TypeBase& copy);
 
-	void PrintStart(ostream&) const;
-	void PrintFinish(ostream&) const;
+	void printStart(ostream&) const;
+	void printFinish(ostream&) const;
 	const char* getClass() const;
 
-	Tag				tag;
-	Tag				defaultTag;
-	string			name; // The ASN.1 Type name
-	string			identifier; // The converted C Type name
-	ConstraintList	constraints;
+	Tag					tag;
+	Tag					defaultTag;
+	string				name; // The ASN.1 Type name
+	string				identifier; // The converted C Type name
+	ConstraintList		constraints;
 	bool				isoptional;
 	ValuePtr			defaultValue;
 	bool				isgenerated;
 	ParameterList		parameters;
-	string			templatePrefix;
-	string			classNameString;
-	string			shortClassNameString;
-	string			outerClassName;
+	string				templatePrefix;
+	string				classNameString;
+	string				shortClassNameString;
+	string				outerClassName;
 	bool				isvaluesettype;
-	ModuleDefinition* module;
+	ModuleDefinition*	module;
 };
 
 
@@ -1799,12 +1802,8 @@ public:
 	~FixedTypeValueSetFieldSpec();
 
 	virtual bool hasDefault() const;
-	void setDefault(ValueSetPtr valueSet) {
-		defaultValueSet = valueSet;
-	}
-	string getField() const {
-		return type->getName();
-	}
+	void setDefault(ValueSetPtr valueSet)	{	defaultValueSet = valueSet;	}
+	string getField() const					{ return type->getName(); }
 	virtual void beginParseSetting(FieldSettingList*) const;
 	virtual void endParseSetting() const;
 	virtual int getToken() const;
@@ -1825,7 +1824,7 @@ public:
 								   const string& objClassName,
 								   ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 protected:
-	TypePtr  type;
+	TypePtr		type;
 	ValueSetPtr defaultValueSet;
 };
 
@@ -2099,7 +2098,7 @@ public:
 	const FieldSpec* getField(const string& fieldName) const;
 
 	virtual bool VerifyDefaultSyntax(FieldSettingList*) const;
-	virtual bool hasLiteral(const string& str) const { return withSyntaxSpec->hasLiteral(str); }
+	virtual bool hasLiteral(const string& str) const { return withSyntaxSpec ? withSyntaxSpec->hasLiteral(str) : false; }
 	virtual TokenGroupPtr getWithSyntax() const;
 	virtual void PreParseObject() const;
 	virtual void beginParseObject() const;
@@ -2206,10 +2205,10 @@ public:
 	ValueSetting(TypePtr typeBase, ValuePtr valueBase);
 	~ValueSetting();
 
-	ValuePtr getValue()					{		return value;	}
-	const ValuePtr getValue() const		{		return value;	}
-	TypePtr getType()					{		return type;	}
-	const TypeBase* getType() const		{		return type.get();	}
+	ValuePtr getValue()					{ return value;	}
+	const ValuePtr getValue() const		{ return value;	}
+	TypePtr getType()					{ return type;	}
+	const TypeBase* getType() const		{ return type.get();	}
 	void print(ostream& strm) const;
 	virtual void generateCplusplus(const string& prefix, const string& name, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
 	virtual void generateInitializationList(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
@@ -2223,8 +2222,8 @@ public:
 	ValueSetSetting(ValueSetPtr set);
 	~ValueSetSetting();
 
-	ValueSetPtr getValueSet()			{ return valueSet;	}
-	const ValueSetPtr getValueSet() const {	return valueSet; }
+	ValueSetPtr getValueSet()				{ return valueSet;	}
+	const ValueSetPtr getValueSet() const	{ return valueSet; }
 	void print(ostream& strm) const;
 	virtual void generateCplusplus(const string& prefix, const string& name, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
 protected:
@@ -2250,8 +2249,8 @@ class ObjectSetSetting : public Setting {
 public:
 	ObjectSetSetting(ConstraintPtr objSet, ObjectClassBase* objClass) : objectClass(objClass), objectSet(objSet) { }
 	~ObjectSetSetting();
-	ConstraintPtr getObjectSet() {	return objectSet;	}
-	const ConstraintPtr getObjectSet() const {	return objectSet;	}
+	ConstraintPtr getObjectSet()				{ return objectSet;	}
+	const ConstraintPtr getObjectSet() const	{ return objectSet;	}
 	void print(ostream&) const;
 	virtual void generateCplusplus(const string& prefix, const string& name, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl, unsigned& flag);
 	virtual void generateInfo(const string& name,ostream& hdr);
@@ -2269,7 +2268,7 @@ public:
 
 	const string& getName() const {	return name; }
 	Setting* getSetting() {	return setting.get(); }
-	const Setting* getSetting() const {	return setting.get();}
+	const Setting* getSetting() const			{ return setting.get();}
 	void print(ostream&) const;
 
 	bool isExtendable() const;
@@ -2903,11 +2902,11 @@ public:
 
 	virtual void generateCplusplus(const string& modName, unsigned numFiles, bool verbose);
 
-	void ResolveObjectClassReferences() const;
+	void resolveObjectClassReferences() const;
 
 	void AdjustModuleName(const string& sourcePath, bool isSubModule = false);
 	bool ReorderTypes();
-	string CreateSubModules(SymbolList& exportedSymbols);
+	string createSubModules(SymbolList& exportedSymbols);
 	string getFileName();
 	void AdjustImportedModules();
 
@@ -2968,17 +2967,17 @@ boost::shared_ptr<T> findWithName(const vector<boost::shared_ptr<T> >& cont, con
 }
 typedef stack<ObjectClassBase*> ClassStack;
 
-extern ModuleList Modules;
+extern ModuleList modules;
 
 #ifndef REENTRANT_PARSER
-extern ModuleDefinition * Module;
+extern ModuleDefinition * module;
 extern ParameterList * dummyParameters;
 extern ClassStack *classStack;
 #endif
 
 
 ModuleDefinition* findModule(const char* name);
-ModuleDefinition* CreateModule(const char* name);
+ModuleDefinition* createModule(const char* name);
 void addRemoveItem(const char* item);
 
 class UsefulModuleDef;
@@ -2997,9 +2996,9 @@ public:
 
 	yyscan_t				lexer;
 	FILE*					file;
-	ModuleDefinition *		Module			= nullptr;
-	ClassStack *			classStack		= nullptr;
-	ParameterList *			dummyParameters = nullptr;
+	ModuleDefinition*		module			= nullptr;
+	ClassStack*				classStack		= nullptr;
+	ParameterList*			dummyParameters = nullptr;
 	TypePtr					valueTypeContext;
 	vector<string>			removeList;
 	int						identifierTokenContext;// = IDENTIFIER; chicken/egg problem

@@ -82,7 +82,7 @@ extern "C" {
 
 #define IDDEBUG 1
 #define YYDEBUG 1
-#include "asn_grammar.h"
+#include "asn_grammar.tab.h"
 #include "asn_lex.h"
 #include "asn_ref_lex.h"
 
@@ -100,7 +100,8 @@ extern "C" {
 #  define IDDEBUG 0
 # endif /* ! defined YYDEBUG */
 #else
-int iddebug;
+extern int yydebug;
+extern int iddebug;
 #endif  /* ! defined IDDEBUG */
 
 
@@ -121,8 +122,8 @@ extern int isUpper(const char* text);
 //  yyerror required function for flex
 //
 #ifdef REENTRANT_PARSER
-ModuleList				Modules;
-UsefulModuleDef *		UsefulModule = nullptr;
+ModuleList						modules;
+UsefulModuleDef *				UsefulModule = nullptr;
 
 static	stack<ParserContext*>	contexts;
 static 	vector<string>			files;
@@ -140,20 +141,27 @@ ParserContext::~ParserContext() {
 	if (file) fclose(file);
 	delete classStack;
 }
+
+//
+// Bison & Flex stuff
+//
+int yyparse(yyscan_t scanner, ParserContext* context);
+
 int idparse (ParserContext* context, const string& path);
-int  iderror(ParserContext *, const string& path, char const *str) {
+int iderror(ParserContext *, const string& path, char const *str) {
 //  extern char * yytext;
 	clog << "First  stage " << StdError(Fatal) << str << " near token \"" << idtext <<"\"" << nl;
 	return 0;
 }
-
-int  yyerror(YYLTYPE* location, yyscan_t scanner, ParserContext * context, char const *str) {
+//int  yyerror(YYLTYPE* location, yyscan_t scanner, ParserContext * context, char const *str) {
+int  yyerror(yyscan_t scanner, ParserContext * context, char const *str) {
 #if 0
 	extern char * yytext;
 	clog << "Second stage " << StdError(Fatal) << str << " near token \"" << yytext <<"\"" << nl;
 #else
-	clog << "Second stage " << StdError(Fatal) << str << " at " << location->first_line << ":" << location->first_column << endl;
-	context->Module = nullptr;
+//	clog << "Second stage " << StdError(Fatal) << str << " at " << location->first_line << ":" << location->first_column << endl;
+	clog << "Second stage " << StdError(Fatal) << str << " at ??" << endl;
+	context->module = nullptr;
 #endif
 	return 0;
 }
@@ -169,6 +177,9 @@ void iderror(const char * str) {
 	cerr << "First  stage " << StdError(Fatal) << str << " near token \"" << idtext <<"\"" << nl;
 }
 #endif
+
+
+
 static const char* tokenAsString(int token);
 static const char* ArcNames[] = {
 	"ITU-T",
@@ -240,15 +251,36 @@ static void insertForwardDeclaration(const OutputFile& hdr, streampos insertionp
 static size_t fileCount = 0;
 static int verbose=0;
 static string asndir;
-static string dllMacro;
-static string dllMacroDEFINED;
-static string dllMacroEXPORTS;
-static string dllMacroDLL;
-static string dllMacroAPI;
-static string dllMacroSTATIC;
-static string dllMacroLIB_SUFFIX;
-static string dllMacroRTS;
-static string dllMacroNO_AUTOMATIC_LIBS;
+
+static bool buildDll = true;
+
+static string dllMacro() {
+	return makeCppName(contexts.top()->module->getName());
+}
+static string dllMacroDEFINED() {
+	return dllMacro() + "_DEFINED";
+}
+static string dllMacroEXPORTS() {
+	return dllMacro() + "_EXPORTS";
+}
+static string dllMacroDLL() {
+	return  dllMacro() + "_DLL";
+}
+static string dllMacroAPI() {
+	return dllMacro() + "_API";
+}
+static string dllMacroSTATIC() {
+	return dllMacro() + "_STATIC";
+}
+static string dllMacroLIB_SUFFIX() {
+	return dllMacro() + "_LIB_SUFFIX";
+}
+static string dllMacroRTS() {
+	return contexts.top()->module->getName();
+}
+static string dllMacroNO_AUTOMATIC_LIBS() {
+	return dllMacro() + "_NO_AUTOMATIC_LIBS";
+}
 static bool includeConfigH = true;
 static string useReinterpretCast;
 
@@ -267,7 +299,7 @@ class UsefulModuleDef : public ModuleDefinition {
 int main(int argc, char** argv) {
 	ios_base::sync_with_stdio(false);
 
-	const char* opt = "i:cdeno:s:vm:Cr:";
+	const char* opt = "i:cdelno:s:vm:Cr:";
 
 	int c;
 	bool generateCpp = true;
@@ -288,7 +320,6 @@ int main(int argc, char** argv) {
 
 		case 'd':
 			yydebug = 1;
-//			iddebug = 1;
 			break;
 
 		case 'e':
@@ -311,16 +342,11 @@ int main(int argc, char** argv) {
 			++verbose;
 			break;
 
+		case 'l':
+			buildDll = false;
+			break;
+
 		case 'm':
-			dllMacroRTS				= optarg;
-			dllMacro				= makeCppName(optarg);
-			dllMacroDEFINED			= dllMacro + "_DEFINED";
-			dllMacroEXPORTS			= dllMacro + "_EXPORTS";
-			dllMacroDLL				= dllMacro + "_DLL";
-			dllMacroAPI				= dllMacro + "_API";
-			dllMacroSTATIC			= dllMacro + "_STATIC";
-			dllMacroLIB_SUFFIX		= dllMacro + "_LIB_SUFFIX";
-			dllMacroNO_AUTOMATIC_LIBS = dllMacro + "_NO_AUTOMATIC_LIBS";
 			break;
 
 		case 'C':
@@ -342,10 +368,11 @@ int main(int argc, char** argv) {
 			 << "  -d          Debug output (copious!)" << nl
 			 << "  -c          generate C++ files" << nl
 			 << "  -e          generated C++ files with .cpp extension" << nl
+			 << "  -l          Don't produce dll shared classes " << nl
+			 << "  -m  name    Macro name for generating DLLs under windows with MergeSym" << nl
 			 << "  -n          Use inline definitions rather than .inl files" << nl
 			 << "  -s  n       Split output if it has more than n (default 1000) classes" << nl
 			 << "  -o  dir     Output directory" << nl
-			 << "  -m  name    Macro name for generating DLLs under windows with MergeSym" << nl
 			 << "  -C          If given, the generated .cxx files won't include config.h" << nl
 			 << "  -r  name    Use reinterpret_casts rather than static_casts in the" << nl
 			 << "              generated .inl files, if -Dname is given to the compiler" << nl
@@ -383,7 +410,7 @@ int main(int argc, char** argv) {
 	contexts.push(&context);
 	UsefulModule = new UsefulModuleDef();
 
-	Modules.push_back(ModuleDefinitionPtr(UsefulModule));
+	modules.push_back(ModuleDefinitionPtr(UsefulModule));
 
 	for (int no = 0 ; no < fileCount; ++no)  {
 		fileName   = files[no];
@@ -406,8 +433,8 @@ int main(int argc, char** argv) {
 		idparse(&context, filePath);
 		rewind(idin); // rewind the file
 	}
-	for(int no = 0; no < Modules.size(); no++) {
-		Modules[no]->dump();
+	for(int no = 0; no < modules.size(); no++) {
+		modules[no]->dump();
 	}
 
 
@@ -422,15 +449,15 @@ int main(int argc, char** argv) {
 		contexts.top()->file = fds[no];
 		yylex_init(&context.lexer);
 		yyset_in(fds[no], context.lexer);
-//		yyrestart(fds[no], context.lexer);
+		yyrestart(fds[no], context.lexer);
 		yyparse(context.lexer, contexts.top());
 		yylex_destroy(context.lexer);
 		fclose(fds[no]);
 		contexts.top()->file = nullptr;
 	}
 
-	for (int no= 0 ; no < Modules.size(); ++no) {
-		Modules[no]->AdjustModuleName(path);
+	for (int no= 0 ; no < modules.size(); ++no) {
+		modules[no]->AdjustModuleName(path);
 	}
 
 	for (int no = 0; no < contexts.top()->removeList.size(); ++no) {
@@ -441,18 +468,18 @@ int main(int argc, char** argv) {
 			module->addToremoveList(contexts.top()->removeList[no].substr(dotpos+1, contexts.top()->removeList[no].size()-1));
 	}
 
-	for (int no = 0 ; no < Modules.size(); ++no) {
-		Modules[no]->RemoveReferences(verbose !=0 );
-		Modules[no]->AdjustImportedModules();
+	for (int no = 0 ; no < modules.size(); ++no) {
+		modules[no]->RemoveReferences(verbose !=0 );
+		modules[no]->AdjustImportedModules();
 	}
 
-	for (int no = 0; no < Modules.size(); ++no) {
-		contexts.top()->Module = Modules[no].get();
+	for (int no = 0; no < modules.size(); ++no) {
+		contexts.top()->module = modules[no].get();
 		if (verbose > 1)
-			clog << *contexts.top()->Module << endl;
+			clog << *contexts.top()->module << endl;
 
 		if (generateCpp)
-			contexts.top()->Module->generateCplusplus(path,  classesPerFile, verbose!=0);
+			contexts.top()->module->generateCplusplus(path,  classesPerFile, verbose!=0);
 	}
 
 	contexts.pop();
@@ -1720,17 +1747,17 @@ TypeBase::TypeBase(TypeBase& copy)
 	isoptional = copy.isoptional;
 	isgenerated = false;
 	isvaluesettype = false;
-	module = contexts.top()->Module;
+	module = contexts.top()->module;
 }
 
 
 void TypeBase::print(ostream& strm) const {
-	PrintStart(strm);
-	PrintFinish(strm);
+	printStart(strm);
+	printFinish(strm);
 }
 
 
-void TypeBase::PrintStart(ostream& strm) const {
+void TypeBase::printStart(ostream& strm) const {
 	strm << tab;
 	if (name.size()) {
 		strm << name << parameters << ": ";
@@ -1740,8 +1767,8 @@ void TypeBase::PrintStart(ostream& strm) const {
 }
 
 
-void TypeBase::PrintFinish(ostream& os) const {
-	contexts.top()->Module->setIndentLevel(-1);
+void TypeBase::printFinish(ostream& os) const {
+	contexts.top()->module->setIndentLevel(-1);
 	os << " " << constraints;
 	if (isoptional)
 		os << " OPTIONAL";
@@ -1762,7 +1789,7 @@ void TypeBase::setDefaultValue(ValuePtr value) {
 
 
 void TypeBase::adjustIdentifier(bool) {
-	identifier = contexts.top()->Module->getPrefix() + makeCppName(name);
+	identifier = contexts.top()->module->getPrefix() + makeCppName(name);
 }
 
 
@@ -1888,7 +1915,7 @@ void TypeBase::beginGenerateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, 
 	}
 	hdr << "class ";
 	if (templatePrefix.empty())
-		hdr << dllMacroAPI << " ";
+		hdr << dllMacroAPI() << " ";
 
 	hdr << getIdentifier() << " : public " << getTypeName() << " {" << nl;
 	hdr << tab;
@@ -1940,7 +1967,7 @@ void TypeBase::generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, os
 	hdr << "static const InfoType theInfo;" << nl;
 	const string& templatePrefix = getTemplatePrefix();
 	if (templatePrefix.empty())
-		cxx << dllMacroAPI << " ";
+		cxx << dllMacroAPI() << " ";
 	else
 		cxx << templatePrefix;
 	cxx
@@ -2055,7 +2082,7 @@ const char* TypeBase::getClass() const {
 /////////////////////////////////////////////////////////
 
 DefinedType::DefinedType(const string& name)
-	: TypeBase(Tag::IllegalUniversalTag, contexts.top()->Module),
+	: TypeBase(Tag::IllegalUniversalTag, contexts.top()->module),
 	  referenceName(name) {
 	unresolved = true;
 }
@@ -2097,7 +2124,7 @@ void DefinedType::ConstructFromType(TypePtr& refType, const string& refName) {
 	refType->setName(refName);
 
 	if (refName != "" || !refType->isPrimitiveType() || refType->hasConstraints()) {
-		contexts.top()->Module->addType(refType);
+		contexts.top()->module->addType(refType);
 	}
 
 	baseType = refType;
@@ -2106,9 +2133,9 @@ void DefinedType::ConstructFromType(TypePtr& refType, const string& refName) {
 
 
 void DefinedType::print(ostream& strm) const {
-	PrintStart(strm);
+	printStart(strm);
 	strm << referenceName << ' ';
-	PrintFinish(strm);
+	printFinish(strm);
 }
 
 
@@ -2185,7 +2212,7 @@ string DefinedType::getTypeName() const {
 	if (baseType->getIdentifier().size() == 0 || result == getIdentifier())
 		return baseType->getTypeName();
 
-	if (getCModuleName() != contexts.top()->Module->getCModuleName())
+	if (getCModuleName() != contexts.top()->module->getCModuleName())
 		result = getCModuleName() + "::" + result;
 	return result;
 }
@@ -2211,9 +2238,9 @@ void DefinedType::resolveReference() const {
 	if (unresolved) {
 		unresolved = false;
 
-		if (contexts.top()->Module == nullptr)
-			contexts.top()->Module = module;
-		baseType = contexts.top()->Module->findType(referenceName);
+		if (contexts.top()->module == nullptr)
+			contexts.top()->module = module;
+		baseType = contexts.top()->module->findType(referenceName);
 
 		// AR Tag should not be fetched from base type
 		// That only confuses SEQUENCE code generation
@@ -2332,7 +2359,7 @@ ParameterizedType::ParameterizedType(TypePtr& refType, const TypeBase& parent, A
 
 
 void ParameterizedType::print(ostream& strm) const {
-	PrintStart(strm);
+	printStart(strm);
 	strm << referenceName << " { ";
 	for (size_t i = 0; i < arguments.size(); i++) {
 		if (i > 0)
@@ -2340,7 +2367,7 @@ void ParameterizedType::print(ostream& strm) const {
 		strm << *arguments[i];
 	}
 	strm << " }";
-	PrintFinish(strm);
+	printFinish(strm);
 }
 
 
@@ -2391,7 +2418,7 @@ TypeBase::RemoveResult ParameterizedType::canRemoveType(const TypeBase& type) {
 /////////////////////////////////////////////////////////
 
 SelectionType::SelectionType(const string& name, TypePtr base)
-	: TypeBase(Tag::IllegalUniversalTag, contexts.top()->Module),
+	: TypeBase(Tag::IllegalUniversalTag, contexts.top()->module),
 	  selection(name) {
 	assert(base.get());
 	baseType = base;
@@ -2403,9 +2430,9 @@ SelectionType::~SelectionType() {
 
 
 void SelectionType::print(ostream& strm) const {
-	PrintStart(strm);
+	printStart(strm);
 	strm << selection << '<' << *baseType;
-	PrintFinish(strm);
+	printFinish(strm);
 }
 
 
@@ -2447,7 +2474,7 @@ bool SelectionType::useType(const TypeBase& type) const {
 /////////////////////////////////////////////////////////
 
 BooleanType::BooleanType()
-	: TypeBase(Tag::UniversalBoolean, contexts.top()->Module) {
+	: TypeBase(Tag::UniversalBoolean, contexts.top()->module) {
 }
 
 
@@ -2471,12 +2498,12 @@ void BooleanType::generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx,
 /////////////////////////////////////////////////////////
 
 IntegerType::IntegerType()
-	: TypeBase(Tag::UniversalInteger, contexts.top()->Module) {
+	: TypeBase(Tag::UniversalInteger, contexts.top()->module) {
 }
 
 
 IntegerType::IntegerType(NamedNumberList& lst)
-	: TypeBase(Tag::UniversalInteger, contexts.top()->Module) {
+	: TypeBase(Tag::UniversalInteger, contexts.top()->module) {
 	allowedValues.swap(lst);
 }
 
@@ -2673,7 +2700,7 @@ void IntegerType::endParseThisTypeValue() const {
 /////////////////////////////////////////////////////////
 
 EnumeratedType::EnumeratedType(NamedNumberList& enums, bool extend, NamedNumberList* ext)
-	: TypeBase(Tag::UniversalEnumeration, contexts.top()->Module),
+	: TypeBase(Tag::UniversalEnumeration, contexts.top()->module),
 	  maxEnumValue(0) {
 	enumerations.swap(enums);
 	numEnums = enumerations.size();
@@ -2686,7 +2713,7 @@ EnumeratedType::EnumeratedType(NamedNumberList& enums, bool extend, NamedNumberL
 
 
 void EnumeratedType::print(ostream& strm) const {
-	PrintStart(strm);
+	printStart(strm);
 	strm << nl;
 
 	size_t i;
@@ -2699,7 +2726,7 @@ void EnumeratedType::print(ostream& strm) const {
 		for (; itr != last; ++itr)
 			strm << tab << **itr << nl << bat;
 	}
-	PrintFinish(strm);
+	printFinish(strm);
 }
 
 
@@ -2823,7 +2850,7 @@ void EnumeratedType::generateInfo(const TypeBase* type, ostream& fwd, ostream& h
 
 	const string& templatePrefix = getTemplatePrefix();
 	if (templatePrefix.empty())
-		cxx << dllMacroAPI << " ";
+		cxx << dllMacroAPI() << " ";
 	else
 		cxx << templatePrefix;
 	cxx
@@ -2850,7 +2877,7 @@ void EnumeratedType::endParseThisTypeValue() const {
 /////////////////////////////////////////////////////////
 
 RealType::RealType()
-	: TypeBase(Tag::UniversalReal, contexts.top()->Module) {
+	: TypeBase(Tag::UniversalReal, contexts.top()->module) {
 }
 
 
@@ -2875,12 +2902,12 @@ void RealType::generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, os
 /////////////////////////////////////////////////////////
 
 BitStringType::BitStringType()
-	: TypeBase(Tag::UniversalBitString, contexts.top()->Module) {
+	: TypeBase(Tag::UniversalBitString, contexts.top()->module) {
 }
 
 
 BitStringType::BitStringType(NamedNumberList& lst)
-	: TypeBase(Tag::UniversalBitString, contexts.top()->Module) {
+	: TypeBase(Tag::UniversalBitString, contexts.top()->module) {
 	allowedBits.swap(lst);
 }
 
@@ -2988,7 +3015,7 @@ void BitStringType::generateInfo(const TypeBase* type, ostream& fwd, ostream& hd
 
 	const string& templatePrefix = type->getTemplatePrefix();
 	if (templatePrefix.empty())
-		cxx << dllMacroAPI << " ";
+		cxx << dllMacroAPI() << " ";
 	else
 		cxx << templatePrefix;
 
@@ -3024,7 +3051,7 @@ void BitStringType::generateInfo(const TypeBase* type, ostream& fwd, ostream& hd
 /////////////////////////////////////////////////////////
 
 OctetStringType::OctetStringType()
-	: TypeBase(Tag::UniversalOctetString, contexts.top()->Module) {
+	: TypeBase(Tag::UniversalOctetString, contexts.top()->module) {
 }
 
 
@@ -3064,7 +3091,7 @@ void OctetStringType::generateInfo(const TypeBase* type, ostream& fwd, ostream& 
 	hdr << "static const InfoType theInfo;" << nl;
 	const string& templatePrefix = type->getTemplatePrefix();
 	if (templatePrefix.empty())
-		cxx << dllMacroAPI << " ";
+		cxx << dllMacroAPI() << " ";
 	else
 		cxx << templatePrefix;
 
@@ -3096,7 +3123,7 @@ void OctetStringType::generateInfo(const TypeBase* type, ostream& fwd, ostream& 
 /////////////////////////////////////////////////////////
 
 NullType::NullType()
-	: TypeBase(Tag::UniversalNull, contexts.top()->Module) {
+	: TypeBase(Tag::UniversalNull, contexts.top()->module) {
 }
 
 void NullType::beginParseThisTypeValue() const {
@@ -3114,11 +3141,8 @@ const char * NullType::getAncestorClass() const {
 
 /////////////////////////////////////////////////////////
 
-SequenceType::SequenceType(TypesVector* a_std,
-						   bool extend,
-						   TypesVector * ext,
-						   unsigned tagNum)
-	: TypeBase(tagNum, contexts.top()->Module), detectingLoop(false) {
+SequenceType::SequenceType(TypesVector* a_std, bool extend, TypesVector * ext, unsigned tagNum)
+	: TypeBase(tagNum, contexts.top()->module), detectingLoop(false) {
 	if (a_std != nullptr) {
 		numFields = a_std->size();
 		a_std->swap(fields);
@@ -3136,7 +3160,7 @@ SequenceType::SequenceType(TypesVector* a_std,
 
 
 void SequenceType::print(ostream& strm) const {
-	PrintStart(strm);
+	printStart(strm);
 	strm << nl;
 
 	size_t i;
@@ -3152,7 +3176,7 @@ void SequenceType::print(ostream& strm) const {
 		strm << bat;
 	}
 
-	PrintFinish(strm);
+	printFinish(strm);
 }
 
 
@@ -3804,7 +3828,7 @@ void SequenceType::generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr
 /////////////////////////////////////////////////////////
 
 SequenceOfType::SequenceOfType(TypePtr base, ConstraintPtr constraint, unsigned tag)
-	: TypeBase(tag, contexts.top()->Module), nonTypedef (false) {
+	: TypeBase(tag, contexts.top()->module), nonTypedef (false) {
 	assert(base.get());
 	baseType = base;
 	if (constraint.get() != nullptr) {
@@ -3818,12 +3842,12 @@ SequenceOfType::~SequenceOfType() {
 
 
 void SequenceOfType::print(ostream& strm) const {
-	PrintStart(strm);
+	printStart(strm);
 	if (baseType.get() == nullptr)
 		strm << "!!Null Type!!" << nl;
 	else
 		strm << *baseType << nl;
-	PrintFinish(strm);
+	printFinish(strm);
 }
 
 
@@ -4364,7 +4388,7 @@ void ChoiceType::generateInfo(const TypeBase* type,ostream& fwd, ostream& hdr, o
 /////////////////////////////////////////////////////////
 
 EmbeddedPDVType::EmbeddedPDVType()
-	: TypeBase(Tag::UniversalEmbeddedPDV, contexts.top()->Module) {
+	: TypeBase(Tag::UniversalEmbeddedPDV, contexts.top()->module) {
 }
 
 
@@ -4376,7 +4400,7 @@ const char * EmbeddedPDVType::getAncestorClass() const {
 /////////////////////////////////////////////////////////
 
 ExternalType::ExternalType()
-	: TypeBase(Tag::UniversalExternalType, contexts.top()->Module) {
+	: TypeBase(Tag::UniversalExternalType, contexts.top()->module) {
 }
 
 
@@ -4388,16 +4412,16 @@ const char * ExternalType::getAncestorClass() const {
 /////////////////////////////////////////////////////////
 
 AnyType::AnyType(const string& ident)
-	: TypeBase(Tag::UniversalExternalType, contexts.top()->Module) {
+	: TypeBase(Tag::UniversalExternalType, contexts.top()->module) {
 	identifier = ident;
 }
 
 
 void AnyType::print(ostream& strm) const {
-	PrintStart(strm);
+	printStart(strm);
 	if (identifier.size())
 		strm << "Defined by " << identifier;
-	PrintFinish(strm);
+	printFinish(strm);
 }
 
 
@@ -4451,7 +4475,7 @@ static const char GeneralStringSet[]   =
 /////////////////////////////////////////////////////////
 
 StringTypeBase::StringTypeBase(int tag)
-	: TypeBase(tag, contexts.top()->Module) {
+	: TypeBase(tag, contexts.top()->module) {
 }
 
 
@@ -4866,7 +4890,7 @@ const char * UnrestrictedCharacterStringType::getAncestorClass() const {
 /////////////////////////////////////////////////////////
 
 GeneralizedTimeType::GeneralizedTimeType()
-	: TypeBase(Tag::UniversalGeneralisedTime, contexts.top()->Module) {
+	: TypeBase(Tag::UniversalGeneralisedTime, contexts.top()->module) {
 }
 
 
@@ -4891,7 +4915,7 @@ void GeneralizedTimeType::generateConstructors(ostream& fwd, ostream& hdr, ostre
 /////////////////////////////////////////////////////////
 
 UTCTimeType::UTCTimeType()
-	: TypeBase(Tag::UniversalUTCTime, contexts.top()->Module) {
+	: TypeBase(Tag::UniversalUTCTime, contexts.top()->module) {
 }
 
 
@@ -4916,7 +4940,7 @@ void UTCTimeType::generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx,
 /////////////////////////////////////////////////////////
 
 ObjectDescriptorType::ObjectDescriptorType()
-	: TypeBase(Tag::UniversalObjectDescriptor, contexts.top()->Module) {
+	: TypeBase(Tag::UniversalObjectDescriptor, contexts.top()->module) {
 }
 
 
@@ -4928,7 +4952,7 @@ const char * ObjectDescriptorType::getAncestorClass() const {
 /////////////////////////////////////////////////////////
 
 RelativeOIDType::RelativeOIDType()
-	: TypeBase(Tag::UniversalRelativeOID, contexts.top()->Module) {
+	: TypeBase(Tag::UniversalRelativeOID, contexts.top()->module) {
 }
 
 
@@ -4956,7 +4980,7 @@ void RelativeOIDType::generateConstructors(ostream& fwd, ostream& hdr, ostream& 
 /////////////////////////////////////////////////////////
 
 ObjectIdentifierType::ObjectIdentifierType()
-	: TypeBase(Tag::UniversalObjectId, contexts.top()->Module) {
+	: TypeBase(Tag::UniversalObjectId, contexts.top()->module) {
 }
 
 
@@ -4986,7 +5010,7 @@ void ObjectIdentifierType::generateConstructors(ostream& fwd, ostream& hdr, ostr
 
 ObjectClassFieldType::ObjectClassFieldType(ObjectClassBasePtr  objclass,
 		const string& field)
-	: TypeBase(Tag::IllegalUniversalTag, contexts.top()->Module),
+	: TypeBase(Tag::IllegalUniversalTag, contexts.top()->module),
 	  asnObjectClass(objclass),
 	  asnObjectClassField(field) {
 }
@@ -5000,9 +5024,9 @@ const char * ObjectClassFieldType::getAncestorClass() const {
 
 
 void ObjectClassFieldType::print(ostream& strm) const {
-	PrintStart(strm);
+	printStart(strm);
 	strm << asnObjectClass->getName() << '.' << asnObjectClassField;
-	PrintFinish(strm);
+	printFinish(strm);
 }
 
 
@@ -5116,13 +5140,13 @@ void ObjectClassFieldType::generateInfo(const TypeBase* type, ostream& fwd, ostr
 /////////////////////////////////////////////////////////
 
 ImportedType::ImportedType(const string& theName, bool param)
-	: TypeBase(Tag::IllegalUniversalTag, contexts.top()->Module) {
+	: TypeBase(Tag::IllegalUniversalTag, contexts.top()->module) {
 	identifier = name = theName;
 	parameterised = param;
 }
 
 ImportedType::ImportedType(const TypePtr& ref)
-	: TypeBase(Tag::IllegalUniversalTag, contexts.top()->Module), reference(ref) {
+	: TypeBase(Tag::IllegalUniversalTag, contexts.top()->module), reference(ref) {
 	identifier = name = ref->getName();
 	parameterised = ref->hasParameters();
 }
@@ -5148,7 +5172,7 @@ void ImportedType::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, o
 void ImportedType::setModuleName(const string& mname) {
 	moduleName = mname;
 	cppModuleName = makeCppName(mname);
-	modulePrefix = contexts.top()->Module->getImportModuleName(mname);
+	modulePrefix = contexts.top()->module->getImportModuleName(mname);
 }
 
 
@@ -5182,7 +5206,7 @@ bool ImportedType::isPrimitiveType() const {
 
 /////////////////////////////////////////////////////////
 TypeFromObject::TypeFromObject(InformationObjectPtr  obj, const string& fld)
-	: TypeBase(Tag::IllegalUniversalTag, contexts.top()->Module)
+	: TypeBase(Tag::IllegalUniversalTag, contexts.top()->module)
 	,refObj(obj)
 	,field(fld) {
 }
@@ -5195,9 +5219,9 @@ const char * TypeFromObject::getAncestorClass() const {
 }
 
 void TypeFromObject::print(ostream& strm) const {
-	PrintStart(strm);
+	printStart(strm);
 	strm << *refObj << "." << field;
-	PrintFinish(strm);
+	printFinish(strm);
 }
 
 void TypeFromObject::generateCplusplus(ostream& fwd, ostream& hdr, ostream&, ostream&) {
@@ -5271,7 +5295,7 @@ void DefinedValue::print(ostream& strm) const {
 void DefinedValue::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
 	if (unresolved) {
 		unresolved = false;
-		actualValue = contexts.top()->Module->findValue(referenceName);
+		actualValue = contexts.top()->module->findValue(referenceName);
 	}
 
 	if (actualValue.get() != nullptr)
@@ -5461,8 +5485,8 @@ void ObjectIdentifierValue::generateCplusplus(ostream& fwd, ostream& hdr, ostrea
 
 void ObjectIdentifierValue::generateConst(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
 	string cppName = makeCppName(getName());
-	hdr << "extern " << dllMacroAPI << " const ASN1::OBJECT_IDENTIFIER " << cppName << ";" << nl << nl;
-	cxx << "const " << dllMacroAPI << " ASN1::OBJECT_IDENTIFIER " << cppName  << " {" ;
+	hdr << "extern " << dllMacroAPI() << " const ASN1::OBJECT_IDENTIFIER " << cppName << ";" << nl << nl;
+	cxx << "const " << dllMacroAPI() << " ASN1::OBJECT_IDENTIFIER " << cppName  << " {" ;
 	stringstream dummy;
 	generateCplusplus(fwd, hdr, cxx, dummy);
 	cxx << "};" << nl << nl;
@@ -5545,7 +5569,7 @@ void ChoiceValue::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, os
 
 ImportModule::ImportModule(string * name, SymbolList * syms)
 	: fullModuleName(*name),
-	  shortModuleName(contexts.top()->Module->getImportModuleName(*name)) {
+	  shortModuleName(contexts.top()->module->getImportModuleName(*name)) {
 	delete name;
 
 	ModuleDefinition* from = findModule(fullModuleName.c_str());
@@ -5555,9 +5579,9 @@ ImportModule::ImportModule(string * name, SymbolList * syms)
 
 		for (size_t i = 0; i < symbols.size(); i++) {
 			if (from)
-				symbols[i]->AppendToModule(from,contexts.top()->Module);
+				symbols[i]->AppendToModule(from,contexts.top()->module);
 			else
-				symbols[i]->AppendToModule(fullModuleName, contexts.top()->Module);
+				symbols[i]->AppendToModule(fullModuleName, contexts.top()->module);
 		}
 	}
 
@@ -5622,7 +5646,7 @@ void ImportModule::Adjust() {
 	if (needCreateSubModules) {
 		ModuleDefinition* module = findModule(fullModuleName.c_str());
 		if (module)
-			filename = module->CreateSubModules(symbols);
+			filename = module->createSubModules(symbols);
 	}
 }
 
@@ -5646,8 +5670,8 @@ ModuleDefinition::ModuleDefinition(const string& name)
 	exportAll = false;
 	indentLevel = 1;
 
-	for (size_t i = 0; i < Modules.size(); ++i) {
-		string str = Modules[i]->moduleName;
+	for (size_t i = 0; i < modules.size(); ++i) {
+		string str = modules[i]->moduleName;
 		identifiers[str]= MODULEREFERENCE;
 	}
 	// Create sorted list for faster searching.
@@ -5658,8 +5682,8 @@ ModuleDefinition::ModuleDefinition(const string& name, const string& filePath, T
 	exportAll = false;
 	indentLevel = 1;
 
-	for (size_t i = 0; i < Modules.size(); ++i) {
-		string str = Modules[i]->moduleName;
+	for (size_t i = 0; i < modules.size(); ++i) {
+		string str = modules[i]->moduleName;
 		identifiers[str]= MODULEREFERENCE;
 	}
 	// Create sorted list for faster searching.
@@ -5846,7 +5870,7 @@ bool ModuleDefinition::ReorderTypes() {
 void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerFile, bool verbose) {
 	size_t i,classesCount = 1;
 
-	contexts.top()->Module = this;
+	contexts.top()->module = this;
 	string dpath(dir);
 	if (dpath.length())
 		dpath += DIR_SEPARATOR;
@@ -5964,54 +5988,56 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 	for (i = 0; i < subModules.size() ; ++i)
 		hdr << "#include \"" << subModules[i]->getFileName() << ".h\"" << nl;
 
-	if (dllMacro.size() > 0) {
-		hdr << nl;
-		hdr << "#ifndef " << dllMacroDEFINED << nl;
-		hdr << "#define " << dllMacroDEFINED << nl;
-		hdr << nl;
+#ifdef TBD
+	hdr << nl;
+	hdr << "#ifndef " << dllMacroDEFINED() << nl;
+	hdr << "#define " << dllMacroDEFINED() << nl;
+	hdr << nl;
+#endif
 
-		hdr << "#include \"Platform.h\"" << nl;
-		hdr << nl;
+	hdr << "#include \"Platform.h\"" << nl;
+	hdr << nl;
 
-		hdr << "#if defined(_WIN32)" << nl;
-		hdr << "	#include \"Platform_WIN32.h\"" << nl;
-		hdr << "#elif defined(__VMS)" << nl;
-		hdr << "	#include \"Platform_VMS.h\"" << nl;
-		hdr << "#elif defined(ALS_VXWORKS)" << nl;
-		hdr << "	#include \"Platform_VX.h\"" << nl;
-		hdr << "#elif defined(ALS_OS_FAMILY_UNIX)" << nl;
-		hdr << "	#include \"Platform_POSIX.h\"" << nl;
-		hdr << "#endif" << nl;
-		hdr << nl;
+	hdr << "#if defined(_WIN32)" << nl;
+	hdr << "	#include \"Platform_WIN32.h\"" << nl;
+	hdr << "#elif defined(__VMS)" << nl;
+	hdr << "	#include \"Platform_VMS.h\"" << nl;
+	hdr << "#elif defined(ALS_VXWORKS)" << nl;
+	hdr << "	#include \"Platform_VX.h\"" << nl;
+	hdr << "#elif defined(ALS_OS_FAMILY_UNIX)" << nl;
+	hdr << "	#include \"Platform_POSIX.h\"" << nl;
+	hdr << "#endif" << nl;
+	hdr << nl;
 
+	if (buildDll) {
 		hdr << "//3" << nl;
-		hdr << "// Ensure that " << dllMacroDLL << " is default unless " << dllMacroSTATIC << " is defined" << nl;
+		hdr << "// Ensure that " << dllMacroDLL() << " is default unless " << dllMacroSTATIC() << " is defined" << nl;
 		hdr << "//" << nl;
 		hdr << "#if defined(_WIN32)&& defined(_DLL)" << nl;
-		hdr << "	#if !defined(" << dllMacroDLL << ")&& !defined(" << dllMacroSTATIC << ")" << nl;
-		hdr << "		#define " << dllMacroDLL << nl;
+		hdr << "	#if !defined(" << dllMacroDLL() << ")&& !defined(" << dllMacroSTATIC() << ")" << nl;
+		hdr << "		#define " << dllMacroDLL() << nl;
 		hdr << "	#endif" << nl;
 		hdr << "#endif" << nl;
 		hdr << nl;
 
 		hdr << "#if defined(_MSC_VER)" << nl;
-		hdr << "	#if defined(" << dllMacroDLL << ")" << nl;
+		hdr << "	#if defined(" << dllMacroDLL() << ")" << nl;
 		hdr << "		#if defined(_DEBUG)" << nl;
-		hdr << "			#define " << dllMacroLIB_SUFFIX << " \"d.lib\"" << nl;
+		hdr << "			#define " << dllMacroLIB_SUFFIX() << " \"d.lib\"" << nl;
 		hdr << "		#else" << nl;
-		hdr << "			#define " << dllMacroLIB_SUFFIX << " \".lib\"" << nl;
+		hdr << "			#define " << dllMacroLIB_SUFFIX() << " \".lib\"" << nl;
 		hdr << "		#endif" << nl;
 		hdr << "	#elif defined(_DLL)" << nl;
 		hdr << "		#if defined(_DEBUG)" << nl;
-		hdr << "			#define " << dllMacroLIB_SUFFIX << " \"mdd.lib\"" << nl;
+		hdr << "			#define " << dllMacroLIB_SUFFIX() << " \"mdd.lib\"" << nl;
 		hdr << "		#else" << nl;
-		hdr << "			#define " << dllMacroLIB_SUFFIX << " \"md.lib\"" << nl;
+		hdr << "			#define " << dllMacroLIB_SUFFIX() << " \"md.lib\"" << nl;
 		hdr << "		#endif" << nl;
 		hdr << "	#else" << nl;
 		hdr << "		#if defined(_DEBUG)" << nl;
-		hdr << "			#define " << dllMacroLIB_SUFFIX << " \"mtd.lib\"" << nl;
+		hdr << "			#define " << dllMacroLIB_SUFFIX() << " \"mtd.lib\"" << nl;
 		hdr << "		#else" << nl;
-		hdr << "			#define " << dllMacroLIB_SUFFIX << " \"mt.lib\"" << nl;
+		hdr << "			#define " << dllMacroLIB_SUFFIX() << " \"mt.lib\"" << nl;
 		hdr << "		#endif" << nl;
 		hdr << "	#endif" << nl;
 		hdr << "#endif" << nl;
@@ -6019,37 +6045,37 @@ void ModuleDefinition::generateCplusplus(const string& dir,	unsigned classesPerF
 
 		hdr << "//" << nl;
 		hdr << "// The following block is the standard way of creating macros which make exporting" << nl;
-		hdr << "// from a DLL simpler. All files within this DLL are compiled with the " << dllMacroEXPORTS << nl;
+		hdr << "// from a DLL simpler. All files within this DLL are compiled with the " << dllMacroEXPORTS() << nl;
 		hdr << "// symbol defined on the command line. this symbol should not be defined on any project" << nl;
 		hdr << "// that uses this DLL. This way any other project whose source files include this file see" << nl;
-		hdr << "// " << dllMacroAPI << " functions as being imported from a DLL, wheras this DLL sees symbols" << nl;
+		hdr << "// " << dllMacroAPI() << " functions as being imported from a DLL, wheras this DLL sees symbols" << nl;
 		hdr << "// defined with this macro as being exported." << nl;
 		hdr << "//" << nl;
-		hdr << "#if defined(_WIN32)&& defined(" << dllMacroDLL << ")" << nl;
-		hdr << "	#if defined(" << dllMacroEXPORTS << ")" << nl;
-		hdr << "		#define " << dllMacroAPI << " __declspec(dllexport)" << nl;
+		hdr << "#if defined(_WIN32)&& defined(" << dllMacroDLL() << ")" << nl;
+		hdr << "	#if defined(" << dllMacroEXPORTS() << ")" << nl;
+		hdr << "		#define " << dllMacroAPI() << " __declspec(dllexport)" << nl;
 		hdr << "	#else" << nl;
-		hdr << "		#define " << dllMacroAPI << " __declspec(dllimport)" << nl;
+		hdr << "		#define " << dllMacroAPI() << " __declspec(dllimport)" << nl;
 		hdr << "	#endif" << nl;
 		hdr << "#endif" << nl;
 		hdr << nl;
 
-		hdr << "#if !defined(" << dllMacroAPI << ")" << nl;
-		hdr << "	#define " << dllMacroAPI << nl;
-		hdr << "#endif" << nl;
-		hdr << nl;
 
 		hdr << "//" << nl;
-		hdr << "// Automatically link " << dllMacro << " library." << nl;
+		hdr << "// Automatically link " << dllMacro() << " library." << nl;
 		hdr << "//" << nl;
 		hdr << "#if defined(_MSC_VER)" << nl;
-		hdr << "	#if !defined(" << dllMacroNO_AUTOMATIC_LIBS << ")&& !defined(" << dllMacroEXPORTS << ")" << nl;
-		hdr << "		#pragma comment(lib, \"" << dllMacroRTS << "\" " << dllMacroLIB_SUFFIX << ")" << nl;
+		hdr << "	#if !defined(" << dllMacroNO_AUTOMATIC_LIBS() << ")&& !defined(" << dllMacroEXPORTS() << ")" << nl;
+		hdr << "		#pragma comment(lib, \"" << dllMacroRTS() << "\" " << dllMacroLIB_SUFFIX() << ")" << nl;
 		hdr << "	#endif" << nl;
-		hdr << "#endif" << nl;
 		hdr << "#endif" << nl;
 		hdr << nl;
 	}
+
+	hdr << "#if !defined(" << dllMacroAPI() << ")" << nl;
+	hdr << "	#define " << dllMacroAPI() << nl;
+	hdr << "#endif" << nl;
+	hdr << nl << nl;
 
 	hdr << "namespace " << cppModuleName << " {" << endl;
 	for_all(imports, boost::bind(&ImportModule::generateUsingDirectives, _1, boost::ref(hdr)));
@@ -6250,7 +6276,7 @@ void ModuleDefinition::generateClassModule(ostream& fwd, ostream& hdr, ostream& 
 	hdr << "// Module" << nl;
 	hdr << "//" << nl;
 	if (!tmphdr.str().empty()) {
-		hdr << "class " << dllMacroAPI << " Module : public ASN1::Module {" << nl
+		hdr << "class " << dllMacroAPI() << " Module : public ASN1::Module {" << nl
 			<< "public:" << nl << tab
 			<< "Module(";
 
@@ -6390,7 +6416,7 @@ const InformationObjectSet* ModuleDefinition::findInformationObjectSet(const str
 	return findWithName(informationObjectSets, name).get();
 }
 
-void ModuleDefinition::ResolveObjectClassReferences() const {
+void ModuleDefinition::resolveObjectClassReferences() const {
 	for (size_t i = 0; i < objectClasses.size(); ++i)
 		objectClasses[i]->resolveReference();
 }
@@ -6402,7 +6428,7 @@ string ModuleDefinition::getFileName() {
 }
 
 
-string ModuleDefinition::CreateSubModules(SymbolList& exportedSymbols) {
+string ModuleDefinition::createSubModules(SymbolList& exportedSymbols) {
 	unsigned clsPerFile = classesPerFile;
 	if(!clsPerFile)
 		clsPerFile = 101;
@@ -6411,7 +6437,7 @@ string ModuleDefinition::CreateSubModules(SymbolList& exportedSymbols) {
 		return getFileName();
 
 	size_t i, j;
-	contexts.top()->Module = this;
+	contexts.top()->module = this;
 	for (i = 0; i < types.size(); ++i)
 		types[i]->resolveReference();
 
@@ -6499,7 +6525,7 @@ string ModuleDefinition::CreateSubModules(SymbolList& exportedSymbols) {
 
 		subModule->AdjustModuleName(getFileDirectory(generatedPath), true);
 		subModules.push_back(subModule);
-		Modules.push_back(subModule);
+		modules.push_back(subModule);
 		return subModule->getFileName();
 	} else {
 		cerr << "Unexpected Situation, Do not use selective imports option" << nl;
@@ -6855,9 +6881,7 @@ void FixedTypeValueFieldSpec::generateTypeField(const string& templatePrefix,
 
 ////////////////////////////////////////////////////////////////////////
 
-FixedTypeValueSetFieldSpec::FixedTypeValueSetFieldSpec(const string& nam,
-		TypePtr t,
-		bool optional)
+FixedTypeValueSetFieldSpec::FixedTypeValueSetFieldSpec(const string& nam, TypePtr t, bool optional)
 	: FieldSpec(nam, optional), type(t) {
 }
 
@@ -7321,25 +7345,40 @@ void ObjectClassDefn::setWithSyntaxSpec(TokenGroupPtr list) {
 
 
 bool ObjectClassDefn::VerifyDefaultSyntax(FieldSettingList* fieldSettings) const {
-	size_t fieldIndex=0, settingIndex=0;
+	size_t fieldno=0, settingno=0;
 	assert(fieldSettings);
-	while (fieldIndex < fieldSpecs->size()&& settingIndex < fieldSettings->size()) {
-		if ((*fieldSpecs)[fieldIndex]->getName() == (*fieldSettings)[settingIndex]->getName()) {
-			fieldIndex++;
-			settingIndex++;
-			continue;
-		} else if ((*fieldSpecs)[fieldIndex]->isOptional() || (*fieldSpecs)[fieldIndex]->hasDefault()) {
-			fieldIndex++;
-			continue;
-		} else {
-			cerr << StdError(Fatal) << "Unrecognized field name : "
-				 << (*fieldSettings)[settingIndex]->getName() <<  nl;
+	bool result = true;
+	bool found;
+	for(settingno = 0; settingno < fieldSettings->size(); ++settingno) {
+		const string& settingName = (*fieldSettings)[settingno]->getName();
+		found = false;
+		for (fieldno = 0; fieldno < fieldSpecs->size(); ++fieldno) {
+			const string& fieldName = (*fieldSpecs)[fieldno]->getName();
+			if (fieldName == settingName) {
+				found = true;break;
+			}
+		}
+		if (!found) {
+			cerr << StdError(Fatal) << "Unrecognized field name : " << settingName <<  nl;
 			exit(1);
+			return false;
 		}
 	}
 	return true;
+#ifdef TBD
+		if (fieldName == settingName) {
+			fieldno++;
+			settingno++;
+			continue;
+		} else if ((*fieldSpecs)[fieldno]->isOptional() || (*fieldSpecs)[fieldno]->hasDefault()) {
+			fieldno++;
+			continue;
+		} else {
+			cerr << StdError(Fatal) << "Unrecognized field name : " << (*fieldSettings)[settingno]->getName() <<  nl;
+			exit(1);
+		}
+#endif
 }
-
 TokenGroupPtr ObjectClassDefn::getWithSyntax() const {
 	return withSyntaxSpec;
 }
@@ -7442,7 +7481,7 @@ void ObjectClassDefn::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx
 	ResolveKey();
 
 
-	hdr << "class "  << dllMacroAPI << " " << className  << " {" << nl
+	hdr << "class "  << dllMacroAPI() << " " << className  << " {" << nl
 		<< "public:" << nl;
 	hdr << tab;
 	if  (keyType.get()) {
@@ -7595,7 +7634,7 @@ void ObjectClassDefn::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx
 /////////////////////////////////////////////////////////////
 ImportedObjectClass::ImportedObjectClass(const string& modName, const string& nam, ObjectClassBase* ref)
 	: DefinedObjectClass(nam, ref), moduleName(modName) {
-	module = findWithName(Modules, modName);
+	module = findWithName(modules, modName);
 }
 
 /////////////////////////////////////////////////////////////
@@ -7619,7 +7658,7 @@ DefinedObjectClass::DefinedObjectClass(const string& nam, ObjectClassBase* ref)
 
 ObjectClassBase* DefinedObjectClass::getReference() {
 	if (reference == nullptr)
-		reference = contexts.top()->Module->findObjectClass(referenceName).get();
+		reference = contexts.top()->module->findObjectClass(referenceName).get();
 	return reference;
 }
 
@@ -7686,7 +7725,7 @@ void DefinedObjectClass::print(ostream& strm) const {
 
 void DefinedObjectClass::resolveReference() const {
 	if (reference == nullptr) {
-		reference = contexts.top()->Module->findObjectClass(referenceName).get();
+		reference = contexts.top()->module->findObjectClass(referenceName).get();
 		ImportedObjectClass* ioc = dynamic_cast<ImportedObjectClass*>(reference);
 		if (ioc != nullptr) {
 			const ModuleDefinitionPtr& m = ioc->getModule();
@@ -7959,7 +7998,7 @@ DefinedObject::DefinedObject(const string& nam, const InformationObject* ref)
 
 const InformationObject* DefinedObject::getReference() const {
 	if (reference == nullptr)
-		reference = contexts.top()->Module->findInformationObject(referenceName);
+		reference = contexts.top()->module->findInformationObject(referenceName);
 	if (reference == nullptr) {
 		cerr << StdError(Fatal) << "Invalid Object : " << getName();
 		exit(1);
@@ -8389,9 +8428,9 @@ bool InformationObjectSetDefn::generateTypeConstructor(ostream& cxx) const {
 		tmp << ends;
 	}
 
-	cxx << "  ASN1::Module* module = env.find(\"" << contexts.top()->Module->getName() << "\");" << nl
+	cxx << "  ASN1::Module* module = env.find(\"" << contexts.top()->module->getName() << "\");" << nl
 		<< "  if (module)" << nl
-		<< "  objSet = &(static_cast<"<< contexts.top()->Module->getCModuleName() << "::Module*>(module)->get_"
+		<< "  objSet = &(static_cast<"<< contexts.top()->module->getCModuleName() << "::Module*>(module)->get_"
 		<< makeCppName(getName()) << "());" << nl
 		<< "  else" << nl
 		<< "    objSet = nullptr;" << nl;
@@ -8408,7 +8447,7 @@ DefinedObjectSet::DefinedObjectSet(const string& ref)
 
 const InformationObjectSet* DefinedObjectSet::getReference() const {
 	if (reference == nullptr)
-		reference = contexts.top()->Module->findInformationObjectSet(referenceName);
+		reference = contexts.top()->module->findInformationObjectSet(referenceName);
 	if (reference == nullptr) {
 		cerr << StdError(Fatal) << "Invalid ObjectSet " << getName();
 		exit(1);
@@ -9219,7 +9258,7 @@ bool ActualObjectSetParameter::referencesType(const TypeBase& type) const {
 //////////////////////////////////////////////////////////////
 
 ObjectSetType::ObjectSetType(InformationObjectSetPtr os)
-	: TypeBase(0, contexts.top()->Module)
+	: TypeBase(0, contexts.top()->module)
 	, objSet(os) {
 	name = objSet->getName();
 	identifier = makeCppName(name);
@@ -9330,12 +9369,12 @@ void addRemoveItem(const char* item) {
 
 
 ModuleDefinition* findModule(const char* name) {
-	ModuleDefinitionPtr smd = findWithName(Modules, name);
+	ModuleDefinitionPtr smd = findWithName(modules, name);
 	return smd.get();
 }
-ModuleDefinition* CreateModule(const char* name) {
+ModuleDefinition* createModule(const char* name) {
 	ModuleDefinitionPtr mdp (new ModuleDefinition(name));
-	Modules.push_back(mdp);
+	modules.push_back(mdp);
 	return mdp.get();
 }
 
