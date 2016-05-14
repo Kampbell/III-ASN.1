@@ -26,11 +26,20 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RDP", "RDP\RDP.vcxproj", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6AC2EA98-D59C-454F-A81E-5BC18D792CE9}"
 	ProjectSection(SolutionItems) = preProject
+		..\btyacc\msvc\btyacc.props = ..\btyacc\msvc\btyacc.props
+		..\btyacc\msvc\btyacc.targets = ..\btyacc\msvc\btyacc.targets
+		..\btyacc\msvc\btyacc.xml = ..\btyacc\msvc\btyacc.xml
 		iiiasn1.properties = iiiasn1.properties
 		solution.props = solution.props
+		..\win-flex-bison\bin\Release\custom_build_rules\win_bison_custom_build.props = ..\win-flex-bison\bin\Release\custom_build_rules\win_bison_custom_build.props
+		..\win-flex-bison\bin\Release\custom_build_rules\win_bison_custom_build.targets = ..\win-flex-bison\bin\Release\custom_build_rules\win_bison_custom_build.targets
+		..\win-flex-bison\bin\Release\custom_build_rules\win_bison_custom_build.xml = ..\win-flex-bison\bin\Release\custom_build_rules\win_bison_custom_build.xml
+		..\win-flex-bison\bin\Release\custom_build_rules\win_flex_custom_build.props = ..\win-flex-bison\bin\Release\custom_build_rules\win_flex_custom_build.props
+		..\win-flex-bison\bin\Release\custom_build_rules\win_flex_custom_build.targets = ..\win-flex-bison\bin\Release\custom_build_rules\win_flex_custom_build.targets
+		..\win-flex-bison\bin\Release\custom_build_rules\win_flex_custom_build.xml = ..\win-flex-bison\bin\Release\custom_build_rules\win_flex_custom_build.xml
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testASN1cmp", "asnparser\testsuite\ASN1cmptest-w32-vs120.vcxproj", "{F012966D-7796-4562-8587-6ADF79466B8F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testASN1c", "asnparser\testsuite\ASN1cmptest-w32-vs120.vcxproj", "{F012966D-7796-4562-8587-6ADF79466B8F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1EED4B13-2A75-4C49-A198-12F2A46F5944} = {1EED4B13-2A75-4C49-A198-12F2A46F5944}
 		{CC4DCE75-9957-4642-A86B-EA14DBCEBF54} = {CC4DCE75-9957-4642-A86B-EA14DBCEBF54}
@@ -42,7 +51,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testASN1", "asn1\testsuite\
 		{CC4DCE75-9957-4642-A86B-EA14DBCEBF54} = {CC4DCE75-9957-4642-A86B-EA14DBCEBF54}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ASN1cmp", "asnparser\ASN1cmp-w32-vs120.vcxproj", "{1EED4B13-2A75-4C49-A198-12F2A46F5944}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ASN1c", "asnparser\ASN1cmp-w32-vs120.vcxproj", "{1EED4B13-2A75-4C49-A198-12F2A46F5944}"
 	ProjectSection(ProjectDependencies) = postProject
 		{CC4DCE75-9957-4642-A86B-EA14DBCEBF54} = {CC4DCE75-9957-4642-A86B-EA14DBCEBF54}
 	EndProjectSection
@@ -53,7 +62,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KAMPBELL", "KAMPBELL\KAMPBE
 		{CC4DCE75-9957-4642-A86B-EA14DBCEBF54} = {CC4DCE75-9957-4642-A86B-EA14DBCEBF54}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VS2013EXE-w32-vs120", "VS2013EXE\VS2013EXE-w32-vs120.vcxproj", "{0F9A0437-F976-4550-9F6C-4DB5E647FF9A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VS2013EXE", "VS2013EXE\VS2013EXE-w32-vs120.vcxproj", "{0F9A0437-F976-4550-9F6C-4DB5E647FF9A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RDPWB", "RDPWB\RDPWB.vcxproj", "{466B1A7F-BB4E-4A85-9A7A-40C303D67314}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -99,6 +110,10 @@ Global
 		{0F9A0437-F976-4550-9F6C-4DB5E647FF9A}.Debug|Win32.Build.0 = Debug|Win32
 		{0F9A0437-F976-4550-9F6C-4DB5E647FF9A}.Release|Win32.ActiveCfg = Release|Win32
 		{0F9A0437-F976-4550-9F6C-4DB5E647FF9A}.Release|Win32.Build.0 = Release|Win32
+		{466B1A7F-BB4E-4A85-9A7A-40C303D67314}.Debug|Win32.ActiveCfg = Debug|Win32
+		{466B1A7F-BB4E-4A85-9A7A-40C303D67314}.Debug|Win32.Build.0 = Debug|Win32
+		{466B1A7F-BB4E-4A85-9A7A-40C303D67314}.Release|Win32.ActiveCfg = Release|Win32
+		{466B1A7F-BB4E-4A85-9A7A-40C303D67314}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

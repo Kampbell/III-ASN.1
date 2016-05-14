@@ -61,7 +61,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <CustomBuildStep>
-      <Command>..\..\bin\ASN1cd -m -c -v -o csn -i asn</Command>
+      <Command>..\..\bin\ASN1cd -l -c -v -o csn -i asn</Command>
       <Outputs>csn\MyHTTP.cxx;csn\MyHTTP.inl;csn\MyHTTP.h;csn\TEST.cxx;csn\TEST.inl;csn\TEST.h;%(Outputs)</Outputs>
     </CustomBuildStep>
     <PropertyGroup>
@@ -151,7 +151,7 @@
     </PreBuildEvent>
     <CustomBuildStep>
       <Outputs>csn\MyHTTP.cxx;csn\MyHTTP.inl;csn\MyHTTP.h;csn\TEST.cxx;csn\TEST.inl;csn\TEST.h;%(Outputs)</Outputs>
-      <Command>..\..\bin\ASN1c -m -c -v -o csn asn/TEST.asn</Command>
+      <Command>..\..\bin\ASN1c -l -c -v -o csn asn/TEST.asn</Command>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -213,7 +213,7 @@
     <None Include="asn1c\14-resolver-OK.asn1-FAILED" />
     <None Include="asn1c\16-constraint-OK.asn1-FAILED" />
     <None Include="asn1c\17-tags-OK.asn1" />
-    <None Include="asn1c\18-class-OK.asn1-FAILED" />
+    <None Include="asn1c\18-class-OK.asn1" />
     <None Include="asn1c\19-param-OK.asn1-FAILED" />
     <None Include="asn1c\20-constr-OK.asn1-FAILED" />
     <None Include="asn1c\21-tags-OK.asn1-FAILED" />
@@ -283,7 +283,8 @@
     <None Include="asn\07-int-OK.asn1" />
     <None Include="asn\16-constraint-OK.asn1.FAIL" />
     <None Include="asn\17-tags-OK.asn1" />
-    <None Include="asn\18-class-OK.asn1.FAIL" />
+    <None Include="asn\18-class-OK.asn1" />
+    <None Include="asn\20-constr-OK.asn1" />
     <None Include="asn\22-tags-OK.asn1" />
     <None Include="asn\24-sequence-OK.asn1" />
     <None Include="asn\29-tags-OK.asn1" />

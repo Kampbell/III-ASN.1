@@ -182,9 +182,6 @@
     <None Include="asn1c\17-tags-OK.asn1">
       <Filter>asn1c</Filter>
     </None>
-    <None Include="asn1c\18-class-OK.asn1-FAILED">
-      <Filter>asn1c</Filter>
-    </None>
     <None Include="asn1c\19-param-OK.asn1-FAILED">
       <Filter>asn1c</Filter>
     </None>
@@ -501,7 +498,13 @@
     <None Include="asn\16-constraint-OK.asn1.FAIL">
       <Filter>asn</Filter>
     </None>
-    <None Include="asn\18-class-OK.asn1.FAIL">
+    <None Include="asn\18-class-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn1c\18-class-OK.asn1">
+      <Filter>asn1c</Filter>
+    </None>
+    <None Include="asn\20-constr-OK.asn1">
       <Filter>asn</Filter>
     </None>
   </ItemGroup>
