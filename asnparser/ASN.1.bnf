@@ -11,13 +11,13 @@ starts with 		followed by 	 						object contains
 &Upper-case 		a class name (UPPER-CASES) 				an information object  set
 */
 
-ModuleDefinition 		::= ModuleIdentifier DEFINITIONS EncodingReferenceDefault TagDefault ExtensionDefault "::=" BEGIN ModuleBody EncodingControlSections END;
+ModuleDefinition 			::= ModuleIdentifier DEFINITIONS EncodingReferenceDefault TagDefault ExtensionDefault "::=" BEGIN ModuleBody EncodingControlSections END;
 
-ModuleIdentifier 		::= modulereference DefinitiveIdentification;
+ModuleIdentifier 			::= modulereference DefinitiveIdentification;
 
 DefinitiveIdentification 	::= DefinitiveOID | DefinitiveOIDandIRI | empty;
 
-DefinitiveOID 			::= "{" DefinitiveObjIdComponentList "}";
+DefinitiveOID 				::= "{" DefinitiveObjIdComponentList "}";
 
 DefinitiveOIDandIRI 		::= DefinitiveOID IRIValue ;
 
@@ -27,39 +27,39 @@ DefinitiveObjIdComponent 	::= NameForm | DefinitiveNumberForm | DefinitiveNameAn
 
 DefinitiveNumberForm 		::= number ;
 
-DefinitiveNameAndNumberForm 	::= identifier "(" DefinitiveNumberForm ")" ;
+DefinitiveNameAndNumberForm ::= identifier "(" DefinitiveNumberForm ")" ;
 
 EncodingReferenceDefault 	::= encodingreference INSTRUCTIONS | empty ;
 
-TagDefault 			::= EXPLICIT TAGS | IMPLICIT TAGS | AUTOMATIC TAGS | empty ;
+TagDefault 					::= EXPLICIT TAGS | IMPLICIT TAGS | AUTOMATIC TAGS | empty ;
 
-ExtensionDefault 		::= EXTENSIBILITY IMPLIED | empty ;
+ExtensionDefault 			::= EXTENSIBILITY IMPLIED | empty ;
 
-ModuleBody 			::= Exports Imports AssignmentList | empty ;
+ModuleBody 					::= Exports Imports AssignmentList | empty ;
 
-Exports 			::= EXPORTS SymbolsExported ";" | EXPORTS ALL ";" | empty ;
+Exports 					::= EXPORTS SymbolsExported ";" | EXPORTS ALL ";" | empty ;
 
-SymbolsExported 		::= SymbolList | empty ;
+SymbolsExported 			::= SymbolList | empty ;
 
-Imports 			::= IMPORTS SymbolsImported ";" | empty ;
+Imports 					::= IMPORTS SymbolsImported ";" | empty ;
 
-SymbolsImported 		::= SymbolsFromModuleList | empty ;
+SymbolsImported 			::= SymbolsFromModuleList | empty ;
 
 SymbolsFromModuleList 		::= SymbolsFromModule | SymbolsFromModuleList SymbolsFromModule ;
 
-SymbolsFromModule 		::= SymbolList FROM GlobalModuleReference ;
+SymbolsFromModule 			::= SymbolList FROM GlobalModuleReference ;
 
 GlobalModuleReference 		::= modulereference AssignedIdentifier ;
 
-AssignedIdentifier 		::= ObjectIdentifierValue | DefinedValue | empty ;
+AssignedIdentifier 			::= ObjectIdentifierValue | DefinedValue | empty ;
 
-SymbolList 			::= Symbol | SymbolList "," Symbol ;
+SymbolList 					::= Symbol | SymbolList "," Symbol ;
 
-Symbol 				::= Reference | ParameterizedReference ;
+Symbol 						::= Reference | ParameterizedReference ;
 
-Reference 			::= typereference | valuereference | objectclassreference | objectreference | objectsetreference ;
+Reference 					::= typereference | valuereference | objectclassreference | objectreference | objectsetreference ;
 
-AssignmentList 			::= Assignment | AssignmentList Assignment ;
+AssignmentList 				::= Assignment | AssignmentList Assignment ;
 
 Assignment 	::=
 TypeAssignment
@@ -325,24 +325,21 @@ NullValue 		::= NULL ;
 XMLNullValue 		::= empty ;
 
 SequenceType 		::=
-SEQUENCE "{" "}"
-| SEQUENCE "{" ExtensionAndException OptionalExtensionMarker "}"
-| SEQUENCE "{" ComponentTypeLists "}"
+	SEQUENCE "{" "}"
+	| SEQUENCE "{" ExtensionAndException OptionalExtensionMarker "}"
+	| SEQUENCE "{" ComponentTypeLists "}"
 ;
 
 ExtensionAndException 	::= "..." | "..." ExceptionSpec ;
 
 OptionalExtensionMarker ::= "," "..." | empty ;
 
-ComponentTypeLists 	::=
-RootComponentTypeList
-| RootComponentTypeList "," ExtensionAndException Extensionadditions
-OptionalExtensionMarker
-| RootComponentTypeList "," ExtensionAndException Extensionadditions
-ExtensionEndMarker "," RootComponentTypeList
-| ExtensionAndException Extensionadditions ExensionEndMarker ","
-RootComponentTypeList
-| ExtensionAndException Extensionadditions OptionalExtensionMarker
+ComponentTypeLists 	::= 
+	RootComponentTypeList
+	| RootComponentTypeList "," ExtensionAndException Extensionadditions OptionalExtensionMarker
+	| RootComponentTypeList "," ExtensionAndException Extensionadditions ExtensionEndMarker "," RootComponentTypeList
+	| ExtensionAndException Extensionadditions ExtensionEndMarker "," RootComponentTypeList
+	| ExtensionAndException Extensionadditions OptionalExtensionMarker
 ;
 
 RootComponentTypeList 	::= ComponentTypeList ;
@@ -375,7 +372,7 @@ SequenceOfType 		::= SEQUENCE OF Type | SEQUENCE OF NamedType ;
 
 SequenceOfValue 	::= "{" ValueList "}" | "{" NamedValueList "}" | "{" "}" ;
 
-ValueList 		::= Value | ValueList "," Value ;
+ValueList 			::= Value | ValueList "," Value ;
 
 NamedValueList 		::= NamedValue | NamedValueList "," NamedValue ;
 
@@ -385,18 +382,18 @@ XMLValueList 		::= XMLValueOrEmpty | XMLValueOrEmpty XMLValueList ;
 
 XMLValueOrEmpty 	::= XMLValue | "<" & NonParameterizedTypeName "/>" ;
 
-XMLDelimitedItemList 	::= XMLDelimitedItem | XMLDelimitedItem XMLDelimitedItemList ;
+XMLDelimitedItemList::= XMLDelimitedItem | XMLDelimitedItem XMLDelimitedItemList ;
 
 XMLDelimitedItem 	::=
-"<" & NonParameterizedTypeName ">" XMLValue
-"</" & NonParameterizedTypeName ">"
-| "<" & identifier ">" XMLValue "</" & identifier ">"
+	"<" & NonParameterizedTypeName ">" XMLValue
+	"</" & NonParameterizedTypeName ">"
+	| "<" & identifier ">" XMLValue "</" & identifier ">"
 ;
 
 SetType 		::=
-SET "{" "}"
-| SET "{" ExtensionAndException OptionalExtensionMarker "}"
-| SET "{" ComponentTypeLists "}"
+	SET "{" "}"
+	| SET "{" ExtensionAndException OptionalExtensionMarker "}"
+	| SET "{" ComponentTypeLists "}"
 ;
 
 SetValue 		::= "{" ComponentValueList "}" | "{" "}" ;
@@ -412,10 +409,10 @@ XMLSetOfValue 		::= XMLValueList | XMLDelimitedItemList | empty ;
 ChoiceType 		::= CHOICE "{" AlternativeTypeLists "}" ;
 
 AlternativeTypeLists 	::=
-RootAlternativeTypeList
-| RootAlternativeTypeList ","
-ExtensionAndException ExtensionadditionAlternatives
-OptionalExtensionMarker
+	RootAlternativeTypeList
+	| RootAlternativeTypeList ","
+	ExtensionAndException ExtensionadditionAlternatives
+	OptionalExtensionMarker
 ;
 
 RootAlternativeTypeList	::= AlternativeTypeList ;
@@ -451,35 +448,35 @@ PrefixedValue 		::= Value ;
 
 XMLPrefixedValue 	::= XMLValue ;
 
-EncodingPrefixedType 	::= EncodingPrefix Type ;
+EncodingPrefixedType::= EncodingPrefix Type ;
 
 EncodingPrefix 		::= "[" EncodingReference EncodingInstruction "]" ;
 
-TaggedType 		::= Tag Type | Tag IMPLICIT Type | Tag EXPLICIT Type ;
+TaggedType 			::= Tag Type | Tag IMPLICIT Type | Tag EXPLICIT Type ;
 
-Tag 			::= "[" EncodingReference Class ClassNumber "]" ;
+Tag 				::= "[" EncodingReference Class ClassNumber "]" ;
 
 EncodingReference 	::= encodingreference ":" | empty ;
 
 ClassNumber 		::= number | DefinedValue ;
 
-Class 			::= UNIVERSAL | APPLICATION | PRIVATE | empty ;
+Class 				::= UNIVERSAL | APPLICATION | PRIVATE | empty ;
 
-EncodingPrefixedType 	::= EncodingPrefix Type ;
+EncodingPrefixedType::= EncodingPrefix Type ;
 
 EncodingPrefix 		::= "[" EncodingReference EncodingInstruction "]" ;
 
-ObjectIdentifierType 	::= OBJECT IDENTIFIER ;
+ObjectIdentifierType::= OBJECT IDENTIFIER ;
 
-ObjectIdentifierValue 	::= "{" ObjIdComponentsList "}" | "{" DefinedValue ObjIdComponentsList "}" ;
+ObjectIdentifierValue::= "{" ObjIdComponentsList "}" | "{" DefinedValue ObjIdComponentsList "}" ;
 
-ObjIdComponentsList 	::= ObjIdComponents | ObjIdComponents ObjIdComponentsList ;
+ObjIdComponentsList ::= ObjIdComponents | ObjIdComponents ObjIdComponentsList ;
 
 ObjIdComponents 	::= NameForm | NumberForm | NameAndNumberForm | DefinedValue ;
 
-NameForm 		::= identifier ;
+NameForm 			::= identifier ;
 
-NumberForm 		::= number | DefinedValue ;
+NumberForm 			::= number | DefinedValue ;
 
 NameAndNumberForm 	::= identifier "(" NumberForm ")" ;
 
@@ -633,14 +630,14 @@ The following productions are used in clauses 49 to 51:
 ConstrainedType 	::= Type Constraint | TypeWithConstraint ;
 
 TypeWithConstraint 	::=
-SET Constraint OF Type
-| SET SizeConstraint OF Type
-| SEQUENCE Constraint OF Type
-| SEQUENCE SizeConstraint OF Type
-| SET Constraint OF NamedType
-| SET SizeConstraint OF NamedType
-| SEQUENCE Constraint OF NamedType
-| SEQUENCE SizeConstraint OF NamedType
+	SET Constraint OF Type
+	| SET SizeConstraint OF Type
+	| SEQUENCE Constraint OF Type
+	| SEQUENCE SizeConstraint OF Type
+	| SET Constraint OF NamedType
+	| SET SizeConstraint OF NamedType
+	| SEQUENCE Constraint OF NamedType
+	| SEQUENCE SizeConstraint OF NamedType
 ;
 
 Constraint 		::= "(" ConstraintSpec ExceptionSpec ")" ;
@@ -651,9 +648,9 @@ SubtypeConstraint 	::= ElementSetSpecs
 ;
 
 ElementSetSpecs 	::=
-RootElementSetSpec
-| RootElementSetSpec "," "..."
-| RootElementSetSpec "," "..." "," additionalElementSetSpec
+	RootElementSetSpec
+	| RootElementSetSpec "," "..."
+	| RootElementSetSpec "," "..." "," additionalElementSetSpec
 ;
 
 RootElementSetSpec 	::= ElementSetSpec ;
@@ -681,24 +678,24 @@ UnionMark 		::= "|" | UNION ;
 IntersectionMark 	::= "^" | INTERSECTION ;
 
 Elements 		::=
-SubtypeElements
-| ObjectSetElements
-| "(" ElementSetSpec ")"
+	SubtypeElements
+	| ObjectSetElements
+	| "(" ElementSetSpec ")"
 ;
 
 SubtypeElements 	::=
-SingleValue
-| ContainedSubtype
-| ValueRange
-| PermittedAlphabet
-| SizeConstraint
-| TypeConstraint
-| InnerTypeConstraints
-| PatternConstraint
-| PropertySettings
-| DurationRange
-| TimePointRange
-| RecurrenceRange
+	SingleValue
+	| ContainedSubtype
+	| ValueRange
+	| PermittedAlphabet
+	| SizeConstraint
+	| TypeConstraint
+	| InnerTypeConstraints
+	| PatternConstraint
+	| PropertySettings
+	| DurationRange
+	| TimePointRange
+	| RecurrenceRange
 ;
 
 SingleValue 		::= Value ;
@@ -780,21 +777,21 @@ ObjectClass 				::= DefinedObjectClass | ObjectClassDefn | ParameterizedObjectCl
 ObjectClassDefn 			::= CLASS "{" FieldSpec "," + "}" WithSyntaxSpec? ;
 
 FieldSpec 					::=
-TypeFieldSpec
-| FixedTypeValueFieldSpec
-| VariableTypeValueFieldSpec
-| FixedTypeValueSetFieldSpec
-| VariableTypeValueSetFieldSpec
-| ObjectFieldSpec
-| ObjectSetFieldSpec
+	TypeFieldSpec
+	| FixedTypeValueFieldSpec
+	| VariableTypeValueFieldSpec
+	| FixedTypeValueSetFieldSpec
+	| VariableTypeValueSetFieldSpec
+	| ObjectFieldSpec
+	| ObjectSetFieldSpec
 ;
 
 PrimitiveFieldName 			::=
-typefieldreference
-| valuefieldreference
-| valuesetfieldreference
-| objectfieldreference
-| objectsetfieldreference
+	typefieldreference
+	| valuefieldreference
+	| valuesetfieldreference
+	| objectfieldreference
+	| objectsetfieldreference
 ;
 
 FieldName 					::= PrimitiveFieldName "." +;
@@ -960,12 +957,13 @@ GeneralConstraint 			::= UserDefinedConstraint | TableConstraint | ContentsConst
 UserDefinedConstraint 		::= CONSTRAINED BY "{" UserDefinedConstraintParameter "," * "}";
 
 UserDefinedConstraintParameter ::= 
-Governor ":" Value
-| Governor ":" ValueSet
-| Governor ":" Object
-| Governor ":" ObjectSet
-| Type
-| DefinedObjectClass;
+	Governor ":" Value
+	| Governor ":" ValueSet
+	| Governor ":" Object
+	| Governor ":" ObjectSet
+	| Type
+	| DefinedObjectClass
+;
 
 TableConstraint ::= SimpleTableConstraint | ComponentRelationConstraint;
 
