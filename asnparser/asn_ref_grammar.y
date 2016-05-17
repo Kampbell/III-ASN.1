@@ -209,18 +209,8 @@ typedef std::vector<std::string> StringList;
     unsigned tagNumber;
   } tagv;
 }
-
 /*
-%{
-
-#define YYLEX() idlex( context)
-int idlex(ParserContext* context);
-#define YYPARSE() int yyparse(ParserContext* context, const string& path)
-int yyparse(ParserContext* context, const string& path);
-#define YYLEX1SIG() int YYLex1(ParserContext* context)
-#define YYLEX1REF() YYLex1(context)
-
-%}
+%printer { if ($$ != nullptr) fprintf (yyoutput, "'%s'", $$->c_str()); } <sval>
 */
 
 %{
@@ -254,9 +244,9 @@ ModuleDefinition
 	  {
 		context->module = nullptr;
 	  }
-  | TypeReference DEFINITIONS TagDefault ASSIGNMENT BEGIN_t
+  | TypeReference DEFINITIONS EncodingReferenceDefault TagDefault ExtensionDefault ASSIGNMENT BEGIN_t
       {
-		context->module = new ModuleDefinition(*$1, path, (Tag::Mode)$3);
+		context->module = new ModuleDefinition(*$1, path, (Tag::Mode)$4);
 		modules.push_back(ModuleDefinitionPtr(context->module));
 		delete $1;
       }

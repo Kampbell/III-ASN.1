@@ -1,10 +1,8 @@
 %option bison-bridge
 %option reentrant 
 %option stack
-/*
 %option bison-locations 
 %option yylineno
-*/
 %option outfile="asn_lex.cxx"
 %option header-file="asn_lex.h"
 %option never-interactive 
@@ -55,6 +53,18 @@
 #include "asn_grammar.tab.h"
 #include <ctype.h>
 
+#if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
+/* Default: YYLTYPE is the text position type. */
+typedef struct YYLTYPE
+{
+    int first_line;
+    int first_column;
+    int last_line;
+    int last_column;
+} YYLTYPE;
+#define YYLTYPE_IS_DECLARED 1
+#endif
+
 
 extern unsigned lineNumber;
 
@@ -64,15 +74,17 @@ extern int LexEcho;
 
 #define YYDEBUG 1
 
+
 #define YY_HEADER_EXPORT_START_CONDITIONS 1
 #define YY_USER_ACTION if (LexEcho) std::cout << yytext << std::flush;
-//#define YY_DECL int yylex(YYSTYPE* yylval_param, YYLTYPE* yylloc, yyscan_t yyscanner, ParserContext* context)
-#define YY_DECL int yylex(YYSTYPE* yylval_param, yyscan_t yyscanner, ParserContext* context)
-/*
+
+extern int yylex (YYSTYPE*,YYLTYPE*  ,yyscan_t, ParserContext*);
+#define YY_DECL int yylex(YYSTYPE* yylval_param, YYLTYPE* yylloc_param, yyscan_t yyscanner, ParserContext* context)
+
 #define YY_USER_ACTION yylloc->first_line = yylloc->last_line = yylineno; \
     yylloc->first_column = yycolumn; yylloc->last_column = yycolumn + yyleng - 1; \
     yycolumn += yyleng;
-*/
+
 static const char* SYMBOLS[] = {
   "$end", "error", "$undefined", "MODULEREFERENCE",
   "TYPEREFERENCE", "OBJECTCLASSREFERENCE", "VALUEREFERENCE",
@@ -232,6 +244,7 @@ exp ({integer}|{real})[eE]-?{integer}
 "EXPLICIT"          { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,EXPLICIT, WORD_t, yyscanner); }  
 "EXPORTS"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,EXPORTS, WORD_t, yyscanner); }  
 "EXTERNAL"          { return EXTERNAL; }
+"EXTENSIBILITY"		{ return EXTENSIBILITY; }
 "FALSE"             { return FALSE_t; }
 "FROM"              { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,FROM, WORD_t, yyscanner); }  
 "GeneralString"     { return GeneralString; }
@@ -242,9 +255,11 @@ exp ({integer}|{real})[eE]-?{integer}
 "TYPE-IDENTIFIER"   { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,TYPE_IDENTIFIER, WORD_t, yyscanner); }  
 "IDENTIFIER"        { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,IDENTIFIER_t, WORD_t, yyscanner); }  
 "IMPLICIT"          { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,IMPLICIT, WORD_t, yyscanner); }  
+"IMPLIED"			{ return IMPLIED; }
 "IMPORTS"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,IMPORTS, WORD_t, yyscanner); }  
 "INCLUDES"          { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,INCLUDES, WORD_t, yyscanner); }  
 "INSTANCE"          { return INSTANCE; }
+"INSTRUCTIONS"		{ return INSTRUCTIONS; }
 "INTEGER"           { return INTEGER_t; }
 "INTERSECTION"      { return INTERSECTION; }
 "ISO646String"      { return ISO646String; }

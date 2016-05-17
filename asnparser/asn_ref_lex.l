@@ -90,6 +90,7 @@ int parenthesisCount = 0;
 "ENUMERATED"                       { return ENUMERATED; }
 "EXCEPT"                           { return EXCEPT; }
 "EXPLICIT"                         { return EXPLICIT; }
+"EXTENSIBILITY"                    { return EXTENSIBILITY; }
 "EXPORTS"                          { return EXPORTS; }
 "EXTERNAL"                         { return EXTERNAL; }
 "FALSE"                            { return FALSE_t; }
@@ -100,6 +101,7 @@ int parenthesisCount = 0;
 "TYPE-IDENTIFIER"                  { return TYPE_IDENTIFIER; }
 "IDENTIFIER"                       { return IDENTIFIER_t; }
 "IMPLICIT"                         { return IMPLICIT; }
+"IMPLIED"							{ return IMPLIED; }
 "IMPORTS"                          { return IMPORTS; }
 "INCLUDES"                         { return INCLUDES; }
 "INSTANCE"                         { return INSTANCE; }

@@ -82,6 +82,20 @@ extern "C" {
 
 #define IDDEBUG 1
 #define YYDEBUG 1
+
+#if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
+/* Default: YYLTYPE is the text position type. */
+typedef struct YYLTYPE
+{
+    int first_line;
+    int first_column;
+    int last_line;
+    int last_column;
+} YYLTYPE;
+#define YYLTYPE_IS_DECLARED 1
+#endif
+
+
 #include "asn_grammar.tab.h"
 #include "asn_lex.h"
 #include "asn_ref_lex.h"
@@ -153,17 +167,16 @@ int iderror(ParserContext *, const string& path, char const *str) {
 	clog << "First  stage " << StdError(Fatal) << str << " near token \"" << idtext <<"\"" << nl;
 	return 0;
 }
-//int  yyerror(YYLTYPE* location, yyscan_t scanner, ParserContext * context, char const *str) {
-int  yyerror(yyscan_t scanner, ParserContext * context, char const *str) {
+void  yyerror(YYLTYPE location, yyscan_t scanner, ParserContext * context, char const *str) {
+//int  yyerror(yyscan_t scanner, ParserContext * context, char const *str) {
 #if 0
 	extern char * yytext;
 	clog << "Second stage " << StdError(Fatal) << str << " near token \"" << yytext <<"\"" << nl;
 #else
-//	clog << "Second stage " << StdError(Fatal) << str << " at " << location->first_line << ":" << location->first_column << endl;
-	clog << "Second stage " << StdError(Fatal) << str << " at ??" << endl;
+	clog << "Second stage " << StdError(Fatal) << str << " at " << location.first_line << ":" << location.first_column << endl;
+//	clog << "Second stage " << StdError(Fatal) << str << " at ??" << endl;
 	context->module = nullptr;
 #endif
-	return 0;
 }
 
 #else
