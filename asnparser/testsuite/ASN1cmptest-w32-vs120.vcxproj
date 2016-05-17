@@ -281,7 +281,7 @@
     <None Include="asn\01-empty-OK.asn1" />
     <None Include="asn\03-enum-OK.asn1" />
     <None Include="asn\07-int-OK.asn1" />
-    <None Include="asn\16-constraint-OK.asn1.FAIL" />
+    <None Include="asn\16-constraint-OK.asn1" />
     <None Include="asn\17-tags-OK.asn1" />
     <None Include="asn\18-class-OK.asn1" />
     <None Include="asn\20-constr-OK.asn1" />

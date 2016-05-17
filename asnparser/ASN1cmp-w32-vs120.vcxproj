@@ -151,7 +151,10 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
     </ClCompile>
-    <ClCompile Include="asn_grammar.tab.c" />
+    <ClCompile Include="asn_grammar.tab.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
+    </ClCompile>
     <ClCompile Include="asn_lex.cxx" />
     <ClCompile Include="asn_ref_grammar.cxx" />
     <ClCompile Include="asn_ref_lex.cxx" />
@@ -203,6 +206,7 @@
     </Bison>
   </ItemGroup>
   <ItemGroup>
+    <None Include="ASN.1.bnf" />
     <None Include="asn\ASN.asn" />
     <None Include="asn\bug-001.asn" />
     <None Include="asn\ISO8823-PRESENTATION.asn" />
@@ -210,6 +214,7 @@
     <None Include="asn\Product.asn" />
     <None Include="asn\Shop.asn" />
     <None Include="asn_grammar.output" />
+    <None Include="asn_grammar.tab.i" />
     <None Include="asn_ref_grammar.out" />
   </ItemGroup>
   <ItemGroup>

@@ -17,7 +17,6 @@
   <ItemGroup>
     <ClCompile Include="getopt.c" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="yyerror.c" />
     <ClCompile Include="asn_lex.cxx">
       <Filter>out</Filter>
     </ClCompile>
@@ -27,10 +26,11 @@
     <ClCompile Include="asn_ref_grammar.cxx">
       <Filter>out</Filter>
     </ClCompile>
-    <ClCompile Include="asn_grammar.code.c">
+    <ClCompile Include="asn_grammar.tab.c">
       <Filter>out</Filter>
     </ClCompile>
-    <ClCompile Include="asn_grammar.tab.c">
+    <ClCompile Include="yyerror.c" />
+    <ClCompile Include="asn_grammar.code.c">
       <Filter>out</Filter>
     </ClCompile>
   </ItemGroup>
@@ -74,6 +74,12 @@
       <Filter>out</Filter>
     </None>
     <None Include="asn_grammar.output">
+      <Filter>out</Filter>
+    </None>
+    <None Include="ASN.1.bnf">
+      <Filter>bnf</Filter>
+    </None>
+    <None Include="asn_grammar.tab.i">
       <Filter>out</Filter>
     </None>
   </ItemGroup>

@@ -495,9 +495,6 @@
     <None Include="asn\37-indirect-choice-OK.asn1">
       <Filter>asn</Filter>
     </None>
-    <None Include="asn\16-constraint-OK.asn1.FAIL">
-      <Filter>asn</Filter>
-    </None>
     <None Include="asn\18-class-OK.asn1">
       <Filter>asn</Filter>
     </None>
@@ -505,6 +502,9 @@
       <Filter>asn1c</Filter>
     </None>
     <None Include="asn\20-constr-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\16-constraint-OK.asn1">
       <Filter>asn</Filter>
     </None>
   </ItemGroup>
