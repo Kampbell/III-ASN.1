@@ -23,14 +23,17 @@
     <ClCompile Include="asn_ref_lex.cxx">
       <Filter>out</Filter>
     </ClCompile>
-    <ClCompile Include="asn_ref_grammar.cxx">
-      <Filter>out</Filter>
-    </ClCompile>
     <ClCompile Include="asn_grammar.tab.c">
       <Filter>out</Filter>
     </ClCompile>
     <ClCompile Include="yyerror.c" />
     <ClCompile Include="asn_grammar.code.c">
+      <Filter>out</Filter>
+    </ClCompile>
+    <ClCompile Include="asn_ref_grammar.code.c">
+      <Filter>out</Filter>
+    </ClCompile>
+    <ClCompile Include="asn_ref_grammar.tab.c">
       <Filter>out</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,10 +47,10 @@
     <ClInclude Include="asn_ref_lex.h">
       <Filter>out</Filter>
     </ClInclude>
-    <ClInclude Include="asn_ref_grammar.h">
+    <ClInclude Include="asn_grammar.tab.h">
       <Filter>out</Filter>
     </ClInclude>
-    <ClInclude Include="asn_grammar.tab.h">
+    <ClInclude Include="asn_ref_grammar.tab.h">
       <Filter>out</Filter>
     </ClInclude>
   </ItemGroup>
@@ -70,9 +73,6 @@
     <None Include="asn\ASN.asn">
       <Filter>asn</Filter>
     </None>
-    <None Include="asn_ref_grammar.out">
-      <Filter>out</Filter>
-    </None>
     <None Include="asn_grammar.output">
       <Filter>out</Filter>
     </None>
@@ -82,16 +82,17 @@
     <None Include="asn_grammar.tab.i">
       <Filter>out</Filter>
     </None>
+    <None Include="asn_ref_grammar.tab.i">
+      <Filter>out</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <BtYacc Include="asn_grammar.bty">
       <Filter>bnf</Filter>
     </BtYacc>
-  </ItemGroup>
-  <ItemGroup>
-    <Bison Include="asn_ref_grammar.y">
+    <BtYacc Include="asn_ref_grammar.bty">
       <Filter>bnf</Filter>
-    </Bison>
+    </BtYacc>
   </ItemGroup>
   <ItemGroup>
     <Flex Include="asn_lex.l">

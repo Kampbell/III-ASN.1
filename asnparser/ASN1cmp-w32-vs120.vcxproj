@@ -156,7 +156,14 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="asn_lex.cxx" />
-    <ClCompile Include="asn_ref_grammar.cxx" />
+    <ClCompile Include="asn_ref_grammar.code.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="asn_ref_grammar.tab.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
+    </ClCompile>
     <ClCompile Include="asn_ref_lex.cxx" />
     <ClCompile Include="getopt.c" />
     <ClCompile Include="main.cpp">
@@ -170,40 +177,11 @@
   <ItemGroup>
     <ClInclude Include="asn_grammar.tab.h" />
     <ClInclude Include="asn_lex.h" />
-    <ClInclude Include="asn_ref_grammar.h" />
+    <ClInclude Include="asn_ref_grammar.tab.h" />
     <ClInclude Include="asn_ref_lex.h" />
     <ClInclude Include="FlexLexer.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="unixstd.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <!--
-    <Bison Include="asn_grammar.y">
-      <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
-      <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</HeaderFile>
-      <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).h</DefinesFile>
-      <Report Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">all</Report>
-      <ReportFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).out</ReportFile>
-      <NoLines Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</NoLines>
-      <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).h</DefinesFile>
-      <Report Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">all</Report>
-      <ReportFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).out</ReportFile>
-      <NoLines Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</NoLines>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </Bison>
-    -->
-    <Bison Include="asn_ref_grammar.y">
-      <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
-      <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).h</DefinesFile>
-      <Report Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">all</Report>
-      <ReportFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).out</ReportFile>
-      <NoLines Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</NoLines>
-      <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).h</DefinesFile>
-      <Report Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">all</Report>
-      <ReportFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).out</ReportFile>
-      <NoLines Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</NoLines>
-    </Bison>
   </ItemGroup>
   <ItemGroup>
     <None Include="ASN.1.bnf" />
@@ -215,10 +193,26 @@
     <None Include="asn\Shop.asn" />
     <None Include="asn_grammar.output" />
     <None Include="asn_grammar.tab.i" />
-    <None Include="asn_ref_grammar.out" />
+    <None Include="asn_ref_grammar.tab.i" />
   </ItemGroup>
   <ItemGroup>
-    <BtYacc Include="asn_grammar.bty" />
+    <BtYacc Include="asn_grammar.bty">
+      <Verbose Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</Verbose>
+      <NoLines Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</NoLines>
+      <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </OutputFile>
+      <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </DefinesFile>
+    </BtYacc>
+    <BtYacc Include="asn_ref_grammar.bty">
+      <FilePrefix Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </FilePrefix>
+      <NamePrefix Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">id</NamePrefix>
+      <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </OutputFile>
+      <Verbose Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</Verbose>
+      <NoLines Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</NoLines>
+    </BtYacc>
   </ItemGroup>
   <ItemGroup>
     <Flex Include="asn_lex.l">
