@@ -1,0 +1,20 @@
+Shop DEFINITIONS AUTOMATIC TAGS ::=
+BEGIN
+	IMPORTS Item, Address FROM Items; 
+
+PurchaseOrder	::= SEQUENCE {
+	dateOfOrder       DATE,
+	name              UTF8String (SIZE(3..50))DEFAULT "N/A",
+	address           Address,        -- imported
+	phone             Phone OPTIONAL, -- defined below
+	items             ListOfItems     -- defined below via imported Item
+ } 
+
+ListOfItems		::= SEQUENCE(SIZE(1..100)) OF Item
+Phone			::= VisibleString -- (PATTERN "\d#3-\d#3-\d#4")
+
+myName UTF8String ::= "abcde"
+myPhone Phone     ::= "333-444-5555"
+-- myFavorite Item   ::= {id color:green, quantity crate, unitPrice 1.99} 
+-- myAddr1 Address   ::= {street "1st Ave", city "Somerset", state "NJ", zip "08873"} 
+END 

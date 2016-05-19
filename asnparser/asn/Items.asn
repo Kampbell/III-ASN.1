@@ -1,0 +1,27 @@
+Items DEFINITIONS AUTOMATIC TAGS ::=  
+BEGIN
+ -- By default, all defined types (Item and Address) are exported 
+Item		::= SEQUENCE { 
+	id			CHOICE {	-- id alternatives – code, url or color
+					code     INTEGER (0..MAX), 
+					url      VisibleString, 
+					color    ENUMERATED {black, blue, ... ,-- extended --  green, red} 
+				} DEFAULT code:9999, 
+	quantity       INTEGER {single(1), dozen(12), crate(36)}, 
+	options        BIT STRING DEFAULT '101100011'B, 
+--	unitPrice      REAL ( 1.00 .. 9999.00 ),
+	unitPrice      INTEGER ( 1 .. 9999 ),
+	...  --, extension allowed below this line
+/*
+	[[ isTaxable   BOOLEAN DEFAULT FALSE ]], -- added to Item in v.2 
+	[[ voltage     INTEGER (110 | 220) OPTIONAL ]]-- added in v.3 
+*/
+}
+
+Address     ::= SEQUENCE { 
+	street          VisibleString (SIZE (5 .. 50)),
+	city            VisibleString (ALL EXCEPT "Springfield"), 
+	state           VisibleString (SIZE(2) ^ FROM ("A".."Z")),
+	zip             NumericString (SIZE(5 | 9)) 
+} 
+END

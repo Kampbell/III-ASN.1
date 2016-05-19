@@ -1,0 +1,53 @@
+--
+-- Copyright (c) 2001 Institute for Information Industry, Taiwan, Republic of China 
+-- (http://www.iii.org.tw/iiia/ewelcome.htm)
+--
+-- Permission to copy, use, modify, sell and distribute this software
+-- is granted provided this copyright notice appears in all copies.
+-- This software is provided "as is" without express or implied
+-- warranty, and with no claim as to its suitability for any purpose.
+--
+
+TEST
+DEFINITIONS ::= 
+BEGIN
+
+
+Choice1 ::= CHOICE {
+    name 	VisibleString,
+    nobody 	NULL
+}
+
+Choice2 ::= [2] CHOICE {
+    name 	VisibleString,
+    nobody 	NULL
+}
+
+Choice3 ::= [2] CHOICE {
+    name	[0]	VisibleString,
+    nobody	[1]	NULL
+}
+
+Choice4 ::= CHOICE {
+   f2	CHOICE {
+	   f3 BOOLEAN,
+	   f4 INTEGER
+   },
+   f1	NULL
+}
+
+S1 ::= SEQUENCE OF INTEGER
+
+S2 ::= SET OF INTEGER
+
+S3 ::= SEQUENCE {
+  age INTEGER,
+  single BOOLEAN
+}
+
+S4 ::= SEQUENCE {
+	name	VisibleString,
+	attrib	Choice4
+}
+
+END
