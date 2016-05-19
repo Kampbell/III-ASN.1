@@ -295,7 +295,7 @@ public:
 	Constraint(const Constraint& other);
 
 	void print(ostream&) const;
-	void PrintElements(ostream&) const;
+	void printElements(ostream&) const;
 
 	bool isExtendable() const {
 		return extendable;
@@ -321,9 +321,9 @@ public:
 	ValueSetPtr getValueSetFromValueSetField(const string& field) const;
 	ConstraintPtr getObjectSetFromObjectField(const string& field) const;
 	ConstraintPtr getObjectSetFromObjectSetField(const string& field) const;
-	const SizeConstraintElement* getSizeConstraint() const;
-	const FromConstraintElement* getFromConstraint() const;
-	const SubTypeConstraintElement* getSubTypeConstraint() const;
+	virtual const SizeConstraintElement* getSizeConstraint() const;
+	virtual const FromConstraintElement* getFromConstraint() const;
+	virtual const SubTypeConstraintElement* getSubTypeConstraint() const;
 
 	void getCharacterSet(string& characterSet) const;
 
@@ -422,6 +422,27 @@ protected:
 	ValuePtr lower;
 	ValuePtr upper;
 };
+
+class PatternValueConstraintElement : public ConstraintElementBase {
+public:
+	PatternValueConstraintElement(const ValuePtr& val);
+	~PatternValueConstraintElement();
+	void print(ostream&) const;
+
+	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
+	virtual void getConstraint(string& str) const;
+
+	const ValuePtr& getPattern() const {
+		return pattern;
+	}
+	virtual bool hasPERInvisibleConstraint(const Parameter&) const;
+
+protected:
+	const ValuePtr pattern;
+  private:
+	PatternValueConstraintElement& operator = (const PatternValueConstraintElement&);
+};
+
 
 
 
@@ -1541,6 +1562,18 @@ class ObjectIdentifierValue : public ValueBase {
 public:
 //	ObjectIdentifierValue(const string& newVal);
 	ObjectIdentifierValue(ObjIdComponentList& newVal);
+	virtual void generateCplusplus(ostream& fwd, ostream&hdr, ostream& cxx, ostream& inl) const;
+	virtual void generateConst(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
+	void print(ostream&) const;
+	const ObjIdComponentList& getComponents() const { return value; }
+protected:
+	ObjIdComponentList value;
+};
+
+class RelativeOIDTypeValue : public ValueBase {
+public:
+//	RelativeOIDTypeValue(const string& newVal);
+	RelativeOIDTypeValue(ObjIdComponentList& newVal);
 	virtual void generateCplusplus(ostream& fwd, ostream&hdr, ostream& cxx, ostream& inl) const;
 	virtual void generateConst(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	void print(ostream&) const;
@@ -2837,11 +2870,9 @@ public:
 
 	void print(ostream&) const;
 
-	Tag::Mode getDefaultTagMode() const {
-		return defaultTagMode;
-	}
+	Tag::Mode getDefaultTagMode() const { return defaultTagMode; }
 
-	void addIdentifier(string* name, int idType);
+	void addIdentifier(const string* name, int idType);
 	void addImportedIdentifiers(StringList& imports, const string& moduleName);
 	int  getIdentifierType(const string& id);
 
@@ -3001,9 +3032,9 @@ public:
 	ParameterList*			dummyParameters = nullptr;
 	TypePtr					valueTypeContext;
 	vector<string>			removeList;
-	int						identifierTokenContext;// = IDENTIFIER; chicken/egg problem
-	int						referenceTokenContext /* = MODULEREFERENCE */;
-	int						nullTokenContext;// = NULL_TYPE; chicken/egg problem
+	int						identifierTokenContext;			// = IDENTIFIER; chicken/egg problem
+	int						referenceTokenContext;			// = MODULEREFERENCE
+	int						nullTokenContext;				// = NULL_TYPE; chicken/egg problem
 	int						braceTokenContext				= '{';
 	int						inOIDContext					= FALSE;
 	int						inMacroContext					= FALSE;
@@ -3014,6 +3045,7 @@ public:
 	const ObjectClassBase*	informationFromObjectContext	= nullptr;
 	int						parsingConstructedType			= FALSE;
 	int						inTopParser						= TRUE;
+	int						inOIDLiteral					= FALSE;	// if within a { . . . } OID value
 };
 
 #endif

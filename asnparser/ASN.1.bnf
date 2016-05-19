@@ -21,7 +21,7 @@ DefinitiveOID 				::= "{" DefinitiveObjIdComponentList "}";
 
 DefinitiveOIDandIRI 		::= DefinitiveOID IRIValue ;
 
-DefinitiveObjIdComponentList 	::= DefinitiveObjIdComponent | DefinitiveObjIdComponent DefinitiveObjIdComponentList ;
+DefinitiveObjIdComponentList::= DefinitiveObjIdComponent | DefinitiveObjIdComponent DefinitiveObjIdComponentList ;
 
 DefinitiveObjIdComponent 	::= NameForm | DefinitiveNumberForm | DefinitiveNameAndNumberForm ;
 
@@ -698,70 +698,37 @@ SubtypeElements 	::=
 	| RecurrenceRange
 ;
 
-SingleValue 		::= Value ;
-
-ContainedSubtype 	::= Includes Type ;
-
-Includes 		::= INCLUDES | empty ;
-
-ValueRange 		::= LowerEndpoint ".." UpperEndpoint ;
-
-LowerEndpoint 		::= LowerEndValue | LowerEndValue "<" ;
-
-UpperEndpoint 		::= UpperEndValue | "<" UpperEndValue ;
-
-LowerEndValue 		::= Value | MIN ;
-
-UpperEndValue 		::= Value | MAX ;
-
-SizeConstraint 		::= SIZE Constraint ;
-
-TypeConstraint 		::= Type ;
-
-PermittedAlphabet 	::= FROM Constraint ;
-
-InnerTypeConstraints 	::=
-WITH COMPONENT SingleTypeConstraint
-| WITH COMPONENTS MultipleTypeConstraints
-SingleTypeConstraint	::= Constraint
-;
-
+SingleValue 			::= Value ;
+ContainedSubtype 		::= Includes Type ;
+Includes 				::= INCLUDES | empty ;
+ValueRange 				::= LowerEndpoint ".." UpperEndpoint ;
+LowerEndpoint 			::= LowerEndValue | LowerEndValue "<" ;
+UpperEndpoint 			::= UpperEndValue | "<" UpperEndValue ;
+LowerEndValue 			::= Value | MIN ;
+UpperEndValue 			::= Value | MAX ;
+SizeConstraint 			::= SIZE Constraint ;
+TypeConstraint 			::= Type ;
+PermittedAlphabet 		::= FROM Constraint ;
+InnerTypeConstraints 	::= WITH COMPONENT SingleTypeConstraint	| WITH COMPONENTS MultipleTypeConstraints;
+SingleTypeConstraint	::= Constraint;
 MultipleTypeConstraints ::= FullSpecification | PartialSpecification ;
-
-FullSpecification 	::= "{" TypeConstraints "}" ;
-
+FullSpecification 		::= "{" TypeConstraints "}" ;
 PartialSpecification 	::= "{" "..." "," TypeConstraints "}" ;
-
-TypeConstraints 	::= NamedConstraint | NamedConstraint "," TypeConstraints ;
-
-NamedConstraint 	::= identifier ComponentConstraint ;
-
+TypeConstraints 		::= NamedConstraint | NamedConstraint "," TypeConstraints ;
+NamedConstraint 		::= identifier ComponentConstraint ;
 ComponentConstraint 	::= ValueConstraint PresenceConstraint ;
-
-ValueConstraint 	::= Constraint | empty ;
-
-PresenceConstraint 	::= PRESENT | ABSENT | OPTIONAL | empty ;
-
-PatternConstraint 	::= PATTERN Value ;
-
-PropertySettings 	::= SETTINGS simplestring ;
-
+ValueConstraint 		::= Constraint | empty ;
+PresenceConstraint 		::= PRESENT | ABSENT | OPTIONAL | empty ;
+PatternConstraint 		::= PATTERN Value ;
+PropertySettings 		::= SETTINGS simplestring ;
 PropertySettingsList 	::= PropertyAndSettingPair | PropertySettingsList PropertyAndSettingPair ;
-
 PropertyAndSettingPair 	::= PropertyName "=" settingName ;
-
-PropertyName 		::= psname ;
-
-SettingName 		::= psname ;
-
-DurationRange 		::= ValueRange ;
-
-TimePointRange 		::= ValueRange ;
-
-RecurrenceRange 	::= ValueRange ;
-
-ExceptionSpec 		::= "!" ExceptionIdentification | empty ;
-
+PropertyName 			::= psname ;
+SettingName 			::= psname ;
+DurationRange 			::= ValueRange ;
+TimePointRange 			::= ValueRange ;
+RecurrenceRange 		::= ValueRange ;
+ExceptionSpec 			::= "!" ExceptionIdentification | empty ;
 ExceptionIdentification	::= SignedNumber | DefinedValue | Type ":" Value;
 
 DefinedObjectClass 			::= ExternalObjectClassReference | objectclassreference | UsefulObjectClassReference;

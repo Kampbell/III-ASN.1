@@ -35,20 +35,18 @@
 
 #define YY_NEVER_INTERACTIVE 1
 
-#include "asn_ref_grammar.h"
+#include "asn_ref_grammar.tab.h"
 
 #define FALSE 0
 #define TRUE  1
 
 #include <ctype.h>
 #define yylval idlval
-#define yytext idtext
 extern unsigned lineNumber;
 
 int InParameterListContext = FALSE;
 
 extern int LexEcho;
-#define YYDEBUG 1
 #define YY_USER_ACTION if (LexEcho) std::cout << idtext << std::flush;
 
 extern "C" int yywrap() { return 1; }
@@ -56,11 +54,14 @@ extern "C" int yywrap() { return 1; }
 int braceCount = 0;
 int parenthesisCount = 0;
 
-#define YY_DECL int idlex(ParserContext* context)
+#define YY_DECL int yylex(YYSTYPE* yylval,YYLTYPE * yylloc, ParserContext* context)
 
 %}
 
 %x multiline_comment comment_line brace parenthesis square_bracket
+
+digit [0-9]
+integer {digit}+
 
 %%
 "::="								{ return ASSIGNMENT; }
@@ -117,16 +118,21 @@ int parenthesisCount = 0;
 "NumericString"                    { return NumericString; }
 "OBJECT"                           { return OBJECT; }
 "OCTET"                            { return OCTET; }
+"OID-IRI"							{ return OID_IRI; }
 "OF"                               { return OF_t; }
 "OPTIONAL"                         { return OPTIONAL_t; }
+"PATTERN"							{ return PATTERN; }
 "PDV"                              { return PDV; }
 "PLUS-INFINITY"                    { return PLUS_INFINITY; }
 "PRESENT"                          { return PRESENT; }
 "PrintableString"                  { return PrintableString; }
 "PRIVATE"                          { return PRIVATE; }
 "REAL"                             { return REAL; }
+"RELATIVE-OID"						{ return RELATIVE_OID; }
+"RELATIVE-OID-IRI"					{ return RELATIVE_OID_IRI; }
 "SEQUENCE"                         { return SEQUENCE; }
 "SET"                              { return SET; }
+"SETTINGS"							{ return SETTINGS; }
 "SIZE"                             { return SIZE_t; }
 "STRING"                           { return STRING; }
 "SYNTAX"                           { return SYNTAX; }
@@ -271,13 +277,14 @@ int parenthesisCount = 0;
 
 "^"  { return '^'; }
 
-"'"(\ 01)*"\'B" {
+['][01]*[']B {
    return BSTRING;
 }
 
-"'"(\ A-F0-9)*"'H" {
+['][0-9a-zA-Z]*[']H {
    return HSTRING;
 }
+
 
 (\"[^\"]*\")(\"[^\"]*\")*  {
 #ifdef __sun
@@ -290,27 +297,27 @@ int parenthesisCount = 0;
     return CSTRING;
   }
 
-[0-9][0-9]*  {
+{integer} {
     const char * ptr = yytext;
-    yylval.ival = 0;
+    yylval->ival = 0;
     while (*ptr != '\0')
-      yylval.ival = yylval.ival * 10 + *ptr++ - '0';
+      yylval->ival = yylval->ival * 10 + *ptr++ - '0';
     return INTEGER;
-  }
+}
 
 "&"([a-zA-Z][a-zA-Z0-9_-]*[a-zA-Z0-9_]) {
-    yylval.sval = new std::string(yytext);
+    yylval->sval = new std::string(yytext);
     return FIELDREFERENCE;
-  }
+}
 
 ([a-z]|([a-z][a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {
-    yylval.sval = new std::string(yytext);
+    yylval->sval = new std::string(yytext);
     return IDENTIFIER;
-  }
+}
 
 
 ([A-Z]|([A-Z][A-Z0-9_-]*[A-Z0-9_]))  {
-    yylval.sval = new std::string(yytext);
+    yylval->sval = new std::string(yytext);
 	int result;
 	if (context->module)
 	  if ((result = context->module->getIdentifierType(yytext)) == OBJECTCLASSREFERENCE)
@@ -319,15 +326,15 @@ int parenthesisCount = 0;
 }
 
 ([A-Z]|([A-Z][a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {
-    yylval.sval = new std::string(yytext);
+    yylval->sval = new std::string(yytext);
     return TYPEREFERENCE;
-  }
+}
 
 [ \t\r]  { }
 
 \n {
     lineNumber++;
-  }
+}
 
 
 .  { std::cerr << StdError(Fatal) << "unknown token " << yytext << std::endl; }

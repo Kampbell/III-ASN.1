@@ -85,12 +85,11 @@ extern "C" {
 
 #if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
 /* Default: YYLTYPE is the text position type. */
-typedef struct YYLTYPE
-{
-    int first_line;
-    int first_column;
-    int last_line;
-    int last_column;
+typedef struct YYLTYPE {
+	int first_line;
+	int first_column;
+	int last_line;
+	int last_column;
 } YYLTYPE;
 #define YYLTYPE_IS_DECLARED 1
 #endif
@@ -162,10 +161,9 @@ ParserContext::~ParserContext() {
 int yyparse(yyscan_t scanner, ParserContext* context);
 
 int idparse (ParserContext* context, const string& path);
-int iderror(ParserContext *, const string& path, char const *str) {
+void iderror(YYLTYPE location, ParserContext * context, const string& path, char const *str) {
 //  extern char * yytext;
-	clog << "First  stage " << StdError(Fatal) << str << " near token \"" << idtext <<"\"" << nl;
-	return 0;
+	clog << "First  stage " << StdError(Fatal) << str << " at " << location.first_line << ":" << location.first_column << endl;
 }
 void  yyerror(YYLTYPE location, yyscan_t scanner, ParserContext * context, char const *str) {
 //int  yyerror(yyscan_t scanner, ParserContext * context, char const *str) {
@@ -908,15 +906,16 @@ Constraint::Constraint(const Constraint& other)
 
 void Constraint::print(ostream& strm) const {
 	strm << '(';
-	PrintElements(strm);
+	printElements(strm);
 	strm << ')';
 }
 
-void PrintVector(ostream& strm ,const ConstraintElementVector& elements, char delimiter) {
+void printVector(ostream& strm ,const ConstraintElementVector& elements, char delimiter) {
 	ConstraintElementVector::const_iterator i = elements.begin(), e = elements.end();
 
 	if (i != e) {
-		(*i)->print(strm);
+		if (*i)
+			(*i)->print(strm);
 		++i;
 	}
 
@@ -926,9 +925,9 @@ void PrintVector(ostream& strm ,const ConstraintElementVector& elements, char de
 	}
 }
 
-void Constraint::PrintElements(ostream& strm) const {
+void Constraint::printElements(ostream& strm) const {
 
-	PrintVector(strm, standard, '|');
+	printVector(strm, standard, '|');
 	if (extendable) {
 		strm << tab;
 		if (standard.size() > 0)
@@ -938,7 +937,7 @@ void Constraint::PrintElements(ostream& strm) const {
 			strm << ',';
 		strm << ' ';
 
-		PrintVector(strm, extensions, '|');
+		printVector(strm, extensions, '|');
 		strm << bat;
 	}
 }
@@ -1216,7 +1215,7 @@ ElementListConstraintElement::ElementListConstraintElement(auto_ptr<ConstraintEl
 }
 
 void ElementListConstraintElement::print(ostream& strm) const {
-	PrintVector(strm, elements, '^');
+	printVector(strm, elements, '^');
 }
 
 
@@ -1481,6 +1480,59 @@ bool ValueRangeConstraintElement::getCharacterSet(string& characterSet) const {
 	return false;
 }
 
+/////////////////////////////////////////////////////////
+
+PatternValueConstraintElement::PatternValueConstraintElement(const ValuePtr& val)
+	: pattern(val) {
+}
+
+PatternValueConstraintElement::~PatternValueConstraintElement() {
+}
+
+
+void PatternValueConstraintElement::print(ostream& strm) const {
+	strm << *pattern;
+}
+
+
+void PatternValueConstraintElement::generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
+	if (dynamic_cast<const IntegerValue*>(pattern.get())) {
+		cxx << fn << ", ";
+		pattern->generateCplusplus(fwd, hdr, cxx, inl);
+		cxx << ", ";
+		pattern->generateCplusplus(fwd, hdr, cxx, inl);
+		cxx << ");" << nl;
+		return;
+	}
+
+	if (dynamic_cast<const CharacterStringValue*>(pattern.get())) {
+		cxx << fn << ", ";
+		pattern->generateCplusplus(fwd, hdr, cxx, inl);
+		cxx << ");" << nl;
+		return;
+	}
+
+	cerr << StdError(Warning) << "Unsupported constraint type, ignoring." << endl;
+}
+
+void PatternValueConstraintElement::getConstraint(string& str) const {
+	stringstream strm;
+
+	if (dynamic_cast<const IntegerValue*>(pattern.get())) {
+		strm << *pattern << ", " << *pattern ;
+		str += strm.str();
+	} else  if (dynamic_cast<const CharacterStringValue*>(pattern.get())) {
+		strm << *pattern;
+		str += strm.str();
+	}
+}
+
+bool PatternValueConstraintElement::hasPERInvisibleConstraint(const Parameter& ) const {
+	return false;
+}
+
+
+/////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////
 
@@ -1634,6 +1686,8 @@ int FromConstraintElement::getRange(ostream& cxx) const {
 	cxx << min << ", " << max;
 	return max-min;
 }
+
+/////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////
 
@@ -5479,9 +5533,6 @@ void CharacterStringValue::getValue(string& v) const {
 
 
 /////////////////////////////////////////////////////////
-
-
-
 ObjectIdentifierValue::ObjectIdentifierValue(ObjIdComponentList& newVal) {
 	value.swap(newVal);
 }
@@ -5506,6 +5557,47 @@ void ObjectIdentifierValue::generateConst(ostream& fwd, ostream& hdr, ostream& c
 }
 
 void ObjectIdentifierValue::print(ostream& strm) const {
+	printBase(strm);
+	if (value.empty())
+		strm << "empty object identifier";
+	else {
+		strm << " {";
+		ObjIdComponentList::const_iterator it;
+		for (it = getComponents().cbegin(); it != getComponents().cend(); ++it) {
+			strm << *it;
+			if (distance(getComponents().cbegin(), it) + 1< getComponents().size())
+				strm << ' ';
+		}
+		strm << "}";
+	}
+	strm << nl;
+}
+
+/////////////////////////////////////////////////////////
+RelativeOIDTypeValue::RelativeOIDTypeValue(ObjIdComponentList& newVal) {
+	value.swap(newVal);
+}
+
+
+void RelativeOIDTypeValue::generateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
+	ObjIdComponentList::const_iterator it;
+	for (it = getComponents().cbegin(); it != getComponents().cend(); ++it) {
+		cxx << it->getNumberForm().getNumber();
+		if (distance(getComponents().cbegin(), it) + 1< getComponents().size())
+			cxx << ", ";
+	}
+}
+
+void RelativeOIDTypeValue::generateConst(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
+	string cppName = makeCppName(getName());
+	hdr << "extern " << dllMacroAPI() << " const ASN1::OBJECT_IDENTIFIER " << cppName << ";" << nl << nl;
+	cxx << "const " << dllMacroAPI() << " ASN1::OBJECT_IDENTIFIER " << cppName  << " {" ;
+	stringstream dummy;
+	generateCplusplus(fwd, hdr, cxx, dummy);
+	cxx << "};" << nl << nl;
+}
+
+void RelativeOIDTypeValue::print(ostream& strm) const {
 	printBase(strm);
 	if (value.empty())
 		strm << "empty object identifier";
@@ -5710,7 +5802,7 @@ void ModuleDefinition::setDefinitiveObjId(StringList& id) {
 	definitiveId.swap(id);
 }
 
-void ModuleDefinition::addIdentifier(string* name, int idType) {
+void ModuleDefinition::addIdentifier(const string* name, int idType) {
 	identifiers[*name]= idType;
 	delete name;
 }
@@ -6881,10 +6973,10 @@ void FixedTypeValueFieldSpec::generate_value_type(ostream& os) const {
 	os << "// value_type for " << name << "--" << identifier <<  *type << endl;
 }
 void FixedTypeValueFieldSpec::generateTypeField(const string& templatePrefix,
-	const string& classNameString,
-	const TypeBase* keyType,
-	const string& objClassName,
-	ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
+		const string& classNameString,
+		const TypeBase* keyType,
+		const string& objClassName,
+		ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
 	cxx << "// value_type for " << name << "--" << identifier <<  *type << endl;
 }
 
@@ -6953,10 +7045,10 @@ void FixedTypeValueSetFieldSpec::generate_value_type(ostream& os) const {
 	os << "// value_type for " << name << "--" << identifier <<  *type << endl;
 }
 void FixedTypeValueSetFieldSpec::generateTypeField(const string& templatePrefix,
-	const string& classNameString,
-	const TypeBase* keyType,
-	const string& objClassName,
-	ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
+		const string& classNameString,
+		const TypeBase* keyType,
+		const string& objClassName,
+		ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
 	cxx << "// value_type for " << name << "--" << identifier <<  *type << endl;
 }
 
@@ -7050,10 +7142,10 @@ void VariableTypeValueFieldSpec::generate_value_type(ostream& os) const {
 	os << "// value_type for " << name << "--" << identifier <<  fieldName << endl;
 }
 void VariableTypeValueFieldSpec::generateTypeField(const string& templatePrefix,
-	const string& classNameString,
-	const TypeBase* keyType,
-	const string& objClassName,
-	ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
+		const string& classNameString,
+		const TypeBase* keyType,
+		const string& objClassName,
+		ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
 	cxx << "// value_type for " << name << "--" << identifier <<  fieldName << endl;
 }
 ////////////////////////////////////////////////////////////////
@@ -7122,10 +7214,10 @@ void VariableTypeValueSetFieldSpec::generate_value_type(ostream& os) const {
 	os << "// value_type for " << name << "--" << identifier <<  fieldName << endl;
 }
 void VariableTypeValueSetFieldSpec::generateTypeField(const string& templatePrefix,
-	const string& classNameString,
-	const TypeBase* keyType,
-	const string& objClassName,
-	ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
+		const string& classNameString,
+		const TypeBase* keyType,
+		const string& objClassName,
+		ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
 	cxx << "// value_type for " << name << "--" << identifier <<  fieldName << endl;
 }
 /////////////////////////////////////////////////////////////////////////////////
@@ -7186,10 +7278,10 @@ void ObjectFieldSpec::generate_value_type(ostream& os) const {
 	os << "// value_type for " << name << "--" << identifier <<  objectClass << endl;
 }
 void ObjectFieldSpec::generateTypeField(const string& templatePrefix,
-	const string& classNameString,
-	const TypeBase* keyType,
-	const string& objClassName,
-	ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
+										const string& classNameString,
+										const TypeBase* keyType,
+										const string& objClassName,
+										ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const {
 	cxx << "// value_type for " << name << "--" << identifier <<  objectClass << endl;
 }
 /////////////////////////////////////////////////////////////////////////////////
@@ -7368,7 +7460,8 @@ bool ObjectClassDefn::VerifyDefaultSyntax(FieldSettingList* fieldSettings) const
 		for (fieldno = 0; fieldno < fieldSpecs->size(); ++fieldno) {
 			const string& fieldName = (*fieldSpecs)[fieldno]->getName();
 			if (fieldName == settingName) {
-				found = true;break;
+				found = true;
+				break;
 			}
 		}
 		if (!found) {
@@ -7379,17 +7472,17 @@ bool ObjectClassDefn::VerifyDefaultSyntax(FieldSettingList* fieldSettings) const
 	}
 	return true;
 #ifdef TBD
-		if (fieldName == settingName) {
-			fieldno++;
-			settingno++;
-			continue;
-		} else if ((*fieldSpecs)[fieldno]->isOptional() || (*fieldSpecs)[fieldno]->hasDefault()) {
-			fieldno++;
-			continue;
-		} else {
-			cerr << StdError(Fatal) << "Unrecognized field name : " << (*fieldSettings)[settingno]->getName() <<  nl;
-			exit(1);
-		}
+	if (fieldName == settingName) {
+		fieldno++;
+		settingno++;
+		continue;
+	} else if ((*fieldSpecs)[fieldno]->isOptional() || (*fieldSpecs)[fieldno]->hasDefault()) {
+		fieldno++;
+		continue;
+	} else {
+		cerr << StdError(Fatal) << "Unrecognized field name : " << (*fieldSettings)[settingno]->getName() <<  nl;
+		exit(1);
+	}
 #endif
 }
 TokenGroupPtr ObjectClassDefn::getWithSyntax() const {
@@ -8366,7 +8459,7 @@ void InformationObjectSetDefn::print(ostream& strm) const {
 	}
 
 	strm << '{';
-	rep->PrintElements(strm);
+	rep->printElements(strm);
 	strm << "}" << nl;
 }
 
@@ -8802,7 +8895,7 @@ void ValueSetDefn::Intersect(ValueSetPtr& other) {
 
 void ValueSetDefn::print(ostream& strm) const {
 	strm << '{';
-	PrintVector(strm, *elements, '|');
+	printVector(strm, *elements, '|');
 	strm << '}';
 }
 

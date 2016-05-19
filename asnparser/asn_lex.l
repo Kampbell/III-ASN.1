@@ -53,30 +53,14 @@
 #include "asn_grammar.tab.h"
 #include <ctype.h>
 
-#if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
-/* Default: YYLTYPE is the text position type. */
-typedef struct YYLTYPE
-{
-    int first_line;
-    int first_column;
-    int last_line;
-    int last_column;
-} YYLTYPE;
-#define YYLTYPE_IS_DECLARED 1
-#endif
-
-
 extern unsigned lineNumber;
-
 extern int LexEcho;
+extern const char *const yyname[];
 
 #define YY_NEVER_INTERACTIVE 1
 
-#define YYDEBUG 1
-
-
 #define YY_HEADER_EXPORT_START_CONDITIONS 1
-#define YY_USER_ACTION if (LexEcho) std::cout << yytext << std::flush;
+//#define YY_USER_ACTION if (LexEcho) std::cout << yytext << std::flush;
 
 extern int yylex (YYSTYPE*,YYLTYPE*  ,yyscan_t, ParserContext*);
 #define YY_DECL int yylex(YYSTYPE* yylval_param, YYLTYPE* yylloc_param, yyscan_t yyscanner, ParserContext* context)
@@ -84,35 +68,6 @@ extern int yylex (YYSTYPE*,YYLTYPE*  ,yyscan_t, ParserContext*);
 #define YY_USER_ACTION yylloc->first_line = yylloc->last_line = yylineno; \
     yylloc->first_column = yycolumn; yylloc->last_column = yycolumn + yyleng - 1; \
     yycolumn += yyleng;
-
-static const char* SYMBOLS[] = {
-  "$end", "error", "$undefined", "MODULEREFERENCE",
-  "TYPEREFERENCE", "OBJECTCLASSREFERENCE", "VALUEREFERENCE",
-  "OBJECTREFERENCE", "OBJECTSETREFERENCE", "PARAMETERIZEDTYPEREFERENCE",
-  "PARAMETERIZEDOBJECTCLASSREFERENCE", "PARAMETERIZEDVALUEREFERENCE",
-  "PARAMETERIZEDOBJECTREFERENCE", "PARAMETERIZEDOBJECTSETREFERENCE",
-  "VALUESET_BRACE", "OBJECT_BRACE", "OBJECTSET_BRACE", "IDENTIFIER",
-  "BIT_IDENTIFIER", "OID_IDENTIFIER", "IMPORT_IDENTIFIER",
-  "fieldreference", "FieldReference", "TYPEFIELDREFERENCE",
-  "FIXEDTYPEVALUEFIELDREFERENCE", "VARIABLETYPEVALUEFIELDREFERENCE",
-  "FIXEDTYPEVALUESETFIELDREFERENCE", "VARIABLETYPEVALUESETFIELDREFERENCE",
-  "OBJECTFIELDREFERENCE", "OBJECTSETFIELDREFERENCE", "INTEGER", "CSTRING",
-  "BSTRING", "HSTRING", "BS_BSTRING", "BS_HSTRING", "ABSENT",
-  "ABSTRACT_SYNTAX", "ALL", "ANY", "APPLICATION", "ASSIGNMENT",
-  "AUTOMATIC", "BEGIN_t", "BIT", "BMPString", "BOOLEAN_t", "BY",
-  "CHARACTER", "CHOICE", "CLASS", "COMPONENT", "COMPONENTS", "CONSTRAINED",
-  "DEFAULT", "DEFINED", "DEFINITIONS", "EMBEDDED", "END", "ENUMERATED",
-  "EXCEPT", "EXPLICIT", "EXPORTS", "EXTERNAL", "FALSE_t", "FROM",
-  "GeneralString", "GraphicString", "IA5String", "TYPE_IDENTIFIER",
-  "IDENTIFIER_t", "IMPLICIT", "IMPORTS", "INCLUDES", "INSTANCE",
-  "INTEGER_t", "INTERSECTION", "ISO646String", "MACRO", "MAX", "MIN",
-  "MINUS_INFINITY", "NOTATION", "NULL_VALUE", "NULL_TYPE", "NumericString",
-  "OBJECT", "OCTET", "OF_t", "OPTIONAL_t", "PDV", "PLUS_INFINITY",
-  "PRESENT", "PrintableString", "PRIVATE", "REAL", "SEQUENCE", "SET",
-  "SIZE_t", "STRING", "SYNTAX", "T61String", "TAGS", "TeletexString",
-  "TRUE_t", "TYPE_t", "UNION", "UNIQUE", "UNIVERSAL", "UniversalString", "UTF8String",
-  "VideotexString", "VisibleString", "GeneralizedTime", "UTCTime", "VALUE",
-  "WITH", "ObjectDescriptor_t", "WORD_t", "OID_INTEGER"}; 
 
 extern "C" int yywrap(yyscan_t ) { return 1; }
 bool dumpUpperCaseToken = false;
@@ -164,7 +119,7 @@ static int getUpperCaseToken(ParserContext* context, const char* text)
 	
 exit:
 	if (dumpUpperCaseToken)
-		printf("getUpperCaseToken::token=%d, name=%s, value=%s\n", result, SYMBOLS[result - 255], text);
+		printf("getUpperCaseToken::token=%d, name=%s, value=%s\n", result, yyname[result - 255], text);
 	return result;
 }
 
@@ -176,7 +131,7 @@ static int getLowerCaseToken(ParserContext* context, const char* text)
 	if (context->dummyParameters && (result = context->dummyParameters->getIdentifierType(text)) != -1)
 		return result;
 
-	if (context->inOIDContext)
+	if (context->inOIDLiteral && context->inOIDContext)
 	    return OID_IDENTIFIER;
 
 	if (context->module && (result = context->module->getIdentifierType(text)) != -1)
@@ -184,7 +139,7 @@ static int getLowerCaseToken(ParserContext* context, const char* text)
 
     return context->identifierTokenContext;
 	} else {
-	if (context->inOIDContext) {
+	if (context->inOIDLiteral && context->inOIDContext) {
 	    result = OID_IDENTIFIER;
 	} else
 
@@ -198,7 +153,7 @@ static int getLowerCaseToken(ParserContext* context, const char* text)
 
 exit:
 	if (dumpLowerCaseToken)
-		printf("getLowerCaseToken::token=%d, name=%s, value=%s\n", result, SYMBOLS[result - 255], text);
+		printf("getLowerCaseToken::token=%d, name=%s, value=%s\n", result, yyname[result - 255], text);
 	return result;
 	}
 }
@@ -209,8 +164,10 @@ exit:
 
 digit [0-9]
 integer {digit}+
-real ({digit}+.{digit}+)
+real ({digit}+"."{digit}+)
 exp ({integer}|{real})[eE]-?{integer}
+lower [a-z]
+upper [A-Z]
 
 %%
 
@@ -243,16 +200,14 @@ exp ({integer}|{real})[eE]-?{integer}
 "EXCEPT"            { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,EXCEPT, WORD_t, yyscanner); }  
 "EXPLICIT"          { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,EXPLICIT, WORD_t, yyscanner); }  
 "EXPORTS"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,EXPORTS, WORD_t, yyscanner); }  
-"EXTERNAL"          { return EXTERNAL; }
 "EXTENSIBILITY"		{ return EXTENSIBILITY; }
+"EXTERNAL"          { return EXTERNAL; }
 "FALSE"             { return FALSE_t; }
 "FROM"              { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,FROM, WORD_t, yyscanner); }  
 "GeneralString"     { return GeneralString; }
-"GraphicString"     { return GraphicString; }
-"UTCTime"			{ return UTCTime; }
 "GeneralizedTime"   { return GeneralizedTime; }
+"GraphicString"     { return GraphicString; }
 "IA5String"         { return IA5String; }
-"TYPE-IDENTIFIER"   { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,TYPE_IDENTIFIER, WORD_t, yyscanner); }  
 "IDENTIFIER"        { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,IDENTIFIER_t, WORD_t, yyscanner); }  
 "IMPLICIT"          { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,IMPLICIT, WORD_t, yyscanner); }  
 "IMPLIED"			{ return IMPLIED; }
@@ -274,34 +229,40 @@ exp ({integer}|{real})[eE]-?{integer}
 "OBJECT"            { return OBJECT; }
 "OCTET"             { return OCTET; }
 "OF"                { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,OF_t, WORD_t, yyscanner); }  
+"OID-IRI"           { return OID_IRI; }
 "OPTIONAL"          { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,OPTIONAL_t, WORD_t, yyscanner); }  
+"PATTERN"			{ return PATTERN; }
 "PDV"               { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,PDV, WORD_t, yyscanner); }  
 "PLUS-INFINITY"     { return PLUS_INFINITY; }
 "PRESENT"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,PRESENT, WORD_t, yyscanner); }  
-"PrintableString"   { return PrintableString; }
 "PRIVATE"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,PRIVATE, WORD_t, yyscanner); }  
+"PrintableString"   { return PrintableString; }
 "REAL"              { return REAL_t; }
-"SEQUENCE"          { return SEQUENCE; }
+"REAL"              { return REAL_t; }
+"RELATIVE-OID"		{ return RELATIVE_OID; }
+"RELATIVE-OID-IRI"	{ return RELATIVE_OID_IRI; }
+"SEQUENCE"			{ return SEQUENCE; }
 "SET"               { return SET; }
+"SETTINGS"			{ return SETTINGS; }
 "SIZE"              { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,SIZE_t, WORD_t, yyscanner); }  
 "STRING"            { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,STRING, WORD_t, yyscanner); }  
 "SYNTAX"            { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,SYNTAX, WORD_t, yyscanner); }  
 "T61String"         { return T61String; }
 "TAGS"              { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,TAGS, WORD_t, yyscanner); }  
-"TeletexString"     { return TeletexString; }
 "TRUE"              { return TRUE_t; }
 "TYPE"				{ return TokenSelect(yylval, !is_WORD(context, yyscanner) ,TYPE_t, WORD_t, yyscanner); }  
+"TYPE-IDENTIFIER"   { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,TYPE_IDENTIFIER, WORD_t, yyscanner); }  
+"TeletexString"     { return TeletexString; }
 "UNION"             { return UNION; }
 "UNIQUE"            { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,UNIQUE, WORD_t, yyscanner); }  
 "UNIVERSAL"         { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,UNIVERSAL, WORD_t, yyscanner); }  
-"UniversalString"   { return UniversalString; }
+"UTCTime"			{ return UTCTime; }
 "UTF8String"		{ return TokenSelect(yylval, !is_WORD(context, yyscanner) ,UTF8String, WORD_t, yyscanner); }  
+"UniversalString"   { return UniversalString; }
 "VALUE"				{ return TokenSelect(yylval, !is_WORD(context, yyscanner) ,VALUE, WORD_t, yyscanner); }  
 "VideotexString"    { return VideotexString; }
 "VisibleString"     { return VisibleString; }
-"WITH"              { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,WITH, WORD_t, yyscanner); }  
-                                                              
-
+"WITH"              { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,WITH, WORD_t, yyscanner); }                                                               
 "/*" {
     BEGIN(multiline_comment);
 }
@@ -457,7 +418,7 @@ exp ({integer}|{real})[eE]-?{integer}
 	} else {
       const char * ptr = yytext;
       yylval->ival = 0;
-      while (*ptr != '\0')
+      while (*ptr != '\0') //FIXME real as integer for now
 		if (isdigit(*ptr))
 			yylval->ival = yylval->ival * 10 + *ptr++ - '0';
       return REAL;
@@ -474,12 +435,12 @@ exp ({integer}|{real})[eE]-?{integer}
   return context->identifierTokenContext==BIT_IDENTIFIER ? BS_HSTRING : HSTRING;
 }
 
-([a-z]|([a-z][a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {
+({lower}|({lower}[a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {
     yylval->sval = new std::string(yytext);
     return getLowerCaseToken(context, yytext);
   }
 
-"&"([a-z]|([a-z][a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {   /* See X.681 section 7.5 */
+"&"({lower}|({lower}[a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {   /* See X.681 section 7.5 */
     yylval->sval = new std::string(yytext);
 	int result;
 	if (context->informationFromObjectContext && (result = context->informationFromObjectContext->getFieldToken(yytext)))
@@ -488,7 +449,7 @@ exp ({integer}|{real})[eE]-?{integer}
     return fieldreference;
   }
 
-"&"([A-Z]|([A-Z][a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {	  /* See X.681 section 7.4 */
+"&"({upper}|({upper}[a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {	  /* See X.681 section 7.4 */
     yylval->sval = new std::string(yytext);
 	int result;
 	if (context->informationFromObjectContext && (result = context->informationFromObjectContext->getFieldToken(yytext)))
@@ -497,7 +458,7 @@ exp ({integer}|{real})[eE]-?{integer}
   }
 
 
-([A-Z]|([A-Z][a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {	  /* See X.680 section 9.2 */
+({upper}|({upper}[a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {	  /* See X.680 section 9.2 */
     yylval->sval = new std::string(yytext);
 	return getUpperCaseToken(context, yytext);
   }
