@@ -391,7 +391,7 @@ XMLDelimitedItem 	::=
 ;
 
 SetType 		::=
-	SET "{" "}"
+	  SET "{" "}"
 	| SET "{" ExtensionAndException OptionalExtensionMarker "}"
 	| SET "{" ComponentTypeLists "}"
 ;
@@ -536,25 +536,25 @@ ExternalValue 		::= SequenceValue ;
 
 XMLExternalValue 	::= XMLSequenceValue ;
 
-TimeType 		::= TIME ;
+TimeType 				::= TIME ;
 
-TimeValue 		::= tstring ;
+TimeValue 				::= tstring ;
 
-XMLTimeValue 		::= xmltstring ;
+XMLTimeValue 			::= xmltstring ;
 
-DateType 		::= DATE ;
+DateType 				::= DATE ;
 
-TimeOfDayType 		::= TIME-OF-DAY ;
+TimeOfDayType 			::= TIME-OF-DAY ;
 
-DateTimeType 		::= DATE-TIME ;
+DateTimeType 			::= DATE-TIME ;
 
-DurationType 		::= DURATION ;
+DurationType 			::= DURATION ;
 
 CharacterStringType 	::= RestrictedCharacterStringType | UnrestrictedCharacterStringType ;
 
 CharacterStringValue 	::= RestrictedCharacterStringValue | UnrestrictedCharacterStringValue ;
 
-XMLCharacterStringValue 	::= XMLRestrictedCharacterStringValue | XMLUnrestrictedCharacterStringValue ;
+XMLCharacterStringValue ::= XMLRestrictedCharacterStringValue | XMLUnrestrictedCharacterStringValue ;
 
 RestrictedCharacterStringType 	::=
 BMPString
@@ -630,7 +630,7 @@ The following productions are used in clauses 49 to 51:
 ConstrainedType 	::= Type Constraint | TypeWithConstraint ;
 
 TypeWithConstraint 	::=
-	SET Constraint OF Type
+	  SET Constraint OF Type
 	| SET SizeConstraint OF Type
 	| SEQUENCE Constraint OF Type
 	| SEQUENCE SizeConstraint OF Type
@@ -644,8 +644,7 @@ Constraint 		::= "(" ConstraintSpec ExceptionSpec ")" ;
 
 ConstraintSpec 		::= SubtypeConstraint | GeneralConstraint ;
 
-SubtypeConstraint 	::= ElementSetSpecs
-;
+SubtypeConstraint 	::= ElementSetSpecs;
 
 ElementSetSpecs 	::=
 	RootElementSetSpec
@@ -657,19 +656,15 @@ RootElementSetSpec 	::= ElementSetSpec ;
 
 additionalElementSetSpec::= ElementSetSpec ;
 
-ElementSetSpec 		::= Unions | ALL Exclusions ;
+ElementSetSpec 			::= Unions | ALL Exclusions ;
 
-Unions 			::= Intersections | UElems UnionMark Intersections ;
+Unions 					::= Intersections | Unions UnionMark Intersections ;
 
-UElems 			::= Unions ;
+Intersections 			::= IntersectionElements | IElems IntersectionMark IntersectionElements ;
 
-Intersections 		::= IntersectionElements | IElems IntersectionMark IntersectionElements ;
+IElems 					::= Intersections ;
 
-IElems 			::= Intersections ;
-
-IntersectionElements 	::= Elements | Elems Exclusions ;
-
-Elems 			::= Elements ;
+IntersectionElements 	::= Elements | Elements Exclusions ;
 
 Exclusions 		::= EXCEPT Elements ;
 

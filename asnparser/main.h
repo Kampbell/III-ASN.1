@@ -473,6 +473,7 @@ public:
 
 	virtual bool referencesType(const TypeBase& type) const;
 	virtual bool hasPERInvisibleConstraint(const Parameter&) const;
+	virtual void print(ostream&) const;
 
 protected:
 	ConstraintPtr constraint;
@@ -483,7 +484,7 @@ class SizeConstraintElement : public NestedConstraintConstraintElement {
 public:
 	SizeConstraintElement(ConstraintPtr constraint);
 	virtual void getConstraint(string& str) const;
-	void print(ostream&) const;
+	virtual void print(ostream&) const;
 	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual const SizeConstraintElement* getSizeConstraint() const;
 };
@@ -503,7 +504,7 @@ public:
 
 class WithComponentConstraintElement : public NestedConstraintConstraintElement {
 public:
-	WithComponentConstraintElement(string name, ConstraintPtr constraint, int presence);
+	WithComponentConstraintElement(const string& name, ConstraintPtr constraint, int presence);
 	void print(ostream&) const;
 	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual bool hasPERInvisibleConstraint(const Parameter&) const {
@@ -2858,7 +2859,7 @@ protected:
 
 typedef shared_ptr<ImportModule> ImportModulePtr;
 typedef vector<ImportModulePtr> ImportsList;
-
+typedef map<string,int> Identifiers;
 
 typedef map<string, TypePtr> TypeMap;
 
@@ -2977,7 +2978,7 @@ public:
 	ObjectClassesList			objectClasses;
 	InformationObjectList		informationObjects;
 	InformationObjectSetList	informationObjectSets;
-	map<string,int>				identifiers;
+	Identifiers					identifiers;
 	string						shortModuleName;
 	string						cppModuleName;
 	string						generatedPath;

@@ -1,3 +1,13 @@
+/*
+%option bison-bridge
+%option stack
+%option outfile="asn_lex.cxx"
+%option header-file="asn_lex.h"
+%option reentrant 
+%option bison-locations 
+%option yylineno
+*/
+%option never-interactive 
 %{
 
 /*
@@ -49,6 +59,11 @@ int InParameterListContext = FALSE;
 extern int LexEcho;
 #define YY_USER_ACTION if (LexEcho) std::cout << idtext << std::flush;
 
+/*
+#define YY_USER_ACTION yylloc->first_line = yylloc->last_line = yylineno; \
+    yylloc->first_column = 0; yylloc->last_column = 0 + yyleng - 1; 
+*/
+
 extern "C" int yywrap() { return 1; }
 
 int braceCount = 0;
@@ -60,7 +75,7 @@ int parenthesisCount = 0;
 
 %x multiline_comment comment_line brace parenthesis square_bracket
 
-digit [0-9]
+digit	[0-9]
 integer {digit}+
 
 %%
@@ -83,6 +98,7 @@ integer {digit}+
 "COMPONENT"                        { return COMPONENT; }
 "COMPONENTS"                       { return COMPONENTS; }
 "CONSTRAINED"                      { return CONSTRAINED; }
+"CONTAINING"						{ return CONTAINING; }
 "DEFAULT"                          { return DEFAULT; }
 "DEFINED"                          { return DEFINED; }
 "DEFINITIONS"                      { return DEFINITIONS; }

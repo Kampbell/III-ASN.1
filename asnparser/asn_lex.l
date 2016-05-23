@@ -110,9 +110,16 @@ static int getUpperCaseToken(ParserContext* context, const char* text)
 		} else 
 		if (((context->inWithSyntaxContext && isUpper(text)) || 
 		(!context->classStack->empty() && context->classStack->top()->hasLiteral(text))) && !context->parsingConstructedType) {
-			result = WORD_t;goto exit;
+			result = WORD_t;
+			goto exit;
 		} else {
-			result = TYPEREFERENCE;
+			for(auto module : modules) {
+				if (module->getName() == text) {
+				   result = MODULEREFERENCE;break;
+				}
+			}
+			if (result == -1)
+				result = TYPEREFERENCE;
 		}
 	} else
 		result = MODULEREFERENCE;
@@ -191,6 +198,7 @@ upper [A-Z]
 "COMPONENT"         { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,COMPONENT, WORD_t, yyscanner); }  
 "COMPONENTS"        { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,COMPONENTS, WORD_t, yyscanner); }  
 "CONSTRAINED"       { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,CONSTRAINED, WORD_t, yyscanner); }  
+"CONTAINING"		{ return CONTAINING; }
 "DEFAULT"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,DEFAULT, WORD_t, yyscanner); }  
 "DEFINED"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,DEFINED, WORD_t, yyscanner); }  
 "DEFINITIONS"       { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,DEFINITIONS, WORD_t, yyscanner); }  
@@ -375,7 +383,7 @@ upper [A-Z]
 
 "="  { return '='; }
 
-'|'  { return '|'; }
+"|"  { return '|'; }
 
 "^"  { return '^'; }
 

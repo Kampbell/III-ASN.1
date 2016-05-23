@@ -134,6 +134,7 @@ extern int isUpper(const char* text);
 //
 //  yyerror required function for flex
 //
+
 #ifdef REENTRANT_PARSER
 ModuleList						modules;
 UsefulModuleDef *				UsefulModule = nullptr;
@@ -1605,6 +1606,10 @@ bool NestedConstraintConstraintElement::hasPERInvisibleConstraint(const Paramete
 	return constraint->hasPERInvisibleConstraint(param);
 }
 
+void NestedConstraintConstraintElement::print(ostream& strm) const {
+	strm << *constraint;
+}
+
 ///////////////////////////////////////////////////////
 
 SizeConstraintElement::SizeConstraintElement(ConstraintPtr constraint)
@@ -1691,7 +1696,7 @@ int FromConstraintElement::getRange(ostream& cxx) const {
 
 /////////////////////////////////////////////////////////
 
-WithComponentConstraintElement::WithComponentConstraintElement(string newName,
+WithComponentConstraintElement::WithComponentConstraintElement(const string& newName,
 		ConstraintPtr constraint,
 		int pres)
 	: NestedConstraintConstraintElement(constraint) {
@@ -5791,6 +5796,7 @@ ModuleDefinition::ModuleDefinition(const string& name, const string& filePath, T
 		string str = modules[i]->moduleName;
 		identifiers[str]= MODULEREFERENCE;
 	}
+
 	// Create sorted list for faster searching.
 }
 
@@ -7054,9 +7060,7 @@ void FixedTypeValueSetFieldSpec::generateTypeField(const string& templatePrefix,
 
 /////////////////////////////////////////////////////////////////////
 
-VariableTypeValueFieldSpec::VariableTypeValueFieldSpec(const string& nam,
-		const string& fieldname,
-		bool optional)
+VariableTypeValueFieldSpec::VariableTypeValueFieldSpec(const string& nam, const string& fieldname, bool optional)
 	: FieldSpec(nam, optional), fieldName(fieldname) {
 }
 
@@ -7393,10 +7397,14 @@ int ObjectClassBase::getFieldToken(const char* fieldname) const {
 	// This should be repalced by a fixup phase on the discovery of the target CLASS
 	// i.e MECANISM-NAME in the sample.
 	//
-	if (fieldname[0] == '&' && islower(fieldname[1]))
+	if (fieldname[0] == '&' && islower(fieldname[1])) {
+		//yylval->sval = new std::string(fieldname);	
 		return FIXEDTYPEVALUEFIELDREFERENCE;
-	if (fieldname[0] == '&' && isupper(fieldname[1]))
+	}
+	if (fieldname[0] == '&' && isupper(fieldname[1])) {
+		//yylval->sval = new std::string(fieldname);	
 		return TYPEFIELDREFERENCE;
+	}
 
 	return -1;
 }
