@@ -42,6 +42,138 @@
     <ClCompile Include="csn\MyHTTP.cxx">
       <Filter>csn</Filter>
     </ClCompile>
+    <ClCompile Include="csn\ModuleASNClass.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleBitStringConstraint.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleBitStringReferencedValue.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleCharacterDefinitions.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleChoiceInSequence.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleConstraintPrecedence.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleEmptyIMPORTS.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleNestedSequenceOf.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleParameterization1.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleParameterization1_t.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleParameterization2.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleParameterization2_t.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleParameterization3.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleParameterization3_t.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleParameterizationWithConstraints.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleParameterizationWithConstraints_t.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleParameterizationWithConstraints2.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleParameterizationWithConstraints2_t.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleParameterizationWithConstraints3.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleParameterizationWithConstraints3_t.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModulePERChoice.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModulePERConstraints.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModulePERExtensions.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModulePERLong.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModulePERStrings.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleRecursion.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleRedefineType.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleSetChoiceExtensibility.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestClass.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestConstr.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestConstrainedBy.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestConstraint1.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestConstraint2.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestEmbeddedChoice.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestEnumeratedDefault.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestIndirectChoiceFine.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestIntOptional.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestMultipleTags.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestOIDConstraint.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestSequenceSimple.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestStringDefault1.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestTags1.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\ModuleTestTags2.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\TEST1.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ASN1CTest.h" />
@@ -118,6 +250,234 @@
       <Filter>csn</Filter>
     </ClInclude>
     <ClInclude Include="csn\TESTtmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleASNClass.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleASNClasstmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleBitStringConstraint.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleBitStringConstrainttmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleBitStringReferencedValue.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleBitStringReferencedValuetmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleCharacterDefinitions.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleCharacterDefinitionstmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleChoiceInSequence.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleChoiceInSequencetmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleConstraintPrecedence.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleConstraintPrecedencetmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleEmptyIMPORTS.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleEmptyIMPORTStmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleNestedSequenceOf.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleNestedSequenceOftmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleParameterization1.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleParameterization1tmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleParameterization2.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleParameterization2tmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleParameterization3.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleParameterization3tmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleParameterizationWithConstraints.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleParameterizationWithConstraints2.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleParameterizationWithConstraints2tmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleParameterizationWithConstraints3.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleParameterizationWithConstraints3tmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleParameterizationWithConstraintstmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModulePERChoice.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModulePERChoicetmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModulePERConstraints.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModulePERConstraintstmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModulePERExtensions.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModulePERExtensionstmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModulePERLong.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModulePERLongtmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModulePERStrings.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModulePERStringstmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleRecursion.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleRecursiontmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleRedefineType.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleRedefineTypetmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleSetChoiceExtensibility.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleSetChoiceExtensibilitytmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestClass.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestClasstmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestConstr.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestConstrainedBy.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestConstrainedBytmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestConstraint1.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestConstraint1tmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestConstraint2.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestConstraint2tmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestConstrtmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestEmbeddedChoice.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestEmbeddedChoicetmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestEnumeratedDefault.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestEnumeratedDefaulttmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestIndirectChoiceFine.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestIndirectChoiceFinetmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestIntOptional.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestIntOptionaltmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestMultipleTags.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestMultipleTagstmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestOIDConstraint.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestOIDConstrainttmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestSequenceSimple.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestSequenceSimpletmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestStringDefault1.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestStringDefault1tmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestTags1.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestTags1tmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestTags2.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\ModuleTestTags2tmp.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\TEST1.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\TEST1tmp.h">
       <Filter>csn</Filter>
     </ClInclude>
   </ItemGroup>
@@ -504,9 +864,6 @@
     <None Include="asn1c\20-constr-OK.asn1">
       <Filter>asn1c</Filter>
     </None>
-    <None Include="asn\21-tags-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
     <None Include="asn\10-int-OK.asn1-FAILED">
       <Filter>asn</Filter>
     </None>
@@ -525,15 +882,6 @@
     <None Include="asn\21-tags-OK.asn1">
       <Filter>asn</Filter>
     </None>
-    <None Include="asn\23-bits-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\25-misc-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\31-set-of-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
     <None Include="asn\34-class-OK.asn1-FAILED">
       <Filter>asn</Filter>
     </None>
@@ -546,9 +894,6 @@
     <None Include="asn\41-int-optional-OK.asn1">
       <Filter>asn</Filter>
     </None>
-    <None Include="asn\42-real-life-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
     <None Include="asn\43-recursion-OK.asn1">
       <Filter>asn</Filter>
     </None>
@@ -558,31 +903,10 @@
     <None Include="asn\46-redefine-OK.asn1">
       <Filter>asn</Filter>
     </None>
-    <None Include="asn\47-set-ext-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
     <None Include="asn\48-real-life-OK.asn1">
       <Filter>asn</Filter>
     </None>
     <None Include="asn\49-real-life-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\50-constraint-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\55-components-of-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\57-components-of-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\58-param-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\59-choice-extended-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\60-any-OK.asn1-FAILED">
       <Filter>asn</Filter>
     </None>
     <None Include="asn\62-any-OK.asn1-TODO">
@@ -594,22 +918,13 @@
     <None Include="asn\65-multi-tag-OK.asn1">
       <Filter>asn</Filter>
     </None>
-    <None Include="asn\66-ref-simple-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
     <None Include="asn\67-embedded-choice-OK.asn1">
       <Filter>asn</Filter>
     </None>
     <None Include="asn\68-enum-default-OK.asn1">
       <Filter>asn</Filter>
     </None>
-    <None Include="asn\69-reserved-words-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
     <None Include="asn\70-xer-test-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\72-same-names-OK.asn1-FAILED">
       <Filter>asn</Filter>
     </None>
     <None Include="asn\73-circular-OK.asn1-FAILED">
@@ -625,18 +940,6 @@
       <Filter>asn</Filter>
     </None>
     <None Include="asn\80-chardefs-OK.asn1">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\81-type-default-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\82-with-comps-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\83-with-comps-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\84-param-tags-OK.asn1-FAILED">
       <Filter>asn</Filter>
     </None>
     <None Include="asn\104-param-1-OK.asn1">
@@ -702,34 +1005,7 @@
     <None Include="asn\85-comments-OK.asn1-FAILED">
       <Filter>asn</Filter>
     </None>
-    <None Include="asn\86-atags-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
     <None Include="asn\87-old-syntax-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\88-integer-enum-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\89-bit-string-enum-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\90-cond-int-type-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\91-cond-int-blessSize-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\92-circular-loops-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\93-asn1c-controls-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\94-set-optionals-OK.asn1-FAILED">
-      <Filter>asn</Filter>
-    </None>
-    <None Include="asn\95-choice-per-order-OK.asn1-FAILED">
       <Filter>asn</Filter>
     </None>
     <None Include="asn\96-type-identifier-OK.asn1-FAILED">
@@ -760,6 +1036,195 @@
       <Filter>asn</Filter>
     </None>
     <None Include="asn\99-class-sample-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\95-choice-per-order-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\94-set-optionals-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\93-asn1c-controls-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\92-circular-loops-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\91-cond-int-blessSize-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\90-cond-int-type-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\89-bit-string-enum-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\88-integer-enum-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\86-atags-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\84-param-tags-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="csn\ModuleASNClass.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleBitStringConstraint.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleBitStringReferencedValue.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleCharacterDefinitions.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleChoiceInSequence.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleConstraintPrecedence.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleNestedSequenceOf.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleParameterization1.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleParameterization2.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleParameterization3.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleParameterizationWithConstraints.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleParameterizationWithConstraints2.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleParameterizationWithConstraints3.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModulePERChoice.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModulePERConstraints.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModulePERExtensions.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModulePERLong.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModulePERStrings.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleRecursion.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleRedefineType.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleSetChoiceExtensibility.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestClass.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestConstr.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestConstrainedBy.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestConstraint1.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestConstraint2.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestEmbeddedChoice.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestEnumeratedDefault.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestIndirectChoiceFine.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestIntOptional.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestMultipleTags.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestSequenceSimple.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestStringDefault1.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestTags1.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\ModuleTestTags2.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\TEST1.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="asn\83-with-comps-OK.asn1-INVALID">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\82-with-comps-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\81-type-default-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\72-same-names-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\23-bits-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\25-misc-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\31-set-of-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\55-components-of-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\57-components-of-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\58-param-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\60-any-OK.asn1-NOT-SUPPORTED">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\66-ref-simple-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\69-reserved-words-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\47-set-ext-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\50-constraint-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\59-choice-extended-OK.asn1">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\42-real-life-OK.asn1">
       <Filter>asn</Filter>
     </None>
   </ItemGroup>

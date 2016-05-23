@@ -51,6 +51,7 @@
     <IntDir>.\Debug\</IntDir>
     <TargetName>$(ProjectName)d</TargetName>
     <TargetExt>.dll</TargetExt>
+    <CustomBuildBeforeTargets>ClCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -114,6 +115,9 @@
       <ProfileGuidedDatabase>../lib/$(TargetName).pgd</ProfileGuidedDatabase>
       <ImportLibrary>../lib/$(TargetName).lib</ImportLibrary>
     </Link>
+    <CustomBuild>
+      <Command>..\..\bin\ASN1cd -l -c -v -o csn -i asn</Command>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
     <CustomBuild Include="h2250v4.asn">
@@ -152,99 +156,7 @@ del cxx\cidmodule.h
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cxx\addressing_data_elements.cxx" />
-    <ClCompile Include="cxx\alternategk_module.cxx" />
-    <ClCompile Include="cxx\call_completion_operations.cxx" />
-    <ClCompile Include="cxx\call_diversion_operations.cxx" />
-    <ClCompile Include="cxx\call_hold_operations.cxx" />
-    <ClCompile Include="cxx\call_offer_operations.cxx" />
-    <ClCompile Include="cxx\call_park_pickup_operations.cxx" />
-    <ClCompile Include="cxx\call_transfer_operations.cxx" />
-    <ClCompile Include="cxx\call_waiting_operations.cxx" />
-    <ClCompile Include="cxx\h225_generic_parameters_definition.cxx" />
-    <ClCompile Include="cxx\h235_security_messages.cxx" />
-    <ClCompile Include="cxx\h323_messages.cxx" />
-    <ClCompile Include="cxx\h4501_general_error_list.cxx" />
-    <ClCompile Include="cxx\h4501_supplementary_serviceapdu_structure.cxx" />
-    <ClCompile Include="cxx\hm_aliasaddress.cxx" />
-    <ClCompile Include="cxx\hm_alternategk.cxx" />
-    <ClCompile Include="cxx\hm_callidentifier.cxx" />
-    <ClCompile Include="cxx\hm_supportedprefix.cxx" />
-    <ClCompile Include="cxx\hm_transportaddress.cxx" />
-    <ClCompile Include="cxx\manufacturer_specific_service_extension_definition.cxx" />
-    <ClCompile Include="cxx\media_gateway_control.cxx" />
-    <ClCompile Include="cxx\message_waiting_indication_operations.cxx" />
-    <ClCompile Include="cxx\mgc_signalsdescriptor.cxx" />
-    <ClCompile Include="cxx\msc_capabilitytableentry.cxx" />
-    <ClCompile Include="cxx\msc_openlogicalchannel.cxx" />
-    <ClCompile Include="cxx\msc_transportaddress.cxx" />
-    <ClCompile Include="cxx\multimedia_system_control.cxx" />
-    <ClCompile Include="cxx\name_operations.cxx" />
-    <ClCompile Include="cxx\remote_operations_apdus.cxx" />
-    <ClCompile Include="cxx\remote_operations_information_objects.cxx" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="cxx\addressing_data_elements.h" />
-    <ClInclude Include="cxx\aliases.h" />
-    <ClInclude Include="cxx\alternategk_module.h" />
-    <ClInclude Include="cxx\call_completion_operations.h" />
-    <ClInclude Include="cxx\call_diversion_operations.h" />
-    <ClInclude Include="cxx\call_hold_operations.h" />
-    <ClInclude Include="cxx\call_offer_operations.h" />
-    <ClInclude Include="cxx\call_park_pickup_operations.h" />
-    <ClInclude Include="cxx\call_transfer_operations.h" />
-    <ClInclude Include="cxx\call_waiting_operations.h" />
-    <ClInclude Include="cxx\h225_generic_parameters_definition.h" />
-    <ClInclude Include="cxx\h235_security_messages.h" />
-    <ClInclude Include="cxx\h323_messages.h" />
-    <ClInclude Include="cxx\h4501_general_error_list.h" />
-    <ClInclude Include="cxx\h4501_supplementary_serviceapdu_structure.h" />
-    <ClInclude Include="cxx\hm_aliasaddress.h" />
-    <ClInclude Include="cxx\hm_alternategk.h" />
-    <ClInclude Include="cxx\hm_callidentifier.h" />
-    <ClInclude Include="cxx\hm_supportedprefix.h" />
-    <ClInclude Include="cxx\hm_transportaddress.h" />
-    <ClInclude Include="cxx\manufacturer_specific_service_extension_definition.h" />
-    <ClInclude Include="cxx\media_gateway_control.h" />
-    <ClInclude Include="cxx\message_waiting_indication_operations.h" />
-    <ClInclude Include="cxx\mgc_signalsdescriptor.h" />
-    <ClInclude Include="cxx\msc_capabilitytableentry.h" />
-    <ClInclude Include="cxx\msc_openlogicalchannel.h" />
-    <ClInclude Include="cxx\msc_transportaddress.h" />
-    <ClInclude Include="cxx\multimedia_system_control.h" />
-    <ClInclude Include="cxx\name_operations.h" />
-    <ClInclude Include="cxx\remote_operations_apdus.h" />
-    <ClInclude Include="cxx\remote_operations_information_objects.h" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="address.asn" />
-    <None Include="cxx\addressing_data_elements.inl" />
-    <None Include="cxx\call_completion_operations.inl" />
-    <None Include="cxx\call_diversion_operations.inl" />
-    <None Include="cxx\call_hold_operations.inl" />
-    <None Include="cxx\call_offer_operations.inl" />
-    <None Include="cxx\call_park_pickup_operations.inl" />
-    <None Include="cxx\call_transfer_operations.inl" />
-    <None Include="cxx\call_waiting_operations.inl" />
-    <None Include="cxx\h235_security_messages.inl" />
-    <None Include="cxx\h323_messages.inl" />
-    <None Include="cxx\h4501_supplementary_serviceapdu_structure.inl" />
-    <None Include="cxx\hm_aliasaddress.inl" />
-    <None Include="cxx\hm_alternategk.inl" />
-    <None Include="cxx\hm_callidentifier.inl" />
-    <None Include="cxx\hm_supportedprefix.inl" />
-    <None Include="cxx\hm_transportaddress.inl" />
-    <None Include="cxx\manufacturer_specific_service_extension_definition.inl" />
-    <None Include="cxx\media_gateway_control.inl" />
-    <None Include="cxx\message_waiting_indication_operations.inl" />
-    <None Include="cxx\mgc_signalsdescriptor.inl" />
-    <None Include="cxx\msc_capabilitytableentry.inl" />
-    <None Include="cxx\msc_openlogicalchannel.inl" />
-    <None Include="cxx\msc_transportaddress.inl" />
-    <None Include="cxx\multimedia_system_control.inl" />
-    <None Include="cxx\name_operations.inl" />
-    <None Include="cxx\remote_operations_apdus.inl" />
-    <None Include="cxx\remote_operations_information_objects.inl" />
     <None Include="h235v2.asn" />
     <None Include="h245v7.asn" />
     <None Include="h248.asn" />

@@ -31,6 +31,9 @@
     <None Include="TEST1.inl">
       <Filter>csn</Filter>
     </None>
+    <None Include="MyHTTP.asn">
+      <Filter>asn</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="csn">

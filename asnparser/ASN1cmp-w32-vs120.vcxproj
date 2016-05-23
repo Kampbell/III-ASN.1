@@ -189,10 +189,10 @@
     <None Include="asn\bug-001.asn" />
     <None Include="asn\ISO8823-PRESENTATION.asn" />
     <None Include="asn\Items.asn" />
-    <None Include="asn\Product.asn" />
     <None Include="asn\Shop.asn" />
     <None Include="asn_grammar.output" />
     <None Include="asn_grammar.tab.i" />
+    <None Include="asn_ref_grammar.output" />
     <None Include="asn_ref_grammar.tab.i" />
   </ItemGroup>
   <ItemGroup>

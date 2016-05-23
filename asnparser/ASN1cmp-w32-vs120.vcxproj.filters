@@ -67,9 +67,6 @@
     <None Include="asn\Items.asn">
       <Filter>asn</Filter>
     </None>
-    <None Include="asn\Product.asn">
-      <Filter>asn</Filter>
-    </None>
     <None Include="asn\ASN.asn">
       <Filter>asn</Filter>
     </None>
@@ -83,6 +80,9 @@
       <Filter>out</Filter>
     </None>
     <None Include="asn_ref_grammar.tab.i">
+      <Filter>out</Filter>
+    </None>
+    <None Include="asn_ref_grammar.output">
       <Filter>out</Filter>
     </None>
   </ItemGroup>
