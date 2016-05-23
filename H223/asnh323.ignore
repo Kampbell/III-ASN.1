@@ -1,0 +1,4 @@
+EXPORTS
+    _wmemcpy @4295 NONAME ;_wmemcpy
+    _wmemmove @4296 NONAME ;_wmemmove
+    _wmemset @4297 NONAME ;_wmemset

@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{b17e0b4a-5c56-4a85-9d01-e9a178a2768d}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{bbab484d-cb81-457a-8353-16d6811baf69}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="csn">
+      <UniqueIdentifier>{12a31713-510a-48ae-b510-aebd7ae074d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="asn">
+      <UniqueIdentifier>{b6ca0588-1b66-4f08-9b9f-d05f3a2ad235}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="asn\h225.sed">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\h2250v4.asn.org">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\ro.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\h4501.asn-FAILED">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\h45010.asn-FAILED">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\h4502.asn-FAILED">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\h4503.asn-FAILED">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\h4504.asn-FAILED">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\h4505.asn-FAILED">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\h4506.asn-FAILED">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\h4507.asn-FAILED">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\h4508.asn-FAILED">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\h4509.asn-FAILED">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\lgc.asn-FAILED">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\MULTIMEDIA-SYSTEM-CONTROL.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\MEDIA-GATEWAY-CONTROL.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\H323-MESSAGES.asn-FAILED">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\H235-SECURITY-MESSAGES.asn-FAILED">
+      <Filter>asn</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="csn\MULTIMEDIA-SYSTEM-CONTROL.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

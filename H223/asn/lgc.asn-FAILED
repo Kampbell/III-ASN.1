@@ -1,0 +1,52 @@
+--
+-- Copyright (c) 2001 Institute for Information Industry, Taiwan, Republic of China 
+-- (http://www.iii.org.tw/iiia/ewelcome.htm)
+--
+-- Permission to copy, use, modify, sell and distribute this software
+-- is granted provided this copyright notice appears in all copies.
+-- This software is provided "as is" without express or implied
+-- warranty, and with no claim as to its suitability for any purpose.
+--
+
+
+
+ALIASES DEFINITIONS  AUTOMATIC TAGS  ::=
+BEGIN
+IMPORTS		EndpointType, SupportedPrefix, AliasAddress FROM  H323-MESSAGES; -- see H.225
+Aliases ::= SEQUENCE OF AliasAddress
+SupportedPrefixes ::= SEQUENCE OF SupportedPrefix
+END
+
+CAP DEFINITIONS  AUTOMATIC TAGS  ::=
+BEGIN
+IMPORTS	CapabilityTableEntry  FROM  MULTIMEDIA-SYSTEM-CONTROL; -- see H.245
+Cap ::= CapabilityTableEntry
+END
+
+LGC DEFINITIONS  AUTOMATIC TAGS  ::=
+BEGIN
+IMPORTS	
+		OpenLogicalChannelAck,
+		OpenLogicalChannelRelease,
+		OpenLogicalChannelReject,
+		CloseLogicalChannel,
+		CloseLogicalChannelAck,
+		RequestChannelClose,
+		RequestChannelCloseAck,
+		RequestChannelCloseRelease,
+		RequestChannelCloseReject,
+		OpenLogicalChannel
+		FROM  MULTIMEDIA-SYSTEM-CONTROL; -- see H.245
+OpenLGC ::= OpenLogicalChannel
+END
+
+--<ASN1.Remove MULTIMEDIA-SYSTEM-CONTROL.MultiplexEntrySend,
+--             MULTIMEDIA-SYSTEM-CONTROL.MultiplexEntrySendAck,
+--             MULTIMEDIA-SYSTEM-CONTROL.MultiplexEntrySendReject,
+--             MULTIMEDIA-SYSTEM-CONTROL.MultiplexEntrySendRelease,
+--             MULTIMEDIA-SYSTEM-CONTROL.RequestMultiplexEntry,
+--             MULTIMEDIA-SYSTEM-CONTROL.RequestMultiplexEntryAck,
+--             MULTIMEDIA-SYSTEM-CONTROL.RequestMultiplexEntryReject,
+--             MULTIMEDIA-SYSTEM-CONTROL.RequestMultiplexEntryRelease,
+--             MULTIMEDIA-SYSTEM-CONTROL.H223SkewIndication,
+--             MULTIMEDIA-SYSTEM-CONTROL.NewATMVCIndication>--
