@@ -6,6 +6,26 @@
 -- .50 1
 -- .50 2
 
+IdentifierModule
+	{ iso org(3) dod(6) internet (1) private(4) enterprise(1)
+		spelio(9363) software(1) asn1c(5) test(1) 50 2 }
+	DEFINITIONS ::=
+BEGIN
+	EXPORTS Identifier;
+
+	maxIdentifier INTEGER ::= 32
+
+	Identifier ::=
+	    VisibleString ( FROM
+	   ("A"|"a"|"B"|"b"|"C"|"c"|"D"|"d"|"E"|"e"|"F"|"f"|
+	   "G"|"g"|"H"|"h"|"I"|"i"|"J"|"j"|"K"|"k"|"L"|"l"|
+	   "M"|"m"|"N"|"n"|"O"|"o"|"P"|"p"|"Q"|"q"|"R"|"r"|
+	   "S"|"s"|"T"|"t"|"U"|"u"|"V"|"v"|"W"|"w"|"X"|"x"|
+	   "Y"|"y"|"Z"|"z"|"$"|"_"|"0"|"1"|"2"|"3"|"4"|"5"|
+	   "6"|"7"|"8"|"9") ) (SIZE(1..maxIdentifier))
+
+END
+
 ModuleNestedConstraintsCheck
 	{ iso org(3) dod(6) internet (1) private(4) enterprise(1)
 		spelio(9363) software(1) asn1c(5) test(1) 50 1 }
@@ -24,7 +44,7 @@ BEGIN
 	other-ten Int2 ::= 10
 
 	-- G.4.3.4
-	ExtensibleExtensions ::= INTEGER ((1..256,...) INTERSECTION (1..256))  
+	ExtensibleExtensions ::= INTEGER ((1..256, ...) INTERSECTION (1..256))  
 
 	Str1 ::= IA5String
 	Str2 ::= Str1 (SIZE(MIN..20 | 25..30))	
@@ -66,28 +86,8 @@ BEGIN
 
 	SequenceOf ::= SEQUENCE (SIZE(1..2)) OF Sequence
 
+/*
 	Enum0	::= ENUMERATED { one, two }
 	Enum1	::= ENUMERATED { one, two }	(one)
-
-END
-
-
-IdentifierModule
-	{ iso org(3) dod(6) internet (1) private(4) enterprise(1)
-		spelio(9363) software(1) asn1c(5) test(1) 50 2 }
-	DEFINITIONS ::=
-BEGIN
-	EXPORTS Identifier;
-
-	maxIdentifier INTEGER ::= 32
-
-	Identifier ::=
-	    VisibleString ( FROM
-	   ("A"|"a"|"B"|"b"|"C"|"c"|"D"|"d"|"E"|"e"|"F"|"f"|
-	   "G"|"g"|"H"|"h"|"I"|"i"|"J"|"j"|"K"|"k"|"L"|"l"|
-	   "M"|"m"|"N"|"n"|"O"|"o"|"P"|"p"|"Q"|"q"|"R"|"r"|
-	   "S"|"s"|"T"|"t"|"U"|"u"|"V"|"v"|"W"|"w"|"X"|"x"|
-	   "Y"|"y"|"Z"|"z"|"$"|"_"|"0"|"1"|"2"|"3"|"4"|"5"|
-	   "6"|"7"|"8"|"9") ) (SIZE(1..maxIdentifier))
-
+*/
 END
