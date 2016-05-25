@@ -10,6 +10,8 @@ VS2013EXE
 *.cxx
 *.fwd
 
+csn/
+
 # Git submodule #
 #################
 boost/
@@ -17,10 +19,12 @@ boost/
 
 # Bison & Flex #
 ################
-asn_grammar.*
-asn_ref_grammar.*
-asn_lex.*
-asn_ref_lex.*
+*.code.c
+*.tab.c
+*.tab.h
+*.tab.i
+*.dot
+*.output
 
 
 
