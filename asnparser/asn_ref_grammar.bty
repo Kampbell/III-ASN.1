@@ -1,0 +1,626 @@
+//%expect 12
+/*
+%define api.pure		full
+%define api.prefix		{id}
+*/
+%lex-param				{ ParserContext* context }
+%parse-param			{ ParserContext* context } { const string& path }
+%locations
+%no-lines
+%{
+
+/*
+ * asn_ref_grammer.y
+ * 
+ * ASN grammar file for typereference, objectclassreference, valuereference, ...
+ *
+ * Copyright (c) 2001 Institute for Information Industry 
+ * (http://www.iii.org.tw/iiia/ewelcome.htm)
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is ASN Parser.
+ *
+ * The Initial Developer of the Original Code is Institute for Information Industry
+ *
+ * The code is modified by Genesys Telecommunications Labs UK, 2003-2011
+ * Contributors: 
+ *    Arunas Ruksnaitis <arunas.ruksnaitis@genesyslab.com>
+ *    Rustam Mirzaev <rustam.mirzaev@genesyslab.com>
+ *
+ */
+
+#undef malloc
+#undef calloc
+#undef realloc
+#undef free
+#include "main.h" 
+
+typedef std::vector<std::string> StringList;
+
+#ifdef _MSC_VER
+#pragma warning(disable:4701)
+#define MSDOS
+#endif
+
+#define VALUEREFERENCE  (TYPEREFERENCE+2)
+#define OBJECTREFERENCE (TYPEREFERENCE+3)
+#define OBJECTSETREFERENCE (TYPEREFERENCE+4)
+
+#define PARAMETERIZEDTYPEREFERENCE (TYPEREFERENCE+5)
+#define PARAMETERIZEDOBJECTCLASSREFERENCE (TYPEREFERENCE+6)
+#define PARAMETERIZEDVALUEREFERENCE  (TYPEREFERENCE+7)
+#define PARAMETERIZEDOBJECTREFERENCE (TYPEREFERENCE+8)
+#define PARAMETERIZEDOBJECTSETREFERENCE (TYPEREFERENCE+9)
+
+#define VALUESET_BRACE (TYPEREFERENCE+10)
+#define OBJECT_BRACE (TYPEREFERENCE+11)
+#define OBJECTSET_BRACE (TYPEREFERENCE+12)
+
+#define YYERROR_VERBOSE 1
+
+%}
+
+%token MODULEREFERENCE 
+%token TYPEREFERENCE  
+%token OBJECTCLASSREFERENCE 
+%token IDENTIFIER
+%token WOULDBE_OBJECTCLASSREFERENCE
+%token FIELDREFERENCE
+%token INTEGER
+
+%token CSTRING
+%token BSTRING
+%token HSTRING
+
+%token ABSENT           
+%token ABSTRACT_SYNTAX  
+%token ALL              
+%token ANY
+%token APPLICATION      
+%token ASSIGNMENT
+%token AUTOMATIC        
+%token BEGIN_t
+%token BIT              
+%token BMPString
+%token BOOLEAN_t
+%token BY
+%token CHARACTER        
+%token CHOICE           
+%token CLASS            
+%token COMPONENT        
+%token COMPONENTS       
+%token CONSTRAINED      
+%token CONTAINING
+%token DEFAULT          
+%token DEFINED
+%token DEFINITIONS 
+%token ELLIPSIS     
+%token EMBEDDED         
+%token END
+%token ENUMERATED       
+%token EXCEPT           
+%token EXPLICIT         
+%token EXPORTS          
+%token EXTERNAL         
+%token EXTENSIBILITY         
+%token FALSE_t           
+%token FROM             
+%token GeneralString    
+%token GraphicString    
+%token IA5String        
+%token TYPE_IDENTIFIER 
+%token IDENTIFIER_t
+%token IMPLICIT         
+%token IMPLIED          
+%token IMPORTS          
+%token INCLUDES         
+%token INSTANCE         
+%token INSTRUCTIONS         
+%token INTEGER_t        
+%token INTERSECTION     
+%token ISO646String
+%token MACRO
+%token MAX              
+%token MIN              
+%token MINUS_INFINITY
+%token NOTATION
+%token NULL_t
+%token NumericString    
+%token OBJECT           
+%token OCTET            
+%token OID_IRI
+%token OF_t              
+%token OPTIONAL_t
+%token PATTERN              
+%token PDV              
+%token PLUS_INFINITY    
+%token PRESENT          
+%token PrintableString  
+%token PRIVATE          
+%token REAL             
+%token RELATIVE_OID             
+%token RELATIVE_OID_IRI
+%token SEQUENCE         
+%token SET              
+%token SETTINGS              
+%token SIZE_t            
+%token STRING           
+%token SYNTAX           
+%token T61String        
+%token TAGS             
+%token TeletexString    
+%token TRUE_t
+%token TYPE_t
+%token UNION            
+%token UNIQUE           
+%token UNIVERSAL        
+%token UTF8String
+%token UniversalString  
+%token VideotexString   
+%token VisibleString    
+%token GeneralizedTime
+%token UTCTime
+%token VALUE
+%token WITH
+
+%token ObjectDescriptor_t
+
+%type <ival> TagDefault
+%type <ival> INTEGER
+
+%type <sval> IDENTIFIER
+%type <sval> MODULEREFERENCE
+%type <sval> TYPEREFERENCE
+%type <sval> TypeReference
+%type <sval> OBJECTCLASSREFERENCE
+%type <sval> WOULDBE_OBJECTCLASSREFERENCE
+%type <sval> FIELDREFERENCE
+%type <sval> GlobalModuleReference
+%type <sval> Reference
+%type <sval> FieldName
+%type <sval> Symbol
+%type <sval> ParameterizedReference
+%type <sval> ParameterizedTypeReference
+%type <sval> ParameterizedWouldbeObjectClassReference
+%type <sval> ParameterizedIdentifier
+%type <modd> ModuleDefinition
+
+%type <slst> SymbolList
+
+%union {
+  ModuleDefinition*			modd;
+  boost::int64_t            ival;
+  std::string				* sval;
+  StringList				* slst;
+  struct {
+    Tag::Type tagClass;
+    unsigned tagNumber;
+  } tagv;
+}
+/*
+%printer { if ($$ != nullptr) fprintf (yyoutput, "'%s'", $$->c_str()); } <sval>
+*/
+
+%{
+#define YYPRINT(a, b, c)  display(a, b, c)
+static void display(FILE *yyoutput, unsigned int a, const YYSTYPE value) {}
+static int adjust(int no) { return no; }
+%}
+
+%%
+
+ModuleDefinitionList
+  : ModuleDefinitionList ModuleDefinition   {  }
+  | ModuleDefinition						{  }
+;
+ModuleDefinition
+  : TypeReference '{' '}' DEFINITIONS EncodingReferenceDefault TagDefault ExtensionDefault ASSIGNMENT BEGIN_t {
+		context->module = new ModuleDefinition(*$1, path, (Tag::Mode)$6);
+		modules.push_back(ModuleDefinitionPtr(context->module));
+		delete $1;
+    } ModuleBody END { context->module = nullptr; }
+
+  | TypeReference DEFINITIONS EncodingReferenceDefault TagDefault ExtensionDefault ASSIGNMENT BEGIN_t {
+		context->module = new ModuleDefinition(*$1, path, (Tag::Mode)$4);
+		modules.push_back(ModuleDefinitionPtr(context->module));
+		delete $1;
+    } ModuleBody END { context->module = nullptr; }
+;
+
+EncodingReferenceDefault 	
+//	: encodingreference INSTRUCTIONS FIXME
+	: IDENTIFIER INSTRUCTIONS 
+	| /*empty*/
+;
+
+TagDefault
+  : EXPLICIT TAGS   { $$ = Tag::Explicit; }
+  | IMPLICIT TAGS	{ $$ = Tag::Implicit; }
+  | AUTOMATIC TAGS	{ $$ = Tag::Automatic; }
+  | /* empty */		{ $$ = Tag::Explicit; }
+;
+
+ExtensionDefault	: EXTENSIBILITY IMPLIED | /*empty*/;
+ModuleBody			: Exports Imports AssignmentList | /* empty */ ;
+Exports				: EXPORTS SymbolsExported ';' | /* empty */ ;
+SymbolsExported		: SymbolList  {  } | /* empty */  {  } ;
+Imports				: IMPORTS SymbolsImported ';' | /* empty */ ;
+SymbolsImported		: SymbolsFromModuleList | /* empty */ ;
+
+SymbolsFromModuleList
+  : SymbolsFromModule
+  | SymbolsFromModuleList SymbolsFromModule
+;
+
+SymbolsFromModule
+  : SymbolList FROM GlobalModuleReference	{ context->module->addImportedIdentifiers(*$1, *$3); delete $1; delete $3; }
+;
+
+GlobalModuleReference		: TypeReference AssignedIdentifier { $$ = $1; };
+
+AssignedIdentifier
+  : DefinedValue
+  | ObjectIdentifierValue
+  | /* empty */
+;
+
+SymbolList
+  : Symbol					{ $$ = new StringList; $$->push_back(*$1); delete $1; }
+  | Symbol ',' SymbolList	{ $3->push_back(*$1); delete $1; $$ = $3; }
+;
+
+Symbol						: Reference | ParameterizedReference  ;
+ParameterizedReference		: Reference '{' '}'	{ *$1 += "{}"; $$ = $1; };
+
+
+/*************************************/
+AssignmentList: Assignment  | AssignmentList Assignment ;
+
+Assignment
+  : TypeAssignment
+  | ValueAssignment
+  | ValueSetTypeAssignment 
+  | ObjectClassAssignment
+  | ObjectAssignment
+  | ObjectSetAssignment
+  | ParameterizedAssignment 
+;
+
+
+ValueSetTypeAssignment
+  : TYPEREFERENCE Type ASSIGNMENT '{' '}'					{ context->module->addIdentifier($1, adjust(TYPEREFERENCE)); }
+  | WOULDBE_OBJECTCLASSREFERENCE Type ASSIGNMENT '{' '}'	{ context->module->addIdentifier($1, adjust(TYPEREFERENCE)); }
+    
+ ;
+
+TypeAssignment
+  : TYPEREFERENCE ASSIGNMENT Type							{ context->module->addIdentifier($1, adjust(TYPEREFERENCE)); }
+  | WOULDBE_OBJECTCLASSREFERENCE ASSIGNMENT Type			{ context->module->addIdentifier($1, adjust(TYPEREFERENCE)); } 
+;
+
+Type		: ConstrainedType | ReferencedType | BuiltinType;
+
+BuiltinType
+	: BitStringType
+	| BooleanType 
+	| CharacterStringType 
+	| ChoiceType 
+	| EmbeddedPDVType 
+	| EnumeratedType 
+	| ExternalType 
+//  | AnyType 
+	| InstanceOfType
+	| IntegerType 
+	| NullType 
+	| ObjectClassFieldType
+	| ObjectIdentifierType 
+	| OctetStringType 
+	| RealType 
+	| RelativeOIDType
+	| SequenceType 
+	| SequenceOfType 
+	| SetType 
+	| SetOfType 
+	| TaggedType
+;
+
+ReferencedType
+  : DefinedType
+  | UsefulType
+  | SelectionType
+  | InformationFromObjects
+;
+
+DefinedType
+  : ExternalTypeReference
+  | TypeReference		{ delete $1; }
+  | ParameterizedType
+/*| ParameterizedValueSetType	synonym for ParameterizedType */
+;
+
+ExternalTypeReference	: MODULEREFERENCE '.' TypeReference	{ delete $1;  delete $3; };
+ParameterizedType		: SimpleDefinedType '{' '}';
+SimpleDefinedType		: ExternalTypeReference | TypeReference		{ delete $1; };
+BitStringType			: BIT STRING | BIT STRING '{' '}';
+BooleanType				: BOOLEAN_t;
+
+CharacterStringType
+  : RestrictedCharacterStringType
+  | UnrestrictedCharacterStringType
+;
+
+RestrictedCharacterStringType
+  : BMPString
+  | UTF8String
+  | GeneralString
+  | GraphicString
+  | IA5String
+  | ISO646String
+  | NumericString
+  | PrintableString
+  | TeletexString
+  | T61String
+  | UniversalString
+  | VideotexString
+  | VisibleString
+;
+
+UnrestrictedCharacterStringType  : CHARACTER STRING;
+ChoiceType				: CHOICE '{' '}';
+EmbeddedPDVType			: EMBEDDED PDV;
+EnumeratedType			: ENUMERATED '{' '}';
+ExternalType			: EXTERNAL;
+AnyType					: ANY | ANY DEFINED BY IDENTIFIER;
+InstanceOfType			: INSTANCE OF_t DefinedObjectClass;
+IntegerType				: INTEGER_t  | INTEGER_t '{' '}';
+NullType				: NULL_t;
+ObjectClassFieldType	: DefinedObjectClass '.' FieldName;
+ObjectIdentifierType	: OBJECT IDENTIFIER_t;
+RelativeOIDType			: RELATIVE_OID;
+OctetStringType			: OCTET STRING;
+RealType				: REAL;
+SequenceType			: SEQUENCE '{' '}';
+SequenceOfType			: SEQUENCE OF_t TypeOrNamedType;
+SetType					: SET '{' '}';
+SetOfType				: SET OF_t TypeOrNamedType;
+TaggedType				: Tag Type | Tag IMPLICIT Type | Tag EXPLICIT Type;
+Tag						: '[' ']';
+SelectionType			: IDENTIFIER '<' Type { delete $1; };
+UsefulType				: GeneralizedTime | UTCTime | ObjectDescriptor_t;
+InformationFromObjects  : ReferencedObjects '.' FieldName { };
+TypeOrNamedType			: Type | NamedType;
+NamedType				: IDENTIFIER Type;
+
+ReferencedObjects
+  : IDENTIFIER			{ delete $1; }
+  | IDENTIFIER '{' '}'  { delete $1; }
+  | TypeReference		{ delete $1; }
+  | ParameterizedType
+;
+
+/********/
+ConstrainedType
+  : Type Constraint
+  | TypeWithConstraint
+;
+
+TypeWithConstraint
+  : SET Constraint OF_t Type
+  | SET SizeConstraint OF_t Type
+  | SEQUENCE Constraint OF_t Type
+  | SEQUENCE SizeConstraint OF_t Type
+;
+
+Constraint		: '(' ')';
+SizeConstraint  : SIZE_t Constraint;
+
+/********/
+ObjectClassAssignment
+	: WOULDBE_OBJECTCLASSREFERENCE ASSIGNMENT ObjectClass {
+		context->module->addIdentifier($1, adjust(OBJECTCLASSREFERENCE));
+	}
+;
+
+ObjectAssignment
+	: IDENTIFIER DefinedObjectClass ASSIGNMENT Object {
+		context->module->addIdentifier($1, adjust(OBJECTREFERENCE));
+	}
+;
+
+ObjectSetAssignment
+	: TYPEREFERENCE DefinedObjectClass ASSIGNMENT ObjectSet  {
+		context->module->addIdentifier($1, adjust(OBJECTSETREFERENCE));
+	}
+	| WOULDBE_OBJECTCLASSREFERENCE DefinedObjectClass ASSIGNMENT ObjectSet {
+		context->module->addIdentifier($1, adjust(OBJECTSETREFERENCE));
+	}
+;
+
+ObjectClass
+  : DefinedObjectClass
+  | ObjectClassDefn 
+  | ParameterizedObjectClass
+;
+
+DefinedObjectClass
+  : ExternalObjectClassReference
+  | OBJECTCLASSREFERENCE    {  delete $1;    }
+  | UsefulObjectClassReference
+;
+
+ExternalObjectClassReference
+  : MODULEREFERENCE '.' OBJECTCLASSREFERENCE	{  delete $1;  delete $3; }
+;
+
+UsefulObjectClassReference  : TYPE_IDENTIFIER  | ABSTRACT_SYNTAX;
+ObjectClassDefn				: CLASS  '{'  '}'  WithSyntaxSpec;
+WithSyntaxSpec				: WITH SYNTAX '{' '}' | /* empty */;
+DefinedObject				: ExternalObjectReference | IDENTIFIER { delete $1; };
+ExternalObjectReference		: MODULEREFERENCE '.' IDENTIFIER    {  delete $1;  delete $3; };
+ParameterizedObjectClass	: DefinedObjectClass  '{' '}';
+
+FieldName
+  : FieldName '.' FIELDREFERENCE	{ delete $3; }
+  | FIELDREFERENCE					{ delete $1; }
+;
+
+Object
+  : DefinedObject
+  | '{' '}'
+  | InformationFromObjects
+/*  | ParameterizedObject */
+;
+
+ObjectSet
+  : '{' '}'
+;
+
+ParameterizedAssignment
+  : ParameterizedTypeAssignment
+  | ParameterizedValueAssignment
+  | ParameterizedValueSetTypeAssignment
+  | ParameterizedObjectClassAssignment
+  | ParameterizedObjectAssignment
+  | ParameterizedObjectSetAssignment 
+;
+
+ParameterizedTypeAssignment
+  : ParameterizedTypeReference ASSIGNMENT Type {
+    context->module->addIdentifier($1, adjust(PARAMETERIZEDTYPEREFERENCE));
+      }
+  | ParameterizedWouldbeObjectClassReference ASSIGNMENT Type {
+    context->module->addIdentifier($1, adjust(PARAMETERIZEDTYPEREFERENCE));
+      }
+;
+
+ParameterizedValueAssignment
+  : ParameterizedIdentifier Type	ASSIGNMENT Value {
+    context->module->addIdentifier($1, adjust(PARAMETERIZEDVALUEREFERENCE)); 
+	  }
+;
+
+ParameterizedValueSetTypeAssignment
+  : ParameterizedTypeReference Type ASSIGNMENT '{' '}' { 
+    context->module->addIdentifier($1, adjust(PARAMETERIZEDTYPEREFERENCE));
+	  }
+  | ParameterizedWouldbeObjectClassReference Type ASSIGNMENT '{' '}' { 
+    context->module->addIdentifier($1, adjust(PARAMETERIZEDTYPEREFERENCE));
+	  }
+;
+
+ParameterizedObjectClassAssignment
+  : ParameterizedWouldbeObjectClassReference ASSIGNMENT ObjectClass { 
+    context->module->addIdentifier($1, adjust(PARAMETERIZEDOBJECTCLASSREFERENCE));
+	  }
+;
+
+ParameterizedObjectAssignment
+  : ParameterizedIdentifier DefinedObjectClass ASSIGNMENT Object { 
+    context->module->addIdentifier($1, adjust(PARAMETERIZEDOBJECTREFERENCE));
+	  }
+;
+
+ParameterizedObjectSetAssignment
+  : ParameterizedTypeReference DefinedObjectClass ASSIGNMENT ObjectSet { 
+    context->module->addIdentifier($1, adjust(PARAMETERIZEDOBJECTSETREFERENCE));
+	  }
+  | ParameterizedWouldbeObjectClassReference DefinedObjectClass ASSIGNMENT ObjectSet  { 
+    context->module->addIdentifier($1, adjust(PARAMETERIZEDOBJECTSETREFERENCE));
+	  }
+;
+
+ParameterizedWouldbeObjectClassReference
+  : WOULDBE_OBJECTCLASSREFERENCE ParameterList
+;
+	    
+ParameterizedTypeReference	: TYPEREFERENCE ParameterList;
+ParameterizedIdentifier		: IDENTIFIER ParameterList;
+ParameterList				: '{' '}';
+
+/********/
+ValueAssignment				: IDENTIFIER Type ASSIGNMENT Value  {
+  context->module->addIdentifier($1, adjust(VALUEREFERENCE));
+}
+;
+
+Value						: NonOpenTypeValue | ObjectClassFieldValue;
+NonOpenTypeValue			: BuiltinValue | ReferencedValue;
+
+BuiltinValue
+	: BitStringValue
+	| BooleanValue
+	| CharacterStringValue
+	| ChoiceValue
+//	| EmbeddedPDVValue  synonym to SequenceValue
+//	| EnumeratedValue   synonym to IDENTIFIER
+//	| ExternalValue     synonym to SequenceValue
+//	| InstanceOfValue   synonym to Value
+	| SignedNumber      /* IntegerValue */ 
+//	| IRIValue
+	| NullValue
+	| ObjectIdentifierValue
+	| OctetStringValue
+	| RealValue
+//	| RelativeIRIValue
+	| RelativeOIDValue
+	| SequenceValue
+//	| SequenceOfValue
+//	| setValue				synonym to SequenceValue
+//	| setOfValue		    synonym to SequenceOfValue
+//	| PrefixedValue
+//	| TimeValue
+;
+
+
+DefinedValue
+  : ExternalValueReference
+  | IDENTIFIER				{ delete $1; }
+  | ParameterizedValue
+;
+
+ExternalValueReference
+  : MODULEREFERENCE '.' IDENTIFIER { delete $1; delete $3;  }
+;
+
+ObjectIdentifierValue	: '{' '}';
+RelativeOIDValue		: '{' '}';
+BitStringValue			: BSTRING | HSTRING;
+BooleanValue			: TRUE_t | FALSE_t;
+
+CharacterStringValue
+  : RestrictedCharacterStringValue
+/*!!!
+  | UnrestrictedCharacterStringValue
+*/
+;
+
+RestrictedCharacterStringValue: CSTRING;
+ChoiceValue				: IDENTIFIER ':' Value  { delete $1; };
+NullValue				: NULL_t;
+RealValue				: NumericRealValue | SpecialRealValue;
+NumericRealValue		:  '0';
+SpecialRealValue		: PLUS_INFINITY | MINUS_INFINITY;
+ObjectClassFieldValue	: OpenTypeFieldVal;
+OpenTypeFieldVal		: Type ':' Value;
+ReferencedValue			: DefinedValue | InformationFromObjects;
+ParameterizedValue		: SimpleDefinedValue  '{' '}';
+SimpleDefinedValue		: ExternalValueReference | IDENTIFIER { delete $1; };
+TypeReference			: TYPEREFERENCE | WOULDBE_OBJECTCLASSREFERENCE;
+Reference				: TypeReference | IDENTIFIER;
+SignedNumber			: INTEGER {}  | '-' INTEGER {};
+
+%%
+
+int YYLEX_DECL();
+int YYPARSE_DECL();
+void YYERROR_DECL();
+
