@@ -641,14 +641,10 @@ ConstraintSpec 		::= SubtypeConstraint | GeneralConstraint ;
 SubtypeConstraint 	::= ElementSetSpecs;
 
 ElementSetSpecs 	::=
-	RootElementSetSpec
-	| RootElementSetSpec "," "..."
-	| RootElementSetSpec "," "..." "," additionalElementSetSpec
+	  ElementSetSpec
+	| ElementSetSpec "," "..."
+	| ElementSetSpec "," "..." "," ElementSetSpec
 ;
-
-RootElementSetSpec 	::= ElementSetSpec ;
-
-additionalElementSetSpec::= ElementSetSpec ;
 
 ElementSetSpec 			::= Unions | ALL Exclusions ;
 
