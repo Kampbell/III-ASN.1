@@ -325,7 +325,7 @@ NullValue 		::= NULL ;
 XMLNullValue 		::= empty ;
 
 SequenceType 		::=
-	SEQUENCE "{" "}"
+	  SEQUENCE "{" "}"
 	| SEQUENCE "{" ExtensionAndException OptionalExtensionMarker "}"
 	| SEQUENCE "{" ComponentTypeLists "}"
 ;
@@ -409,29 +409,23 @@ XMLSetOfValue 		::= XMLValueList | XMLDelimitedItemList | empty ;
 ChoiceType 		::= CHOICE "{" AlternativeTypeLists "}" ;
 
 AlternativeTypeLists 	::=
-	RootAlternativeTypeList
-	| RootAlternativeTypeList ","
-	ExtensionAndException ExtensionadditionAlternatives
-	OptionalExtensionMarker
+	  AlternativeTypeList
+	| AlternativeTypeList "," ExtensionAndException ExtensionadditionAlternatives OptionalExtensionMarker
 ;
-
-RootAlternativeTypeList	::= AlternativeTypeList ;
 
 ExtensionadditionAlternatives 	::= "," ExtensionadditionAlternativesList | empty ;
 
 ExtensionadditionAlternativesList 	::=
-ExtensionadditionAlternative
-| ExtensionadditionAlternativesList "," ExtensionadditionAlternative
+	  ExtensionadditionAlternative
+	| ExtensionadditionAlternativesList "," ExtensionadditionAlternative
 ;
 
 ExtensionadditionAlternative 	::=
-ExtensionadditionAlternativesGroup
-| NamedType
+	  ExtensionadditionAlternativesGroup
+	| NamedType
 ;
 
-ExtensionadditionAlternativesGroup 	::=
-"[[" VersionNumber AlternativeTypeList "]]"
-;
+ExtensionadditionAlternativesGroup 	::= "[[" VersionNumber AlternativeTypeList "]]";
 
 AlternativeTypeList 	::= NamedType | AlternativeTypeList "," NamedType ;
 
