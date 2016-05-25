@@ -283,7 +283,7 @@ ParameterizedReference		: Reference '{' '}'	{ *$1 += "{}"; $$ = $1; };
 
 
 /*************************************/
-AssignmentList: Assignment  | AssignmentList Assignment ;
+AssignmentList: Assignment  [ YYVALID; ] | AssignmentList Assignment [ YYVALID; ];
 
 Assignment
   : TypeAssignment
