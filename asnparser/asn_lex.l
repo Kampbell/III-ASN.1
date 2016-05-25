@@ -62,19 +62,21 @@ extern const char *const yyname[];
 #define YY_HEADER_EXPORT_START_CONDITIONS 1
 //#define YY_USER_ACTION if (LexEcho) std::cout << yytext << std::flush;
 
-extern int yylex (YYSTYPE*,YYLTYPE*  ,yyscan_t, ParserContext*);
-#define YY_DECL int yylex(YYSTYPE* yylval_param, YYLTYPE* yylloc_param, yyscan_t yyscanner, ParserContext* context)
+extern int yylex (YYSTYPE*,YYLTYPE*  ,yyscan_t, ParserContext*, void* save);
+#define YY_DECL int yylex(YYSTYPE* yylval_param, YYLTYPE* yylloc_param, yyscan_t yyscanner, ParserContext* context, void* yytrial)
 
 #define YY_USER_ACTION yylloc->first_line = yylloc->last_line = yylineno; \
     yylloc->first_column = yycolumn; yylloc->last_column = yycolumn + yyleng - 1; \
     yycolumn += yyleng;
 
+#define YY_USER_INIT yylloc->first_line = yylloc->last_line = yylineno = 1; \
+    yylloc->first_column = yycolumn; yylloc->last_column = yycolumn = 1;
+
 extern "C" int yywrap(yyscan_t ) { return 1; }
 bool dumpUpperCaseToken = false;
 bool dumpLowerCaseToken = false;
 
-int isUpper(const char* text)
-{
+int isUpper(const char* text) {
 	for (const char* p = text; *p != 0; ++p)
 		if (!(isupper(*p) || *p == '-' || *p == '_'))
 			return FALSE;
@@ -82,24 +84,21 @@ int isUpper(const char* text)
 }
 char *yyget_text (yyscan_t yyscanner );
 
-static int TokenSelect(YYSTYPE * yylval, int ctx, int token1, int token2, yyscan_t yyscanner)
-{
+static int TokenSelect(YYSTYPE * yylval, int ctx, int token1, int token2, yyscan_t yyscanner) {
   if (ctx)
     return token1;
   yylval->sval = new std::string(yyget_text(yyscanner));
   return token2;
 }
 
-static int is_WORD(ParserContext* context, yyscan_t yyscanner)
-{
+static int is_WORD(ParserContext* context, yyscan_t yyscanner) {
 	return (context->inWithSyntaxContext || 
 	         (!context->classStack->empty() && context->classStack->top()->hasLiteral(yyget_text(yyscanner)))) 
 			&& !context->parsingConstructedType;
 }
 
-static int getUpperCaseToken(ParserContext* context, const char* text)
-{
-     int result = 0;
+static int getUpperCaseToken(ParserContext* context, const char* text) {
+    int result = 0;
 	if (context->dummyParameters && (result = context->dummyParameters->getIdentifierType(text)) != -1) {
 		result = result;goto exit;
 	}
@@ -130,8 +129,7 @@ exit:
 	return result;
 }
 
-static int getLowerCaseToken(ParserContext* context, const char* text)
-{
+static int getLowerCaseToken(ParserContext* context, const char* text) {
 	int result = 0;
 
 	if (true) {
@@ -271,6 +269,8 @@ upper [A-Z]
 "VideotexString"    { return VideotexString; }
 "VisibleString"     { return VisibleString; }
 "WITH"              { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,WITH, WORD_t, yyscanner); }                                                               
+
+
 "/*" {
     BEGIN(multiline_comment);
 }
@@ -365,8 +365,6 @@ upper [A-Z]
 
 "|"  { return '|'; }
 
-";"  { return ';'; }
-
 "+"  { return '+'; }
 
 "-"  { return '-'; }
@@ -387,6 +385,7 @@ upper [A-Z]
 
 "^"  { return '^'; }
 
+";"  { return ';'; }
 
 (\"[^\"]*\")(\"[^\"]*\")*  {
     std::string s = yytext;
@@ -402,7 +401,7 @@ upper [A-Z]
     }
     yylval->sval = new std::string(s);
     return CSTRING;
-  }
+}
 
 {integer}  {
 	if (context->inOIDContext) {
@@ -416,7 +415,7 @@ upper [A-Z]
         yylval->ival = yylval->ival * 10 + *ptr++ - '0';
       return INTEGER;
 	}
-  }
+}
 
 {real}  {
 	if (context->inOIDContext) {
@@ -431,7 +430,7 @@ upper [A-Z]
 			yylval->ival = yylval->ival * 10 + *ptr++ - '0';
       return REAL;
 	}
-  }
+}
 
 ['][01]*[']B {
   yylval->sval = new std::string(yytext);
@@ -446,7 +445,7 @@ upper [A-Z]
 ({lower}|({lower}[a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {
     yylval->sval = new std::string(yytext);
     return getLowerCaseToken(context, yytext);
-  }
+}
 
 "&"({lower}|({lower}[a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {   /* See X.681 section 7.5 */
     yylval->sval = new std::string(yytext);
@@ -455,7 +454,7 @@ upper [A-Z]
 		return result;
 		
     return fieldreference;
-  }
+}
 
 "&"({upper}|({upper}[a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {	  /* See X.681 section 7.4 */
     yylval->sval = new std::string(yytext);
@@ -463,19 +462,19 @@ upper [A-Z]
 	if (context->informationFromObjectContext && (result = context->informationFromObjectContext->getFieldToken(yytext)))
 		return result;
     return FieldReference;
-  }
+}
 
 
 ({upper}|({upper}[a-zA-Z0-9_-]*[a-zA-Z0-9_]))  {	  /* See X.680 section 9.2 */
     yylval->sval = new std::string(yytext);
 	return getUpperCaseToken(context, yytext);
-  }
+}
 
 [ \t\r]  { }
 
 \n {
     lineNumber++;
-  }
+}
 
 .  { std::cerr << StdError(Fatal) << "unknown token " << yytext << std::endl; }
 
