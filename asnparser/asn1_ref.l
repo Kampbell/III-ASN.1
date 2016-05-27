@@ -1,8 +1,8 @@
 /*
 %option bison-bridge
 %option stack
-%option outfile="asn_lex.cxx"
-%option header-file="asn_lex.h"
+%option outfile="asn1_ref.cxx"
+%option header-file="asn1_ref.hxx"
 %option reentrant 
 %option bison-locations 
 %option yylineno
@@ -45,7 +45,7 @@
 
 #define YY_NEVER_INTERACTIVE 1
 
-#include "asn_ref_grammar.tab.h"
+#include "asn1_ref.tab.h"
 
 #define FALSE 0
 #define TRUE  1
@@ -99,9 +99,12 @@ integer {digit}+
 "COMPONENTS"                       { return COMPONENTS; }
 "CONSTRAINED"                      { return CONSTRAINED; }
 "CONTAINING"						{ return CONTAINING; }
+"DATE"								{ return DATE; }
+"DATE-TIME"							{ return DATE_TIME; }
 "DEFAULT"                          { return DEFAULT; }
 "DEFINED"                          { return DEFINED; }
 "DEFINITIONS"                      { return DEFINITIONS; }
+"DURATION"							{ return DURATION; }
 "EMBEDDED"                         { return EMBEDDED; }
 "END"                              { return END; }
 "ENUMERATED"                       { return ENUMERATED; }
@@ -156,6 +159,8 @@ integer {digit}+
 "TAGS"                             { return TAGS; }
 "TeletexString"                    { return TeletexString; }
 "TRUE"                             { return TRUE_t; }
+"TIME"								{ return TIME; }
+"TIME-OF-DAY"						{ return TIME_OF_DAY; }
 "TYPE"								{ return TYPE_t; }
 "UNION"                            { return UNION; }
 "UNIQUE"                           { return UNIQUE; }

@@ -217,18 +217,11 @@ public:
 	Tag(unsigned tagNum, Mode m);
 	Tag() : type(Universal), number(0), mode(Implicit) {}
 
-	bool isDefined() const {
-		return (type|number)!= 0;
-	}
 
 	void print(ostream&) const;
-	bool operator == (const Tag& other) const {
-		return type == other.type&& number == other.number&& mode == other.mode;
-	}
-
-	bool operator != (const Tag& other) const {
-		return !(*this == other);
-	}
+	bool isDefined() const					  { return (type|number)!= 0;	}
+	bool operator == (const Tag& other) const {	return type == other.type&& number == other.number&& mode == other.mode; }
+	bool operator != (const Tag& other) const {	return !(*this == other);}
 
 	Type type;
 	unsigned number;
@@ -247,15 +240,12 @@ class SubTypeConstraintElement;
 
 typedef shared_ptr<ValueSet> ValueSetPtr;
 typedef shared_ptr<Constraint> ConstraintPtr;
-
 class ConstraintElementBase : public Printable {
 public:
 	ConstraintElementBase();
 	~ConstraintElementBase();
 
-	void setExclusions(shared_ptr<ConstraintElementBase> excl) {
-		exclusions = excl;
-	}
+	void setExclusions(shared_ptr<ConstraintElementBase> excl) {exclusions = excl;	}
 
 	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual void getConstraint(string& ) const {}
@@ -266,9 +256,7 @@ public:
 	virtual ConstraintPtr getObjectSetFromObjectField(const string& field) const;
 	virtual ConstraintPtr getObjectSetFromObjectSetField(const string& field) const;
 
-	virtual bool hasPERInvisibleConstraint(const Parameter&) const {
-		return false;
-	}
+	virtual bool hasPERInvisibleConstraint(const Parameter&) const { return false; }
 	virtual void generateObjectSetInstanceCode(const string& , ostream& ) const {}
 	virtual void generateObjSetAccessCode(ostream& ) {}
 	virtual bool getCharacterSet(string& characterSet) const;
@@ -283,9 +271,10 @@ protected:
 	shared_ptr<ConstraintElementBase> exclusions;
 };
 
+
+
 typedef shared_ptr<ConstraintElementBase> ConstraintElementPtr;
 typedef vector<ConstraintElementPtr> ConstraintElementVector;
-
 class Constraint : public Printable {
 public:
 	Constraint(bool extend) : extendable(extend) {};
@@ -297,25 +286,15 @@ public:
 	void print(ostream&) const;
 	void printElements(ostream&) const;
 
-	bool isExtendable() const {
-		return extendable;
-	}
+	bool isExtendable() const { return extendable; }
 	void getConstraint(string& str) const;
 	void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	bool referencesType(const TypeBase& type) const;
 
-	const ConstraintElementVector& getStandardElements() const {
-		return standard;
-	}
-	const ConstraintElementVector& getExtensionElements() const {
-		return extensions;
-	}
-	ConstraintElementVector& getStandardElements() {
-		return standard;
-	}
-	ConstraintElementVector& getExtensionElements() {
-		return extensions;
-	}
+	const ConstraintElementVector& getStandardElements() const	{ return standard;	}
+	const ConstraintElementVector& getExtensionElements() const { return extensions;}
+	ConstraintElementVector& getStandardElements()				{ return standard; }
+	ConstraintElementVector& getExtensionElements()				{ return extensions; }
 
 	ValueSetPtr getValueSetFromValueField(const string& field) const;
 	ValueSetPtr getValueSetFromValueSetField(const string& field) const;
@@ -333,8 +312,8 @@ public:
 	void generateObjSetAccessCode(ostream&);
 
 protected:
+	bool					extendable;
 	ConstraintElementVector standard;
-	bool                  extendable;
 	ConstraintElementVector extensions;
 };
 
@@ -358,9 +337,7 @@ public:
 	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual void getConstraint(string& str) const;
 	virtual bool referencesType(const TypeBase& type) const;
-	const ConstraintElementVector& getElements() const {
-		return elements;
-	}
+	const ConstraintElementVector& getElements() const		{ return elements; }
 
 	virtual ValueSetPtr getValueSetFromValueField(const string& field) const;
 	virtual ValueSetPtr getValueSetFromValueSetField(const string& field) const;
@@ -373,10 +350,8 @@ public:
 	virtual const SizeConstraintElement* getSizeConstraint() const;
 	virtual const FromConstraintElement* getFromConstraint() const;
 
-	void AppendElements(
-		ConstraintElementVector::const_iterator first,
-		ConstraintElementVector::const_iterator last
-	);
+	void AppendElements(ConstraintElementVector::const_iterator first,	ConstraintElementVector::const_iterator last);
+
 protected:
 	ConstraintElementVector elements;
 };
@@ -394,15 +369,14 @@ public:
 	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual void getConstraint(string& str) const;
 
-	const ValuePtr& getValue() const {
-		return value;
-	}
+	const ValuePtr& getValue() const			{ return value;	}
 	virtual bool hasPERInvisibleConstraint(const Parameter&) const;
 	virtual bool getCharacterSet(string& characterSet) const;
 
 protected:
 	const ValuePtr value;
-  private:
+
+private:
 	SingleValueConstraintElement& operator = (const SingleValueConstraintElement&);
 };
 
@@ -432,14 +406,13 @@ public:
 	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 	virtual void getConstraint(string& str) const;
 
-	const ValuePtr& getPattern() const {
-		return pattern;
-	}
+	const ValuePtr& getPattern() const	{ return pattern; }
 	virtual bool hasPERInvisibleConstraint(const Parameter&) const;
 
 protected:
 	const ValuePtr pattern;
-  private:
+
+ private:
 	PatternValueConstraintElement& operator = (const PatternValueConstraintElement&);
 };
 
@@ -507,9 +480,7 @@ public:
 	WithComponentConstraintElement(const string& name, ConstraintPtr constraint, int presence);
 	void print(ostream&) const;
 	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
-	virtual bool hasPERInvisibleConstraint(const Parameter&) const {
-		return false;
-	}
+	virtual bool hasPERInvisibleConstraint(const Parameter&) const	{ return false;	}
 
 	enum {
 		Present,
@@ -545,9 +516,8 @@ public:
 	UserDefinedConstraintElement(ActualParameterListPtr list);
 	void print(ostream&) const;
 	virtual void generateCplusplus(const string& fn, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
-	virtual bool hasPERInvisibleConstraint(const Parameter&) const {
-		return true;
-	}
+	virtual bool hasPERInvisibleConstraint(const Parameter&) const { return true; }
+
 protected:
 	ActualParameterListPtr parameters;
 };
@@ -556,6 +526,7 @@ class AtNotation : public Printable {
 public:
 private:
 };
+
 class DefinedObjectSet;
 typedef shared_ptr<DefinedObjectSet> DefinedObjectSetPtr;
 class TableConstraint {
@@ -564,8 +535,9 @@ public:
 	~TableConstraint();
 	bool ReferenceType(const TypeBase& type);
 	string getObjectSetIdentifier() const;
-	const StringList* getAtNotations() const {	return atNotations.get();}
-  private:
+	const StringList* getAtNotations() const {	return atNotations.get(); }
+
+private:
 	shared_ptr<DefinedObjectSet> objSet;
 	auto_ptr<StringList> atNotations;
 };
@@ -583,6 +555,7 @@ public:
 	virtual bool isTypeParameter() const {return true;}
 	virtual bool ReferencedBy(const TypeBase&) const;
 	virtual ActualParameterPtr MakeActualParameter() const;
+
 protected:
 	string name;
 	int identifierType;
@@ -598,6 +571,7 @@ public:
 	virtual bool isTypeParameter() const {		return false;	}
 	virtual bool ReferencedBy(const TypeBase&) const {		return false;	}
 	virtual ActualParameterPtr MakeActualParameter() const;
+
 protected:
 	TypePtr governor;
 };
@@ -606,18 +580,14 @@ class DefinedObjectClass;
 typedef shared_ptr<DefinedObjectClass> DefinedObjectClassPtr;
 class ObjectParameter : public Parameter {
 public:
-	ObjectParameter(DefinedObjectClassPtr governor,
-					const string& name);
+	ObjectParameter(DefinedObjectClassPtr governor,	const string& name);
 	~ObjectParameter();
-	DefinedObjectClass* getGovernor() {
-		return governor.get();
-	}
+	DefinedObjectClass* getGovernor() {	return governor.get();	}
 	void print(ostream& strm) const;
-	virtual bool isTypeParameter() const {
-		return false;
-	}
+	virtual bool isTypeParameter() const {	return false; }
 	virtual bool ReferencedBy(const TypeBase&) const;
 	virtual ActualParameterPtr MakeActualParameter() const;
+
 protected:
 	DefinedObjectClassPtr governor;
 };
@@ -628,18 +598,14 @@ typedef vector<ParameterPtr> ParameterListRep;
 class ParameterList : public Printable {
 public:
 	void Append(ParameterPtr param);
-	bool isEmpty() const {
-		return rep.empty();
-	}
+	bool isEmpty() const {	return rep.empty();	}
 	int getIdentifierType(const char* identifier);
 	Parameter* getParameter(const char* identifier);
 	void generateCplusplus(string& templatePrefix, string& classNameString);
 	void print(ostream& strm) const;
 	shared_ptr<ParameterList> getReferencedParameters(const TypeBase& type) const;
 	ActualParameterListPtr MakeActualParameters() const;
-	void swap(ParameterList& other) {
-		rep.swap(other.rep);
-	}
+	void swap(ParameterList& other) { rep.swap(other.rep); }
 	ParameterListRep rep;
 };
 
@@ -706,17 +672,13 @@ public:
 	virtual bool forwardDeclareMe(ostream& hdr);
 	virtual void generateInfo(const TypeBase* type, ostream& fwd, ostream& hdr, ostream& cxx);
 
-	bool isGenerated() const {
-		return isgenerated;
-	}
+	bool isGenerated() const						{ return isgenerated; }
 	virtual void beginGenerateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	void endGenerateCplusplus(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	void generateTags(ostream& strm) const;
 	void generateCplusplusConstraints(const string& prefix, ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl) const;
 
-	const ConstraintList& getConstraints() const {
-		return constraints;
-	}
+	const ConstraintList& getConstraints() const	{ return constraints; }
 	virtual void beginParseThisTypeValue() const {}
 	virtual void endParseThisTypeValue() const {}
 	virtual void resolveReference() const {}
@@ -725,17 +687,13 @@ public:
 
 	virtual void RemovePERInvisibleConstraint(const ParameterPtr&);
 	void RemovePERInvisibleConstraints();
-	virtual bool useType(const TypeBase& ) const {
-		return false;
-	}
+	virtual bool useType(const TypeBase& ) const	{ return false;	}
 
 	virtual void generateConstructors(ostream& fwd, ostream& hdr, ostream& cxx, ostream& inl);
 	virtual bool needGenInfo() const;
 	TypePtr SeqOfflattenThisType(const TypeBase& parent, TypePtr thisPtr);
 
-	const ParameterList& getParameters() const {
-		return parameters;
-	}
+	const ParameterList& getParameters() const		{ return parameters; }
 	virtual void generateDecoder(ostream&) {}
 
 	enum RemoveResult {
@@ -743,18 +701,11 @@ public:
 		MAY_NOT,
 		FORBIDDEN
 	};
-	virtual RemoveResult canRemoveType(const TypeBase&) {
-		return OK;
-	}
-	virtual bool removeThisType(const TypeBase& type) {
-		return getName() == type.getName();
-	}
-	virtual bool isRemovedType() const {
-		return false;
-	}
-	ModuleDefinition* getModule() const {
-		return module;
-	}
+	virtual RemoveResult canRemoveType(const TypeBase&)		{ return OK; }
+	virtual bool removeThisType(const TypeBase& type)		{ return getName() == type.getName(); }
+	virtual bool isRemovedType() const						{ return false; }
+	ModuleDefinition* getModule() const						{ return module; }
+
 protected:
 	TypeBase(unsigned tagNum, ModuleDefinition* md);
 	TypeBase(TypeBase& copy);
@@ -826,9 +777,7 @@ protected:
 class ParameterizedType : public DefinedType {
 public:
 	ParameterizedType(const string& name, ActualParameterList& args);
-	ParameterizedType(TypePtr& refType,
-					  const TypeBase& parent,
-					  ActualParameterList& args);
+	ParameterizedType(TypePtr& refType, const TypeBase& parent,  ActualParameterList& args);
 
 	void print(ostream&) const;
 
@@ -837,6 +786,7 @@ public:
 	virtual bool referencesType(const TypeBase& type) const;
 	virtual bool useType(const TypeBase& type) const;
 	virtual RemoveResult canRemoveType(const TypeBase&);
+
 protected:
 	ActualParameterList arguments;
 };
@@ -898,9 +848,8 @@ public:
 	virtual void generateInfo(const TypeBase* type, ostream& , ostream&);
 	virtual TypePtr flattenThisType(TypePtr& self, const TypeBase& parent);
 
-	virtual void
-	beginParseThisTypeValue() const,
-							endParseThisTypeValue() const;
+	virtual void beginParseThisTypeValue() const;
+	virtual void endParseThisTypeValue() const;
 
 protected:
 	NamedNumberList allowedValues;
@@ -1706,7 +1655,6 @@ typedef shared_ptr<FieldSetting> FieldSettingPtr;
 typedef vector<FieldSettingPtr> FieldSettingList;
 
 class FieldSpec;
-//PLIST(FieldSpecsList, FieldSpec);
 typedef shared_ptr<FieldSpec> FieldSpecPtr;
 typedef vector<FieldSpecPtr> FieldSpecsList;
 

@@ -100,9 +100,12 @@ typedef std::vector<std::string> StringList;
 %token COMPONENTS       
 %token CONSTRAINED      
 %token CONTAINING
+%token DATE
+%token DATE_TIME
 %token DEFAULT          
 %token DEFINED
 %token DEFINITIONS 
+%token DURATION
 %token ELLIPSIS     
 %token EMBEDDED         
 %token END
@@ -157,6 +160,8 @@ typedef std::vector<std::string> StringList;
 %token SYNTAX           
 %token T61String        
 %token TAGS             
+%token TIME
+%token TIME_OF_DAY
 %token TeletexString    
 %token TRUE_t
 %token TYPE_t

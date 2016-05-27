@@ -7,7 +7,7 @@
 /*
 %define api.pure		full
 */
-%lex-param				{ yyscan_t scanner } { ParserContext* context } { void* yytrial }
+%lex-param				{ yyscan_t scanner } { ParserContext* context }
 %parse-param			{ yyscan_t scanner } { ParserContext* context }
 %locations
 %no-lines
@@ -134,8 +134,11 @@ extern int iddebug;
 %token CONSTRAINED
 %token CONTAINING
 %token DEFAULT
+%token DATE
+%token DATE_TIME
 %token DEFINED
 %token DEFINITIONS
+%token DURATION
 %token ELLIPSIS
 %token EMBEDDED
 %token END
@@ -193,6 +196,8 @@ extern int iddebug;
 %token SYNTAX
 %token T61String
 %token TAGS
+%token TIME
+%token TIME_OF_DAY
 %token TRUE_t
 %token TYPE_IDENTIFIER
 %token TYPE_t
@@ -683,9 +688,9 @@ BuiltinType
 	| BooleanType
 	| CharacterStringType
 	| ChoiceType
-//	| DateType
-//	| DateTimeType
-//	| DurationType
+	| DateType
+	| DateTimeType
+	| DurationType
 	| EmbeddedPDVType
 	| EnumeratedType
 	| ExternalType
@@ -705,8 +710,8 @@ BuiltinType
 	| SetType
 	| SetOfType
 	| TaggedType
-//	| TimeType
-//	| TimeOfDayType
+	| TimeType
+	| TimeOfDayType
 ;
 
 
@@ -749,19 +754,14 @@ NamedBit
 	| IDENTIFIER '(' DefinedValue ')'	{ $$ = new NamedNumber($1, ((DefinedValue*)$3)->getReference()); delete $3; }
 ;
 
-BooleanType
-	: BOOLEAN_t		{	$$ = new BooleanType;	}
-;
-
-/*
-TimeType 				::= TIME ;
-TimeValue 				::= tstring ;
-XMLTimeValue 			::= xmltstring ;
-DateType 				::= DATE ;
-TimeOfDayType 			::= TIME_OF_DAY ;
-DateTimeType 			::= DATE_TIME ;
-DurationType 			::= DURATION ;
-*/
+BooleanType				: BOOLEAN_t		{	$$ = new BooleanType;	};
+TimeType 				: TIME ;
+TimeValue 				: CSTRING ;	//FIXME should be a TSTRING
+//XMLTimeValue 			: xmltstring ;
+DateType 				: DATE ;
+TimeOfDayType 			: TIME_OF_DAY ;
+DateTimeType 			: DATE_TIME ;
+DurationType 			: DURATION ;
 
 
 CharacterStringType
@@ -800,21 +800,17 @@ AlternativeTypeLists
 //	| AlternativeTypeList ',' ExtensionAndException  ','  AlternativeTypeList		{	$$ = new ChoiceType($1, true, $5);  }
 ;
 
-ExtensionadditionAlternatives 	: ',' ExtensionadditionAlternativesList | /*empty*/ ;
+ExtensionadditionAlternatives		: ',' ExtensionadditionAlternativesList | /*empty*/ ;
 
-ExtensionadditionAlternativesList 	:
-ExtensionadditionAlternative
-| ExtensionadditionAlternativesList ',' ExtensionadditionAlternative
+ExtensionadditionAlternativesList
+	: ExtensionadditionAlternative
+	| ExtensionadditionAlternativesList ',' ExtensionadditionAlternative
 ;
 
-ExtensionadditionAlternative 	:
-ExtensionadditionAlternativesGroup
-| NamedType
-;
+ExtensionadditionAlternative 		: ExtensionadditionAlternativesGroup | NamedType;
 
-ExtensionadditionAlternativesGroup 	:
-"[[" VersionNumber AlternativeTypeList "]]"
-;
+ExtensionadditionAlternativesGroup 	: "[[" VersionNumber AlternativeTypeList "]]";
+
 AlternativeTypeList
 	: NamedType							{ $$ = new TypesVector;	$$->push_back(TypePtr($1)); }
 	| AlternativeTypeList ',' NamedType	{ $1->push_back(TypePtr($3)); }
@@ -831,7 +827,6 @@ NamedType
 		$1->setName(strm.str());
     }
 */
-/*| SelectionType    /* Unnecessary as have rule in Type for this */
 ;
 
 EmbeddedPDVType
@@ -1051,7 +1046,7 @@ TaggedType
 ;
 
 Tag
-	: '[' Class ClassNumber ']'					{ $$.tagClass = (Tag::Type)$2; $$.tagNumber = (int)$3;  }
+	: '[' Class ClassNumber ']'	{ $$.tagClass = (Tag::Type)$2; $$.tagNumber = (int)$3;  }
 ;
 
 ClassNumber
@@ -1067,14 +1062,14 @@ ClassNumber
 ;
 
 Class
-	: UNIVERSAL			{	$$ = Tag::Universal; }
-	| APPLICATION		{	$$ = Tag::Application; }
-	| PRIVATE			{	$$ = Tag::Private;  }
-	| /*empty*/			{	$$ = Tag::ContextSpecific; }
+	: UNIVERSAL					{	$$ = Tag::Universal; }
+	| APPLICATION				{	$$ = Tag::Application; }
+	| PRIVATE					{	$$ = Tag::Private;  }
+	| /*empty*/					{	$$ = Tag::ContextSpecific; }
 ;
 
 SelectionType
-	: IDENTIFIER '<' Type	{ $$ = new SelectionType(*$1, TypePtr($3)); delete $1; }
+	: IDENTIFIER '<' Type		{ $$ = new SelectionType(*$1, TypePtr($3)); delete $1; }
 ;
 
 UsefulType
@@ -1091,30 +1086,26 @@ TypeFromObject
 ;
 
 ValueSetFromObjects
-	: ReferencedObjectsDot FIXEDTYPEVALUEFIELDREFERENCE
-   {
-		  $$ = new ValueSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
-		  context->informationFromObjectContext = nullptr;
-   }
-	| ReferencedObjectsDot FIXEDTYPEVALUESETFIELDREFERENCE
-   {
-		  $$ = new ValueSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
-		  context->informationFromObjectContext = nullptr;
-   }
+	: ReferencedObjectsDot FIXEDTYPEVALUEFIELDREFERENCE {
+		$$ = new ValueSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
+		context->informationFromObjectContext = nullptr;
+	}
+	| ReferencedObjectsDot FIXEDTYPEVALUESETFIELDREFERENCE {
+		$$ = new ValueSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
+		context->informationFromObjectContext = nullptr;
+	}
 	| ValueSetFromObject
 ;
 
 ObjectSetFromObjects
-	: ReferencedObjectsDot OBJECTFIELDREFERENCE
-    {
+	: ReferencedObjectsDot OBJECTFIELDREFERENCE {
 		  $$ = new ObjectSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
 		  context->informationFromObjectContext = nullptr;
-		}
-	| ReferencedObjectsDot OBJECTSETFIELDREFERENCE
-    {
+	}
+	| ReferencedObjectsDot OBJECTSETFIELDREFERENCE {
 		  $$ = new ObjectSetFromObjects(ObjectSetConstraintElementPtr($1), *$2); delete $2;
 		  context->informationFromObjectContext = nullptr;
-		}
+	}
 	| ObjectSetFromObject
 ;
 
@@ -1184,8 +1175,7 @@ ElementSetSpec
 	: Unions
 	| ALL Exclusions      {
 		$$ = new ConstraintElementVector;
-		$$->push_back(ConstraintElementPtr(
-								new ConstrainAllConstraintElement(ConstraintElementPtr($2))));
+		$$->push_back(ConstraintElementPtr(new ConstrainAllConstraintElement(ConstraintElementPtr($2))));
 	}
 ;
 
@@ -1276,12 +1266,14 @@ SizeConstraint		: SIZE_t Constraint	{ $$ = new SizeConstraintElement(ConstraintP
 TypeConstraint 		: Type ;
 
 ContainedSubtype
-	: INCLUDES Type			{ $$ = $2;  }
+	: Includes Type			{ $$ = $2;  }
 /*| Type		 Actual grammar has INCLUDES keyword optional but this is
 				 horribly ambiguous, so only support  a few specific Type
 				 definitions */
 ;
 
+
+Includes 				: INCLUDES /* | empty*/ ;
 
 
 InnerTypeConstraints
@@ -1961,7 +1953,7 @@ BuiltinValue
 //	| setValue				synonym to SequenceValue
 //	| setOfValue		    synonym to SequenceOfValue
 //	| PrefixedValue
-//	| TimeValue
+//	| TimeValue				synonym of CSTRING
 ;
 
 
@@ -2239,6 +2231,8 @@ ValueSet
 ;
 
 
+/*
+	Kept for history
 
 MacroDefinition
 	: TYPEREFERENCE MACRO ASSIGNMENT MacroSubstance {
@@ -2254,7 +2248,7 @@ MacroSubstance
 ;
 
 MacroBody
-	: TypeProduction ValueProduction /*SupportingProductions*/
+	: TypeProduction ValueProduction SupportingProductions
 ;
 
 TypeProduction
@@ -2265,23 +2259,6 @@ ValueProduction
 	: VALUE NOTATION ASSIGNMENT MacroAlternativeList
 ;
 
-
-/*
-SupportingProductions
-	: ProductionList
-	| /*empty*//*
-;
-
-ProductionList
-	: Production
-	| ProductionList Production
-;
-
-Production
-	: TYPEREFERENCE ASSIGNMENT MacroAlternativeList
-
-;
-*/
 
 MacroAlternativeList
 	: MacroAlternative
@@ -2327,7 +2304,7 @@ LocalValueAssignment
 	: IDENTIFIER Type ASSIGNMENT Value
       {}
 ;
-
+*/
 
 /********/
 

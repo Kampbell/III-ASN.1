@@ -4,7 +4,7 @@
 
 typedef int Yshort;
 
-#include "asn_grammar.tab.h"
+#include "asn1.tab.h"
 
 #ifdef __cplusplus
 #define _C_ "C"

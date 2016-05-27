@@ -3,14 +3,14 @@
 %option stack
 %option bison-locations 
 %option yylineno
-%option outfile="asn_lex.cxx"
-%option header-file="asn_lex.h"
+%option outfile="asn1.cxx"
+%option header-file="asn1.hxx"
 %option never-interactive 
 
 %{
 
 /*
- * asn_lex.l
+ * asn1.l
  *
  * ASN lexical analysis file
  *
@@ -50,7 +50,7 @@
  */
 
 #include "main.h"
-#include "asn_grammar.tab.h"
+#include "asn1.tab.h"
 #include <ctype.h>
 
 extern unsigned lineNumber;
@@ -62,8 +62,8 @@ extern const char *const yyname[];
 #define YY_HEADER_EXPORT_START_CONDITIONS 1
 //#define YY_USER_ACTION if (LexEcho) std::cout << yytext << std::flush;
 
-extern int yylex (YYSTYPE*,YYLTYPE*  ,yyscan_t, ParserContext*, void* save);
-#define YY_DECL int yylex(YYSTYPE* yylval_param, YYLTYPE* yylloc_param, yyscan_t yyscanner, ParserContext* context, void* yytrial)
+extern int yylex (YYSTYPE*,YYLTYPE*  ,yyscan_t, ParserContext*);
+#define YY_DECL int yylex(YYSTYPE* yylval_param, YYLTYPE* yylloc_param, yyscan_t yyscanner, ParserContext* context)
 
 #define YY_USER_ACTION yylloc->first_line = yylloc->last_line = yylineno; \
     yylloc->first_column = yycolumn; yylloc->last_column = yycolumn + yyleng - 1; \
@@ -197,9 +197,12 @@ upper [A-Z]
 "COMPONENTS"        { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,COMPONENTS, WORD_t, yyscanner); }  
 "CONSTRAINED"       { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,CONSTRAINED, WORD_t, yyscanner); }  
 "CONTAINING"		{ return CONTAINING; }
+"DATE"				{ return DATE; }
+"DATE-TIME"			{ return DATE_TIME; }
 "DEFAULT"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,DEFAULT, WORD_t, yyscanner); }  
 "DEFINED"           { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,DEFINED, WORD_t, yyscanner); }  
 "DEFINITIONS"       { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,DEFINITIONS, WORD_t, yyscanner); }  
+"DURATION"          { return DURATION; }
 "EMBEDDED"          { return EMBEDDED; }
 "END"               { return END; }
 "ENUMERATED"        { return ENUMERATED; }
@@ -255,6 +258,8 @@ upper [A-Z]
 "SYNTAX"            { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,SYNTAX, WORD_t, yyscanner); }  
 "T61String"         { return T61String; }
 "TAGS"              { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,TAGS, WORD_t, yyscanner); }  
+"TIME"              { return TIME; }
+"TIME-OF-DAY"		{ return TIME_OF_DAY; }
 "TRUE"              { return TRUE_t; }
 "TYPE"				{ return TokenSelect(yylval, !is_WORD(context, yyscanner) ,TYPE_t, WORD_t, yyscanner); }  
 "TYPE-IDENTIFIER"   { return TokenSelect(yylval, !is_WORD(context, yyscanner) ,TYPE_IDENTIFIER, WORD_t, yyscanner); }  

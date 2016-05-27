@@ -95,9 +95,9 @@ typedef struct YYLTYPE {
 #endif
 
 
-#include "asn_grammar.tab.h"
-#include "asn_lex.h"
-#include "asn_ref_lex.h"
+#include "asn1.tab.h"
+#include "asn1.hxx"
+#include "asn1_ref.hxx"
 
 
 
@@ -7778,7 +7778,7 @@ ObjectClassBase* DefinedObjectClass::getReference() {
 
 const ObjectClassBase* DefinedObjectClass::getReference() const {
 	resolveReference();
-//	assert(reference);
+	assert(reference);
 	return reference;
 }
 
