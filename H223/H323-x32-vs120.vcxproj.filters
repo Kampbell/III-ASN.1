@@ -71,10 +71,36 @@
     <None Include="asn\H235-SECURITY-MESSAGES.asn-FAILED">
       <Filter>asn</Filter>
     </None>
+    <None Include="csn\MEDIA-GATEWAY-CONTROL.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\MULTIMEDIA-SYSTEM-CONTROL.inl">
+      <Filter>csn</Filter>
+    </None>
+    <None Include="csn\Remote-Operations-Information-Objects.inl">
+      <Filter>csn</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="csn\MULTIMEDIA-SYSTEM-CONTROL.h">
       <Filter>csn</Filter>
     </ClInclude>
+    <ClInclude Include="csn\MEDIA-GATEWAY-CONTROL.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+    <ClInclude Include="csn\Remote-Operations-Information-Objects.h">
+      <Filter>csn</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="csn\MEDIA-GATEWAY-CONTROL.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\MULTIMEDIA-SYSTEM-CONTROL.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
+    <ClCompile Include="csn\Remote-Operations-Information-Objects.cxx">
+      <Filter>csn</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

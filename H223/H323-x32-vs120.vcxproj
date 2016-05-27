@@ -148,9 +148,19 @@
     <None Include="asn\h4509.asn-FAILED" />
     <None Include="asn\lgc.asn-FAILED" />
     <None Include="asn\ro.asn" />
+    <None Include="csn\MEDIA-GATEWAY-CONTROL.inl" />
+    <None Include="csn\MULTIMEDIA-SYSTEM-CONTROL.inl" />
+    <None Include="csn\Remote-Operations-Information-Objects.inl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="csn\MEDIA-GATEWAY-CONTROL.h" />
     <ClInclude Include="csn\MULTIMEDIA-SYSTEM-CONTROL.h" />
+    <ClInclude Include="csn\Remote-Operations-Information-Objects.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="csn\MEDIA-GATEWAY-CONTROL.cxx" />
+    <ClCompile Include="csn\MULTIMEDIA-SYSTEM-CONTROL.cxx" />
+    <ClCompile Include="csn\Remote-Operations-Information-Objects.cxx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
