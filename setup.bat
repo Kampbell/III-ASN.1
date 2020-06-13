@@ -1,0 +1,2 @@
+PATH=%ASN1-W32%\bin;%PATH%
+

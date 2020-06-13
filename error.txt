@@ -1,0 +1,33 @@
+1>z:\git\iii-asn.1-tool\asn1\asn1.h(2658): error C2679: binary '=': no operator found which takes a right-hand operand of type 'ASN1::SEQUENCE_OF<ISO8823_PRESENTATION::Context_list_subtype,ASN1::SizeConstraint<3,0,7>>::iterator' (or there is no acceptable conversion)
+1>  c:\program files (x86)\microsoft visual studio 14.0\vc\include\vector(391): note: could be 
+
+'vector<ASN1::AbstractData*> &
+vector<ASN1::AbstractData*>::operator =(vector<ASN1::AbstractData*> &&)'
+
+
+'vector<ASN1::AbstractData*> &
+vector<ASN1::AbstractData*>::operator =(const vector<ASN1::AbstractData*> &)'
+
+
+1>  z:\git\iii-asn.1-tool\asn1\asn1.h(2658): note: while trying to match the argument list 
+
+'(vector<ASN1::AbstractData*>, ASN1::SEQUENCE_OF<ISO8823_PRESENTATION::Context_list_subtype,ASN1::SizeConstraint<3,0,7>>::iterator)'
+1>  z:\git\iii-asn.1-tool\asn1\asn1.h(2652): note: see reference to function template instantiation 
+'void ASN1::SEQUENCE_OF<ISO8823_PRESENTATION::Context_list_subtype,ASN1::SizeConstraint<3,0,7>>::remove_if<binder2nd<equal_to<T>>>(Predicate)' being compiled
+1>          with
+1>          [
+1>              T=ISO8823_PRESENTATION::Context_list_subtype,
+1>              Predicate=binder2nd<equal_to<ISO8823_PRESENTATION::Context_list_subtype>>
+1>          ]
+1>  z:\git\iii-asn.1-tool\asn1\asn1.h(2652): note: see reference to function template instantiation 'void ASN1::SEQUENCE_OF<ISO8823_PRESENTATION::Context_list_subtype,ASN1::SizeConstraint<3,0,7>>::remove_if<binder2nd<equal_to<T>>>(Predicate)' being compiled
+1>          with
+1>          [
+1>              T=ISO8823_PRESENTATION::Context_list_subtype,
+1>              Predicate=binder2nd<equal_to<ISO8823_PRESENTATION::Context_list_subtype>>
+1>          ]
+1>  z:\git\iii-asn.1-tool\asn1\asn1.h(2652): note: while compiling class template member function 
+'void ASN1::SEQUENCE_OF<ISO8823_PRESENTATION::Context_list_subtype,ASN1::SizeConstraint<3,0,7>>::remove(const ISO8823_PRESENTATION::Context_list_subtype &)'
+1>  z:\git\iii-asn.1-tool\kampbell\csn\iso8823-presentation.h(1696): note: see reference to class template instantiation 
+'ASN1::SEQUENCE_OF<ISO8823_PRESENTATION::Context_list_subtype,ASN1::SizeConstraint<3,0,7>>' being compiled
+
+1>  c:\program files (x86)\microsoft visual studio 14.0\vc\include\vector(391): note: or       

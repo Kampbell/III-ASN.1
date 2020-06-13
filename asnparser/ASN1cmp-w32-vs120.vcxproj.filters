@@ -85,14 +85,36 @@
     <None Include="asn1_ref.tab.i">
       <Filter>csn</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <BtYacc Include="asn1.bty">
-      <Filter>bnf</Filter>
-    </BtYacc>
-    <BtYacc Include="asn1_ref.bty">
-      <Filter>bnf</Filter>
-    </BtYacc>
+    <None Include="asn\ACSE-1.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\PRESENTATION-ADDRESS.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\Reliable-Transfer-APDU.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\Remote-Operations-Abstract-Syntaxes.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\Remote-Operations-Generic-ROS-PDUs.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\Remote-Operations-Information-Objects.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\Remote-Operations-Information-Objects-extensions.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\Remote-Operations-Realizations.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\Remote-Operations-Useful-Definitions.asn">
+      <Filter>asn</Filter>
+    </None>
+    <None Include="asn\ROS.asn">
+      <Filter>asn</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Flex Include="asn1.l">
@@ -101,5 +123,13 @@
     <Flex Include="asn1_ref.l">
       <Filter>bnf</Filter>
     </Flex>
+  </ItemGroup>
+  <ItemGroup>
+    <BYacc Include="asn1.bty">
+      <Filter>bnf</Filter>
+    </BYacc>
+    <BYacc Include="asn1_ref.bty">
+      <Filter>bnf</Filter>
+    </BYacc>
   </ItemGroup>
 </Project>

@@ -55,32 +55,23 @@ public:
 	virtual ~FlexLexer()	{ }
 
 	const char* YYText()	{ return yytext; }
-	int YYLeng()		{ return yyleng; }
+	int YYLeng()			{ return yyleng; }
 
-	virtual void
-		yy_switch_to_buffer( struct yy_buffer_state* new_buffer ) = 0;
-	virtual struct yy_buffer_state*
-		yy_create_buffer( istream* s, int size ) = 0;
+	virtual void						yy_switch_to_buffer( struct yy_buffer_state* new_buffer ) = 0;
+	virtual struct yy_buffer_state*		yy_create_buffer(std::istream* s, int size ) = 0;
 	virtual void yy_delete_buffer( struct yy_buffer_state* b ) = 0;
-	virtual void yyrestart( istream* s ) = 0;
+	virtual void yyrestart(std::istream* s ) = 0;
 
 	virtual int yylex() = 0;
 
 	// Call yylex with new input/output sources.
-	int yylex(std::istream* new_in, std::ostream* new_out = 0 )
-		{
-		switch_streams( new_in, new_out );
-		return yylex();
-		}
+	int yylex(std::istream* new_in, std::ostream* new_out = 0 )	{ switch_streams( new_in, new_out ); return yylex(); }
 
 	// Switch to new input/output streams.  A nil stream pointer
 	// indicates "keep the current one".
-	virtual void switch_streams(std::istream* new_in = 0,
-					std::ostream* new_out = 0 ) = 0;
-
-	int lineno() const		{ return yylineno; }
-
-	int debug() const		{ return yy_flex_debug; }
+	virtual void switch_streams(std::istream* new_in = 0, std::ostream* new_out = 0 ) = 0;
+	int lineno() const			{ return yylineno; }
+	int debug() const			{ return yy_flex_debug; }
 	void set_debug( int flag )	{ yy_flex_debug = flag; }
 
 protected:
@@ -110,7 +101,7 @@ public:
 	void yy_switch_to_buffer( struct yy_buffer_state* new_buffer );
 	struct yy_buffer_state* yy_create_buffer(std::istream* s, int size );
 	void yy_delete_buffer( struct yy_buffer_state* b );
-	void yyrestart( istream* s );
+	void yyrestart(std::istream* s );
 
 	virtual int yylex();
 	virtual void switch_streams(std::istream* new_in, std::ostream* new_out );
@@ -124,7 +115,7 @@ protected:
 	int yyinput();
 
 	void yy_load_buffer_state();
-	void yy_init_buffer( struct yy_buffer_state* b, istream* s );
+	void yy_init_buffer( struct yy_buffer_state* b, std::istream* s );
 	void yy_flush_buffer( struct yy_buffer_state* b );
 
 	int yy_start_stack_ptr;

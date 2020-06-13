@@ -1,16 +1,35 @@
 /*
-%glr-parser
 %expect-rr 1
 %expect 19
 */
-
 /*
-%define api.pure		full
-*/
-%lex-param				{ yyscan_t scanner } { ParserContext* context }
+Usage: Z:\git\byacc\msvc\BTYaccd.exe [options] filename
+
+Options:
+  -b file_prefix        set filename prefix (default "y.")
+  -B                    create a backtracking parser
+  -d [include_suffix]   write definitions (.tab.h)
+  -e                    generate enum instead of #define
+  -i [extern_suffix]    write interface (y.tab.i)
+  -g                    write a graphical description
+  -l                    suppress #line directives
+  -L                    enable position processing, e.g., "%locations"
+  -o output_file        (default ".tab.c")
+  -p symbol_prefix      set symbol prefix (default "yy")
+  -P                    create a reentrant parser, e.g., "%pure-parser"
+  -r [code_suffix]      produce separate code and table files (y.code.c)
+  -s                    suppress #define's for quoted names in %token lines
+  -t                    add debugging support
+  -v                    write description (y.output)
+  -V                    show version information and exit
+  -y                    POSIX compatibility
+ */
+
+%lex-param			{ yyscan_t scanner } { ParserContext* context }
 %parse-param			{ yyscan_t scanner } { ParserContext* context }
 %locations
 %no-lines
+%pure-parser
 
 %{
 /*
@@ -1434,7 +1453,7 @@ ObjectAssignment
   ASSIGNMENT Object
     {
 		$2->endParseObject();
-		context->classStack->pop();
+		context->pop();
 		$5->setName(*$1); delete $1;
 		$5->setObjectClass($2);
 		context->module->addInformationObject(InformationObjectPtr($5));
@@ -1452,7 +1471,7 @@ ObjectSetAssignment
 		context->module->addInformationObjectSet(InformationObjectSetPtr(
 		new InformationObjectSetDefn(*$1, ObjectClassBasePtr($2), ConstraintPtr($5))));
 		delete $1;
-		context->classStack->pop();
+		context->pop();
 	}
 ;
 
@@ -1587,7 +1606,7 @@ ObjectFieldSpec
 	| fieldreference DefinedObjectClass OPTIONAL_t	{ $$ = new  ObjectFieldSpec(*$1, $2, true); delete $1; }
 	| fieldreference DefinedObjectClass				{ $2->beginParseObject(); }	DEFAULT Object {
 		$2->endParseObject();
-		context->classStack->pop();
+		context->pop();
 		ObjectFieldSpec* spec = new  ObjectFieldSpec(*$1, $2); delete $1;
 		spec->setDefault(InformationObjectPtr($5));
 		$$ = spec;
@@ -1607,7 +1626,7 @@ ObjectSetFieldSpec
 		delete $1;
 		spec->setDefault(ConstraintPtr($5));
 		$$= spec;
-    	context->classStack->pop();
+    	context->pop();
 	}
 ;
 
@@ -1719,20 +1738,20 @@ DefaultSyntax
 	: OBJECT_BRACE FieldSettings '}'  {
 		$$ = $2;
 		if (context->inObjectSetContext)
-		  context->classStack->top()->PreParseObject();
+		  context->top()->PreParseObject();
 	}
 ;
 
 FieldSettings
-	: FieldSettings ',' PrimitiveFieldName  { context->classStack->top()->getField(*$3)->beginParseSetting($1); } Setting  {
+	: FieldSettings ',' PrimitiveFieldName  { context->top()->getField(*$3)->beginParseSetting($1); } Setting  {
 		$$ = $1;
-		context->classStack->top()->getField(*$3)->endParseSetting();
+		context->top()->getField(*$3)->endParseSetting();
 		$1->push_back(FieldSettingPtr(new FieldSetting(*$3, std::auto_ptr<Setting>($5))));
 		delete $3;
 	}
-	| PrimitiveFieldName  {	context->classStack->top()->getField(*$1)->beginParseSetting(nullptr); } Setting  {
+	| PrimitiveFieldName  {	context->top()->getField(*$1)->beginParseSetting(nullptr); } Setting  {
 		$$ = new FieldSettingList;
-		context->classStack->top()->getField(*$1)->endParseSetting();
+		context->top()->getField(*$1)->endParseSetting();
 		$$->push_back(FieldSettingPtr(new FieldSetting(*$1, std::auto_ptr<Setting>($3))));
 		delete $1;
 	}
@@ -1743,20 +1762,20 @@ DefinedSyntax
 	: OBJECT_BRACE DefinedSyntaxTokens '}'
 	{
 		$$ = $2;
-		$$->ResetTokenGroup();
+		$$->resetTokenGroup();
 		if (context->inObjectSetContext)
-			context->classStack->top()->PreParseObject();
+			context->top()->PreParseObject();
 	}
 ;
 
 DefinedSyntaxTokens
 	: DefinedSyntaxTokens DefinedSyntaxToken	{	$$ = $1; $$->addToken($2); }
-	| /*empty*/			{	$$ = new DefaultSyntaxBuilder(context->classStack->top()->getWithSyntax()); 	}
+	| /*empty*/			{	$$ = new DefaultSyntaxBuilder(context->top()->getWithSyntax()); 	}
 ;
 
 DefinedSyntaxToken
 	: Literal			{	$$ = new LiteralToken(*$1); delete $1;  }
-	| Setting			{	$$ = new SettingToken(std::auto_ptr<Setting>($1));  }
+	| Setting			{	$$ = new SettingToken(std::auto_ptr<Setting>($1)); }
 ;
 
 Setting
@@ -1770,15 +1789,13 @@ Setting
 							$$ = new ValueSetting(context->valueTypeContext,ValuePtr($1));
 	}
 	| ValueSet		   {	$$ = new ValueSetSetting(ValueSetPtr($1)); }
-	| Object		   {	$$ = new ObjectSetting(InformationObjectPtr($1),context->classStack->top()); }
-	| ObjectSet		   {    $$ = new ObjectSetSetting(ConstraintPtr($1), context->classStack->top());
-							context->classStack->pop();	
-  }
+	| Object		   {	$$ = new ObjectSetting(InformationObjectPtr($1),context->top()); context->pop(); }
+	| ObjectSet		   {    $$ = new ObjectSetSetting(ConstraintPtr($1), context->top()); context->pop(); }
 ;
 
 
 ObjectSet
-	: OBJECTSET_BRACE ObjectSetSpec '}'  {	$$ = $2;context->classStack->top()->endParseObjectSet();  }
+	: OBJECTSET_BRACE ObjectSetSpec '}'  {	$$ = $2;context->top()->endParseObjectSet();  }
 ;
 
 ObjectSetSpec
@@ -1859,7 +1876,7 @@ ParameterizedObjectAssignment
     ASSIGNMENT Object
       {
 		$3->endParseObject();
-		context->classStack->pop();
+		context->pop();
 		context->dummyParameters = nullptr;
 		$6->setName(*$1); delete $1;
 		$6->setObjectClass($3);
@@ -1881,7 +1898,7 @@ ParameterizedObjectSetAssignment
 				new InformationObjectSetDefn(*$1, ObjectClassBasePtr($3),
 				                            ConstraintPtr($6), ParameterListPtr($2))));
 		delete $1;
-		context->classStack->pop();
+		context->pop();
 		  }
 ;
 

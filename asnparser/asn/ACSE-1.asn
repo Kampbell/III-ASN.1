@@ -7,7 +7,6 @@ ACSE-1 {joint-iso-itu-t association-control(2) modules(0) apdus(0) version1(1)}
 DEFINITIONS ::=
 BEGIN
 
-/*
 EXPORTS
   -- acse-as-id, -- ACSE-apdu, -- aCSE-id,--  Application-context-name, AP-title,
     AE-qualifier, AE-title, AP-invocation-identifier, AE-invocation-identifier,
@@ -263,7 +262,6 @@ Release-response-reason ::= INTEGER {
 Name ::= CHOICE { -- only one possibility for now --
 	rdnSequence  RDNSequence
 }
-*/
 
 RDNSequence ::= SEQUENCE OF RelativeDistinguishedName
 
@@ -277,22 +275,6 @@ AttributeUsage ::= ENUMERATED {
   dSAOperation(3)}
 
 
-/*
-CONTEXT ::= CLASS {
-  &Type          ,
-  &defaultValue  &Type OPTIONAL,
-  &Assertion     OPTIONAL,
-  &absentMatch   BOOLEAN DEFAULT TRUE,
-  &id            OBJECT IDENTIFIER UNIQUE
-}
-WITH SYNTAX {
-  WITH SYNTAX &Type
-  [DEFAULT-VALUE &defaultValue]
-  [ASSERTED AS &Assertion]
-  [ABSENT-MATCH &absentMatch]
-  ID &id
-}
-*/
 -- MATCHING-RULE information object class specification 
 MATCHING-RULE ::= CLASS {
   &ParentMatchingRules   MATCHING-RULE OPTIONAL,
@@ -305,19 +287,6 @@ WITH SYNTAX {
   [SYNTAX &AssertionType]
   [UNIQUE-MATCH-INDICATOR &uniqueMatchIndicator]
   ID &id
-}
-
-/*
--- matching rules 
-objectIdentifierMatch MATCHING-RULE ::= {
-  SYNTAX  OBJECT IDENTIFIER
-  ID      { 2 1 2 } -- id-mr-objectIdentifierMatch
-}
-*/
-
-distinguishedNameMatch MATCHING-RULE ::= {
-  SYNTAX  DistinguishedName
-  ID      { 2 1 2 } -- id-mr-distinguishedNameMatch
 }
 
 -- ATTRIBUTE information object class specification 
@@ -349,20 +318,46 @@ WITH SYNTAX {
   ID &id
 }
 
-/*
+CONTEXT ::= CLASS {
+  &Type          ,
+  &defaultValue  &Type OPTIONAL,
+  &Assertion     OPTIONAL,
+  &absentMatch   BOOLEAN DEFAULT TRUE,
+  &id            OBJECT IDENTIFIER UNIQUE
+}
+WITH SYNTAX {
+  WITH SYNTAX &Type
+  [DEFAULT-VALUE &defaultValue]
+  [ASSERTED AS &Assertion]
+  [ABSENT-MATCH &absentMatch]
+  ID &id
+}
+
+-- matching rules 
+objectIdentifierMatch MATCHING-RULE ::= {
+  SYNTAX  OBJECT IDENTIFIER
+  ID      { 2 1 2 } -- id-mr-objectIdentifierMatch
+}
+
+distinguishedNameMatch MATCHING-RULE ::= {
+  SYNTAX  DistinguishedName
+  ID      { 2 1 2 } -- id-mr-distinguishedNameMatch
+}
+
 objectClass ATTRIBUTE ::= {
   WITH SYNTAX             OBJECT IDENTIFIER
   EQUALITY MATCHING RULE  objectIdentifierMatch
   ID                      { 2 1 2 } -- id-at-objectClass
 }
-*/
+
+/*
 aliasedEntryName ATTRIBUTE ::= {
   WITH SYNTAX             DistinguishedName
   EQUALITY MATCHING RULE  distinguishedNameMatch
   SINGLE VALUE            TRUE
   ID                      { 2 1 2 } -- id-at-aliasedEntryName
 }
-/*
+*/
 -- attributes 
 id-at-objectClass OBJECT IDENTIFIER ::= {id-at 0}
 
@@ -415,7 +410,6 @@ AttributeTypeAndDistinguishedValue ::= SEQUENCE {
                 contextList       SET SIZE (1..MAX) OF Context} OPTIONAL
 }
 */
-/*
 AttributeTypeAndDistinguishedValue ::= SEQUENCE {
   type					OBJECT IDENTIFIER,
   value                 OBJECT IDENTIFIER,
@@ -433,7 +427,6 @@ Context ::= SEQUENCE {
     SET SIZE (1..MAX) OF CONTEXT.&Type({SupportedContexts}{@contextType}),
   fallback       BOOLEAN DEFAULT FALSE
 }
-*/
 
 END
 

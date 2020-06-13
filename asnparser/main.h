@@ -1961,7 +1961,7 @@ public:
 	void print(ostream& os) const;
 	virtual bool ValidateField(FieldSpecsList* ) { return true;	}
 	virtual MakeDefaultSyntaxResult  MakeDefaultSyntax(DefinedSyntaxToken* token, FieldSettingList* setting);
-	virtual bool hasLiteral(const string& str) const { return str == name; }
+	virtual bool hasLiteral(const string& str) const;
 	virtual void preMakeDefaultSyntax(FieldSettingList*) {};
 	virtual void cancelMakeDefaultSyntax(int no = 0) const {}
 
@@ -1981,7 +1981,7 @@ public:
 	void print(ostream&) const;
 	virtual bool ValidateField(FieldSpecsList* fields);
 	virtual MakeDefaultSyntaxResult  MakeDefaultSyntax(DefinedSyntaxToken* token, FieldSettingList* setting);
-	virtual bool hasLiteral(const string&) const { return false; }
+	virtual bool hasLiteral(const string&) const;
 	virtual void preMakeDefaultSyntax(FieldSettingList* settings);
 	virtual void cancelMakeDefaultSyntax(int no = 0) const;
   private:
@@ -1997,7 +1997,7 @@ public:
 	TokenGroup() : optional(false), cursor(0) {}
 	TokenGroup(const TokenGroup& other);
 	~TokenGroup() {}
-	void addToken(TokenOrGroupSpecPtr token) {	tokenOrGroupSpecList.push_back(token); }
+	void addToken(TokenOrGroupSpecPtr token);
 	void setOptional() { optional = true; }
 	void print(ostream&) const;
 	bool ValidateField(FieldSpecsList* fields);
@@ -2023,7 +2023,8 @@ public:
 	~DefaultSyntaxBuilder();
 	void addToken(DefinedSyntaxToken* token);
 	auto_ptr<FieldSettingList> getDefaultSyntax();
-	void ResetTokenGroup();
+	void resetTokenGroup();
+	void cancelMakeDefaultSyntax();
   private:
 	TokenGroupPtr tokenGroup;
 	auto_ptr<FieldSettingList> setting;
@@ -2080,7 +2081,7 @@ public:
 	const FieldSpec* getField(const string& fieldName) const;
 
 	virtual bool VerifyDefaultSyntax(FieldSettingList*) const;
-	virtual bool hasLiteral(const string& str) const { return withSyntaxSpec ? withSyntaxSpec->hasLiteral(str) : false; }
+	virtual bool hasLiteral(const string& str) const;
 	virtual TokenGroupPtr getWithSyntax() const;
 	virtual void PreParseObject() const;
 	virtual void beginParseObject() const;
@@ -2374,7 +2375,7 @@ public:
 	virtual FieldSettingPtr MatchSetting(const string&) {
 		return FieldSettingPtr();
 	}
-	virtual bool isendSyntaxToken() {
+	virtual bool isEndSyntaxToken() {
 		return false;
 	}
 };
@@ -2398,10 +2399,10 @@ protected:
 	auto_ptr<Setting> setting;
 };
 
-class endSyntaxToken : public DefinedSyntaxToken {
+class EndSyntaxToken : public DefinedSyntaxToken {
 public:
-	endSyntaxToken() {}
-	virtual bool isendSyntaxToken() {
+	EndSyntaxToken() {}
+	virtual bool isEndSyntaxToken() {
 		return true;
 	}
 };
@@ -2974,10 +2975,18 @@ public:
 	ParserContext(FILE* file = nullptr);
 	~ParserContext();
 
+	void pop() const;
+	void push(ObjectClassBase* object);
+	ObjectClassBase* top() const;
+	bool empty() const;
+
+private:
+	ClassStack*				classStack		= nullptr;
+
+public:
 	yyscan_t				lexer;
 	FILE*					file;
 	ModuleDefinition*		module			= nullptr;
-	ClassStack*				classStack		= nullptr;
 	ParameterList*			dummyParameters = nullptr;
 	TypePtr					valueTypeContext;
 	vector<string>			removeList;

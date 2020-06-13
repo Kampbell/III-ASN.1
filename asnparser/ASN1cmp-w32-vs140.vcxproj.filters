@@ -77,6 +77,9 @@
     <None Include="asn\Shop.asn">
       <Filter>asn</Filter>
     </None>
+    <None Include="asn1.bty">
+      <Filter>bnf</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="bnf">

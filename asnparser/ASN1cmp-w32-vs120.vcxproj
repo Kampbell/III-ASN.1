@@ -27,9 +27,9 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="..\..\btyacc\msvc\btyacc.props" />
     <Import Project="..\..\win-flex-bison\bin\Release\custom_build_rules\win_flex_custom_build.props" />
     <Import Project="..\..\win-flex-bison\bin\Release\custom_build_rules\win_bison_custom_build.props" />
+    <Import Project="..\..\byacc\MSVC\byacc.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -189,22 +189,33 @@
     <None Include="asn1.tab.i" />
     <None Include="asn1_ref.output" />
     <None Include="asn1_ref.tab.i" />
+    <None Include="asn\ACSE-1.asn" />
     <None Include="asn\ASN.asn" />
     <None Include="asn\bug-001.asn" />
     <None Include="asn\ISO8823-PRESENTATION.asn" />
     <None Include="asn\Items.asn" />
+    <None Include="asn\PRESENTATION-ADDRESS.asn" />
+    <None Include="asn\Reliable-Transfer-APDU.asn" />
+    <None Include="asn\Remote-Operations-Abstract-Syntaxes.asn" />
+    <None Include="asn\Remote-Operations-Generic-ROS-PDUs.asn" />
+    <None Include="asn\Remote-Operations-Information-Objects-extensions.asn" />
+    <None Include="asn\Remote-Operations-Information-Objects.asn" />
+    <None Include="asn\Remote-Operations-Realizations.asn" />
+    <None Include="asn\Remote-Operations-Useful-Definitions.asn" />
+    <None Include="asn\ROS.asn" />
     <None Include="asn\Shop.asn" />
   </ItemGroup>
   <ItemGroup>
-    <BtYacc Include="asn1.bty">
+    <BYacc Include="asn1.bty">
       <Verbose Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</Verbose>
       <NoLines Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</NoLines>
       <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </OutputFile>
       <DefinesFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </DefinesFile>
-    </BtYacc>
-    <BtYacc Include="asn1_ref.bty">
+      <FileType>Document</FileType>
+    </BYacc>
+    <BYacc Include="asn1_ref.bty">
       <FilePrefix Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </FilePrefix>
       <NamePrefix Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">id</NamePrefix>
@@ -212,7 +223,8 @@
       </OutputFile>
       <Verbose Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</Verbose>
       <NoLines Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</NoLines>
-    </BtYacc>
+      <FileType>Document</FileType>
+    </BYacc>
   </ItemGroup>
   <ItemGroup>
     <Flex Include="asn1.l">
@@ -220,6 +232,7 @@
       <Noline Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</Noline>
       <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).hxx</HeaderFile>
       <HeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).hxx</HeaderFile>
+      <Cpp Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</Cpp>
     </Flex>
     <Flex Include="asn1_ref.l">
       <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).cxx</OutputFile>
@@ -234,8 +247,8 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\btyacc\msvc\btyacc.targets" />
     <Import Project="..\..\win-flex-bison\bin\Release\custom_build_rules\win_flex_custom_build.targets" />
     <Import Project="..\..\win-flex-bison\bin\Release\custom_build_rules\win_bison_custom_build.targets" />
+    <Import Project="..\..\byacc\MSVC\byacc.targets" />
   </ImportGroup>
 </Project>

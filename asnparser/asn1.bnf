@@ -566,34 +566,29 @@ BMPString
 | VisibleString
 ;
 
-RestrictedCharacterStringValue 	::=
-cstring
-| CharacterStringList
-| Quadruple
-| Tuple
-;
+RestrictedCharacterStringValue 	::= cstring | CharacterStringList | Quadruple | Tuple;
 
-CharacterStringList 	::= "{" CharSyms "}" ;
+CharacterStringList 			::= "{" CharSyms "}" ;
 
-CharSyms 		::= CharsDefn | CharSyms "," CharsDefn ;
+CharSyms 						::= CharsDefn | CharSyms "," CharsDefn ;
 
-CharsDefn 		::= cstring | Quadruple | Tuple | DefinedValue ;
+CharsDefn 						::= cstring | Quadruple | Tuple | DefinedValue ;
 
-Quadruple 		::= "{" Group "," Plane "," Row "," Cell "}" ;
+Quadruple 						::= "{" Group "," Plane "," Row "," Cell "}" ;
 
-Group 			::= number ;
+Group 							::= number ;
 
-Plane 			::= number ;
+Plane 							::= number ;
 
-Row 			::= number ;
+Row 							::= number ;
 
-Cell 			::= number ;
+Cell 							::= number ;
 
-Tuple 			::= "{" TableColumn "," TableRow "}" ;
+Tuple 							::= "{" TableColumn "," TableRow "}" ;
 
-TableColumn 		::= number ;
+TableColumn 					::= number ;
 
-TableRow 		::= number ;
+TableRow 						::= number ;
 
 XMLRestrictedCharacterStringValue 	::= xmlcstring ;
 
@@ -665,7 +660,7 @@ IntersectionMark 	::= "^" | INTERSECTION ;
 Elements 		::=
 	SubtypeElements
 	| ObjectSetElements
-	| "(" ElementSetSpec ")"
+	| "(" ElementSetSpecs ")"
 ;
 
 SubtypeElements 	::=
@@ -824,6 +819,8 @@ OpenTypeFieldVal 			::= Type ":" Value;
 
 FixedTypeFieldVal 			::= BuiltinValue | ReferencedValue;
 
+ReferencedValue				::= DefinedValue | ValueFromObject
+
 XMLObjectClassFieldValue 	::= XMLOpenTypeFieldVal | XMLFixedTypeFieldVal;
 
 XMLOpenTypeFieldVal 		::= XMLTypedValue | xmlhstring;
@@ -882,7 +879,8 @@ DummyGovernor 				::= DummyReference;
 
 DummyReference 				::= Reference;
 
-ParameterizedReference 		::= Reference | Reference "{" "}";
+// bug ParameterizedReference 		::= Reference | Reference "{" "}";
+ParameterizedReference 		::= Reference "{" "}";
 
 SimpleDefinedType 			::= ExternalTypeReference | typereference;
 

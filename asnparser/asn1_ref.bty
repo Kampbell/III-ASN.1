@@ -543,13 +543,10 @@ ParameterizedObjectSetAssignment
 	  }
 ;
 
-ParameterizedWouldbeObjectClassReference
-  : WOULDBE_OBJECTCLASSREFERENCE ParameterList
-;
-	    
-ParameterizedTypeReference	: TYPEREFERENCE ParameterList;
-ParameterizedIdentifier		: IDENTIFIER ParameterList;
-ParameterList				: '{' '}';
+ParameterizedWouldbeObjectClassReference	: WOULDBE_OBJECTCLASSREFERENCE ParameterList;
+ParameterizedTypeReference					: TYPEREFERENCE ParameterList;
+ParameterizedIdentifier						: IDENTIFIER ParameterList;
+ParameterList								: '{' '}';
 
 /********/
 ValueAssignment				: IDENTIFIER Type ASSIGNMENT Value  {

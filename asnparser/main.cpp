@@ -7417,6 +7417,10 @@ ObjectClassDefn::ObjectClassDefn()
 ObjectClassDefn::~ObjectClassDefn() {
 }
 
+bool ObjectClassDefn::hasLiteral(const string& str) const {
+	return withSyntaxSpec ? withSyntaxSpec->hasLiteral(str) : false; 
+}
+
 void ObjectClassDefn::setFieldSpecs(auto_ptr<FieldSpecsList> list) {
 	fieldSpecs = list;
 	for (size_t i = 0; i < fieldSpecs->size(); ++i)
@@ -7503,18 +7507,18 @@ void ObjectClassDefn::PreParseObject() const {
 }
 
 void ObjectClassDefn::beginParseObject() const {
-	contexts.top()->classStack->push(const_cast<ObjectClassDefn*>(this));
+	contexts.top()->push(const_cast<ObjectClassDefn*>(this));
 	PreParseObject();
 	contexts.top()->braceTokenContext = OBJECT_BRACE;
 }
 
 void ObjectClassDefn::endParseObject() const {
 	contexts.top()->braceTokenContext = '{';
-//  classStack->Pop();
+//    contexts.top()->pop();
 }
 
 void ObjectClassDefn::beginParseObjectSet() const {
-	contexts.top()->classStack->push(const_cast<ObjectClassDefn*>(this));
+	contexts.top()->push(const_cast<ObjectClassDefn*>(this));
 	PreParseObject();
 	contexts.top()->braceTokenContext = OBJECTSET_BRACE;
 	contexts.top()->inObjectSetContext++;
@@ -7778,7 +7782,16 @@ ObjectClassBase* DefinedObjectClass::getReference() {
 
 const ObjectClassBase* DefinedObjectClass::getReference() const {
 	resolveReference();
+#if 0
+This assert does not work for forward reference of OBJECTCLASSREFERENCE
+when getReference is called by the lexer. See ACSE-1::MECHANISM-NAME reference 
+in Authentication-value while defined later on
+
+TODO split getReference when called from the lexer or called from the parser
+TODO use assert only on the parser call
+
 	assert(reference);
+#endif
 	return reference;
 }
 
@@ -7820,7 +7833,9 @@ void DefinedObjectClass::beginParseObject() const {
 }
 
 void DefinedObjectClass::endParseObject() const {
-	getReference()->endParseObject();
+	const ObjectClassBase* reference = getReference();
+	if (reference)
+		reference->endParseObject();
 }
 
 void DefinedObjectClass::beginParseObjectSet() const {
@@ -7891,6 +7906,10 @@ void DefinedObjectClass::generateCplusplus(ostream& fwd, ostream& hdr, ostream& 
 
 //////////////////////////////////////////////////////////////////
 
+bool Literal::hasLiteral(const string& str) const {
+	return str == name; 
+}
+
 void Literal::print(ostream& strm) const {
 	strm << name;
 	// use skipws flag to indicate whether to output nl or not
@@ -7908,6 +7927,9 @@ TokenOrGroupSpec::MakeDefaultSyntaxResult  Literal::MakeDefaultSyntax(DefinedSyn
 
 
 /////////////////////////////////////////////////////////////////////
+bool PrimitiveFieldName::hasLiteral(const string&) const {
+	return false; 
+}
 
 void PrimitiveFieldName::print(ostream& strm) const {
 	strm << name;
@@ -8012,8 +8034,14 @@ TokenOrGroupSpec::MakeDefaultSyntaxResult  TokenGroup::MakeDefaultSyntax(Defined
 	return result;
 }
 
+///////////////////////////////////////////////////////////////////
+
 TokenGroup::TokenGroup(const TokenGroup& other)
 	: tokenOrGroupSpecList(other.tokenOrGroupSpecList), optional(other.optional), cursor(other.cursor) {
+}
+
+void TokenGroup::addToken(TokenOrGroupSpecPtr token) {
+	tokenOrGroupSpecList.push_back(token); 
 }
 
 void TokenGroup::preMakeDefaultSyntax(FieldSettingList* settings) {
@@ -8023,7 +8051,11 @@ void TokenGroup::preMakeDefaultSyntax(FieldSettingList* settings) {
 
 void TokenGroup::cancelMakeDefaultSyntax(int no) const {
 	if (tokenOrGroupSpecList.size())
-		tokenOrGroupSpecList[no]->cancelMakeDefaultSyntax(1);
+		for (auto tokenOrGroupSpec :tokenOrGroupSpecList) {
+			tokenOrGroupSpec->cancelMakeDefaultSyntax();
+		}
+
+//		tokenOrGroupSpecList[no]->cancelMakeDefaultSyntax(1);
 }
 
 
@@ -8761,12 +8793,13 @@ void DefaultSyntaxBuilder::addToken(DefinedSyntaxToken* token) {
 		cerr << StdError(Fatal) << "Invalid Object Definition" << nl;
 		exit(1);
 	}
-	tokenGroup->cancelMakeDefaultSyntax();
-
+//	tokenGroup->cancelMakeDefaultSyntax();
 }
-
+void DefaultSyntaxBuilder::cancelMakeDefaultSyntax() {
+	tokenGroup->cancelMakeDefaultSyntax();
+}
 auto_ptr<FieldSettingList> DefaultSyntaxBuilder::getDefaultSyntax() {
-	endSyntaxToken token;
+	EndSyntaxToken token;
 #ifdef FIXME
 	// The code below does not work
 	if (tokenGroup->MakeDefaultSyntax(&token, setting.get()) == TokenOrGroupSpec::NOT_CONSUMED) {
@@ -8781,7 +8814,7 @@ auto_ptr<FieldSettingList> DefaultSyntaxBuilder::getDefaultSyntax() {
 #endif
 }
 
-void DefaultSyntaxBuilder::ResetTokenGroup() {
+void DefaultSyntaxBuilder::resetTokenGroup() {
 	tokenGroup->Reset();
 }
 
@@ -9391,6 +9424,19 @@ bool ObjectSetType::hasParameters() const {
 }
 
 
+//////////////////////////////////////////////////////////////
+void ParserContext::pop() const	{
+	classStack->pop(); 
+ }
+void ParserContext::push(ObjectClassBase* object) {
+	classStack->push(object); 
+}
+ObjectClassBase* ParserContext::top() const	{
+	return classStack->top(); 
+}
+bool ParserContext::empty() const {
+	return classStack->empty(); 
+}
 
 
 ostream& operator<<(ostream& out, const StdError& e) {

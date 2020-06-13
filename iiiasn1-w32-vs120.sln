@@ -24,9 +24,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RDP", "RDP\RDP.vcxproj", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6AC2EA98-D59C-454F-A81E-5BC18D792CE9}"
 	ProjectSection(SolutionItems) = preProject
-		..\btyacc\msvc\btyacc.props = ..\btyacc\msvc\btyacc.props
-		..\btyacc\msvc\btyacc.targets = ..\btyacc\msvc\btyacc.targets
-		..\btyacc\msvc\btyacc.xml = ..\btyacc\msvc\btyacc.xml
+		..\byacc\MSVC\byacc.props = ..\byacc\MSVC\byacc.props
+		..\byacc\MSVC\byacc.targets = ..\byacc\MSVC\byacc.targets
+		..\byacc\MSVC\byacc.xml = ..\byacc\MSVC\byacc.xml
 		iiiasn1.properties = iiiasn1.properties
 		solution.props = solution.props
 		..\win-flex-bison\bin\Release\custom_build_rules\win_bison_custom_build.props = ..\win-flex-bison\bin\Release\custom_build_rules\win_bison_custom_build.props
